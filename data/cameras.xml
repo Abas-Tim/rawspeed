@@ -10800,8 +10800,29 @@
 	<Camera make="Panasonic" model="DC-S1RM2" supported="no">
 		<ID make="Panasonic" model="DC-S1RM2">Panasonic DC-S1RM2</ID>
 	</Camera>
-	<Camera make="Panasonic" model="DC-S9" supported="no">
+	<Camera make="Panasonic" model="DC-S9">
 		<ID make="Panasonic" model="DC-S9">Panasonic DC-S9</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="128" white="4095"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">9983 -3890 -841</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-4180 12164 2263</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-249 1139 5766</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DC-S9" mode="3:2">
+		<ID make="Panasonic" model="DC-S9">Panasonic DC-S9</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="128" white="4095"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">9983 -3890 -841</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-4180 12164 2263</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-249 1139 5766</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60">
 		<Crop x="0" y="0" width="0" height="0"/>
