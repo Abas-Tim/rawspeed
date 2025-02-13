@@ -11564,6 +11564,12 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DC-G97" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-G97">Panasonic DC-G97</ID>
+	</Camera>
+	<Camera make="Panasonic" model="DC-G99M2" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-G99M2">Panasonic DC-G99M2</ID>
+	</Camera>
 	<Camera make="Panasonic" model="DC-GF9">
 		<ID make="Panasonic" model="DC-GF9">Panasonic DC-GF9</ID>
 		<Crop x="0" y="0" width="-208" height="0"/>
