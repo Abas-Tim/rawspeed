@@ -14229,6 +14229,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-8" height="0"/>
 		<Sensor black="800" white="16300"/>
+		<Aliases>
+			<Alias>ZV-1A</Alias>
+		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">8280 -2987 -703</ColorMatrixRow>
