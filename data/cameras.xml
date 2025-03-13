@@ -12860,6 +12860,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-12" height="0"/>
 		<Sensor black="800" white="16300"/>
+		<Aliases>
+			<Alias>DSC-RX100M7A</Alias>
+		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">10315 -4390 -937</ColorMatrixRow>
