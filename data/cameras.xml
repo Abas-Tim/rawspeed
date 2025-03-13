@@ -7358,7 +7358,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="OM Digital Solutions" model="OM-3">
-	  <ID make="OM System" model="OM-3">OM Digital Solutions OM-3</ID>
+		<ID make="OM System" model="OM-3">OM Digital Solutions OM-3</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
