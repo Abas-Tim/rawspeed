@@ -15498,6 +15498,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="FUJIFILM" model="GFX100RF" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="GFX100RF">Fujifilm GFX100RF</ID>
+	</Camera>
 	<Camera make="FUJIFILM" model="X-Pro1">
 		<ID make="Fujifilm" model="X-Pro1">Fujifilm X-Pro1</ID>
 		<CFA2 width="6" height="6">
