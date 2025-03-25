@@ -15498,8 +15498,39 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="FUJIFILM" model="GFX100RF" supported="unknown-no-samples">
-		<ID make="Fujifilm" model="GFX100RF">Fujifilm GFX100RF</ID>
+	<Camera make="FUJIFILM" model="GFX100RF">
+		<ID make="Fujifilm" model="GFX100RF">Fujifilm GFX 100RF</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Sensor black="0" white="0"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">12806 -5779 -1110</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-3546 11507 2318</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-177 996 5715</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
+	<Camera make="FUJIFILM" model="GFX100RF" mode="compressed">
+		<ID make="Fujifilm" model="GFX100RF">Fujifilm GFX 100RF</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Sensor black="0" white="0"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">12806 -5779 -1110</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-3546 11507 2318</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-177 996 5715</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
 	</Camera>
 	<Camera make="FUJIFILM" model="X-Pro1">
 		<ID make="Fujifilm" model="X-Pro1">Fujifilm X-Pro1</ID>
