@@ -1663,6 +1663,9 @@
 	<Camera make="Canon" model="Canon EOS R50" supported="no">
 		<ID make="Canon" model="EOS R50">Canon EOS R50</ID>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS R50 V" supported="unknown-no-samples">
+		<ID make="Canon" model="EOS R50 V">Canon EOS R50 V</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS R100" supported="no">
 		<ID make="Canon" model="EOS R100">Canon EOS R100</ID>
 	</Camera>
