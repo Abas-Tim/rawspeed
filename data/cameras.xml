@@ -1663,6 +1663,9 @@
 	<Camera make="Canon" model="Canon EOS R50" supported="no">
 		<ID make="Canon" model="EOS R50">Canon EOS R50</ID>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS R50 V" supported="unknown-no-samples">
+		<ID make="Canon" model="EOS R50 V">Canon EOS R50 V</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS R100" supported="no">
 		<ID make="Canon" model="EOS R100">Canon EOS R100</ID>
 	</Camera>
@@ -2824,6 +2827,9 @@
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot SX70 HS" supported="no">
 		<ID make="Canon" model="PowerShot SX70 HS">Canon PowerShot SX70 HS</ID>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot V1" supported="unknown-no-samples">
+		<ID make="Canon" model="PowerShot V1">Canon PowerShot V1</ID>
 	</Camera>
 	<Camera make="GoPro" model="FUSION" mode="dng">
 		<ID make="GoPro" model="FUSION">GoPro FUSION</ID>
