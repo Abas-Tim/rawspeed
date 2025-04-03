@@ -35,10 +35,6 @@
 #include <cstdint>
 #include <functional>
 
-// Arbitrarily chosen maximum tiff list length to prevent blindly trusting Tiff data and allocating 
-// large amounts of memory. 
-constexpr static uint16_t csMaxTiffTagListLength = 1024;
-
 namespace rawspeed {
 
 
@@ -105,11 +101,7 @@ public:
 template<typename T> 
 void getPanasonicTiffVector(const TiffIFD& ifd, TiffTag tag, std::vector<T>& output) {
   ByteStream bs = ifd.getEntry(tag)->getData();
-  uint16_t length = bs.getU16();
-  if (length > csMaxTiffTagListLength) {
-    ThrowRDE("TiffTag list for tag %u exceeds maximum allowed size %u", uint(tag), length);
-  }
-  output.resize(length);
+  output.resize(bs.getU16());
   
   // Note: Relying on ByteStream and its parent classes to prevent out-of-bounds reading.
   for (T& v : output) v = bs.get<T>();
@@ -302,13 +294,8 @@ void PanasonicV8Decompressor::validateParams() {
 void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
   ByteStream stream = ifd.getEntry(TiffTag::PANASONIC_V8_HUF_TABLE)->getData();
 
-  uint16_t length = stream.getU16();
-  if (length > csMaxTiffTagListLength) {
-    ThrowRDE("Huffman table length exceeds maximum allowed list length %u > %u", length, csMaxTiffTagListLength);
-  }
-
   struct HuffEntry { uint16_t bitcount, symbol, mask; };
-  std::vector<HuffEntry> huffTable(length);
+  std::vector<HuffEntry> huffTable(stream.getU16());
 
   for (HuffEntry& entry : huffTable) {
     entry.bitcount = stream.getU16(); // Number of bits in symbol
