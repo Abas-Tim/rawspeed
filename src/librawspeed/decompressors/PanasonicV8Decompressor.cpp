@@ -166,8 +166,8 @@ void PanasonicV8Decompressor::decompress() const
     #pragma omp parallel for num_threads(threadCount) schedule(static) default(none)
   #endif
     for (uint stripIdx = 0; stripIdx < mParams.horizontalStripCount; ++stripIdx) {
-      const size_t stripSize = (size_t(mParams.stripBitLengths[stripIdx]) + 7) / 8;
-      const size_t stripOffset = mParams.stripByteOffsets[stripIdx];
+      const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
+      const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
 
       // Note: Relying on Buffer to catch OOB access attempts 
       DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize), Endianness::big);
@@ -210,7 +210,7 @@ void PanasonicV8Decompressor::decompressStrip(const uint stripIdx, InternalHuffD
     
     // Copy lineBuffer into output buffer.
     for (uint linePos = 0; linePos < stripWidth*2; linePos += 4) {
-      const size_t dstStartCol = stripOutputOffset + linePos / 2;
+      const uint32_t dstStartCol = stripOutputOffset + linePos / 2;
 
       if (mGammaLUT.empty()) [[likely]] {
         outBuffer[row + 0](dstStartCol + 0) = lineBuffer[linePos + 0]; // Top Red
@@ -232,7 +232,7 @@ void PanasonicV8Decompressor::decompressStrip(const uint stripIdx, InternalHuffD
 int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::decodeNextDiffValue() {
   // Retrieve the difference category, which indicates magnitude of the difference between
   // the predicted and actual value. 
-  const uint16_t next16 = mBitPump.peekBits(16);
+  const uint16_t next16 = uint16_t(mBitPump.peekBits(16));
   const auto& [bits, diffCat] = mLUT[next16];
   if (diffCat == 0 && bits == 7) ThrowRDE("Huffman decoding encountered an invalid value!");
   mBitPump.skipBits(bits); // Skip the bits that encoded the difference category
@@ -299,8 +299,8 @@ void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
 
   for (HuffEntry& entry : huffTable) {
     entry.bitcount = stream.getU16(); // Number of bits in symbol
-    entry.symbol = stream.getU16() << (16U - entry.bitcount);
-    entry.mask = 0xffffU << (16U - entry.bitcount); // mask of the bits overlapping symbol
+    entry.symbol = uint16_t(stream.getU16() << (16u - entry.bitcount));
+    entry.mask = uint16_t(0xffffu << (16u - entry.bitcount)); // mask of the bits overlapping symbol
   }
 
   // Cache of Huffman table results for all possible 16-bit values. 
@@ -320,6 +320,9 @@ void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
   }
 }
 
+
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wunreachable-code"
 /// Maybe the most complicated part of the entire file format, and seemingly, completely unused. 
 void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
   // Retrieve encoded gamma curve from tags. 
@@ -339,7 +342,8 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
   if (!gamamPointsAreIdentity || !gammaSlopesAreIdentity) {
     // Generate gamma LUT based on retrieved curve.
     ThrowRDE("Non-identity gamma curve encountered. Never encountered in any testing samples!");
-    if (encodedGammaPoints.size() != 6 || encodedGammaSlopes.size() == 6) {
+
+    if (encodedGammaPoints.size() != 6 || encodedGammaSlopes.size() != 6) {
       ThrowRDE("Gamma curve point and/or slope list is not the expected length of 6");
     }
 
@@ -362,11 +366,10 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
       [](const GammaPoint& a, const GammaPoint& b) { return a.x <= b.x; });
     if (!pointsAreOrdered) {
       ThrowRDE("Points in the gamma curve are out of order!");
-      return;
     }
 
     // Evaluates the gamma curve for value x in the piece-wise function segment 'i'
-    const auto fnGamma = [&](const uint16_t x, const uint i) -> uint16_t {
+    const auto fnGamma = [&](const uint32_t x, const uint i) -> uint16_t {
       assert(i < gammaPoints.size());
       const GammaPoint& pt = gammaPoints[i];
       const GammaSlope& slope = gammaSlopes[i];
@@ -404,6 +407,8 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
     }
   }
 }
+
+#pragma GCC diagnostic pop
 
 
 } // namespace rawspeed
