@@ -170,7 +170,7 @@ void PanasonicV8Decompressor::decompress() const
       const size_t stripOffset = mParams.stripByteOffsets[stripIdx];
 
       // Note: Relying on Buffer to catch OOB access attempts 
-      DataBuffer stripBuffer(mInputFile.getSubView(mParams.stripByteOffsets[stripIdx], stripSize), Endianness::big);
+      DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize), Endianness::big);
       InternalHuffDecoder decoder(mHuffmanLUT, mParams.huffShiftDown, stripBuffer.getAsArray1DRef());
 
       decompressStrip(stripIdx, decoder, mRawOutput->getU16DataAsUncroppedArray2DRef());
@@ -178,8 +178,8 @@ void PanasonicV8Decompressor::decompress() const
 }
 
 
-void __attribute__((always_inline)) 
-PanasonicV8Decompressor::decompressStrip(const uint stripIdx, InternalHuffDecoder decoder, Array2DRef<uint16_t> outBuffer) const
+
+void PanasonicV8Decompressor::decompressStrip(const uint stripIdx, InternalHuffDecoder decoder, Array2DRef<uint16_t> outBuffer) const
 {
   const uint32_t stripWidth = mParams.stripWidths[stripIdx];
   const uint32_t stripHeight = mParams.stripHeights[stripIdx];
@@ -229,7 +229,7 @@ PanasonicV8Decompressor::decompressStrip(const uint stripIdx, InternalHuffDecode
   }
 }
 
-int32_t __attribute__((always_inline)) PanasonicV8Decompressor::InternalHuffDecoder::decodeNextDiffValue() {
+int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::decodeNextDiffValue() {
   // Retrieve the difference category, which indicates magnitude of the difference between
   // the predicted and actual value. 
   const uint16_t next16 = mBitPump.peekBits(16);
@@ -310,7 +310,7 @@ void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
   // prefix codes recorded in the table. 
   for (uint li = 0; li < mHuffmanLUT.size(); ++li) {
     PanasonicV8Decompressor::HuffmanLUTEntry& lutVal = mHuffmanLUT[li];
-    for (int ti = 0; ti < huffTable.size(); ++ti) {
+    for (uint ti = 0; ti < huffTable.size(); ++ti) {
       if ((uint16_t(li) & huffTable[ti].mask) == huffTable[ti].symbol) {
         lutVal.bitcount = uint8_t(huffTable[ti].bitcount);
         lutVal.diffCat = uint8_t(ti); 
@@ -395,7 +395,7 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
 
     uint interval = 0;
     // Evaluate the gamma curve for all uint16_t values. 
-    for (uint16_t x = 0; x <= UINT16_MAX; ++x) {
+    for (uint32_t x = 0; x <= UINT16_MAX; ++x) {
       // Advance interval as needed, skipping over possible redundant intervals.
       while (interval+1 < gammaPoints.size() && x >= gammaPoints[interval+1].x) ++interval;
       assert(gammaPoints[interval].x <= x);
