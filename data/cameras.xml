@@ -11547,8 +11547,25 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Panasonic" model="DC-G9M2" supported="no">
+	<Camera make="Panasonic" model="DC-G9M2">
 		<ID make="Panasonic" model="DC-G9M2">Panasonic DC-G9M2</ID>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">8325 -3456 -623</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-4330 12089 2528</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-860 2646 5984</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DC-G9M2" mode="4:3">
+		<ID make="Panasonic" model="DC-G9M2">Panasonic DC-G9M2</ID>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">8325 -3456 -623</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-4330 12089 2528</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-860 2646 5984</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DC-G95">
 		<ID make="Panasonic" model="DC-G95">Panasonic DC-G95</ID>

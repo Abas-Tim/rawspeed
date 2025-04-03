@@ -31,6 +31,7 @@
 #include "decompressors/PanasonicV5Decompressor.h"
 #include "decompressors/PanasonicV6Decompressor.h"
 #include "decompressors/PanasonicV7Decompressor.h"
+#include "decompressors/PanasonicV8Decompressor.h"
 #include "decompressors/UncompressedDecompressor.h"
 #include "io/Buffer.h"
 #include "io/ByteStream.h"
@@ -168,6 +169,16 @@ RawImage Rw2Decoder::decodeRawInternal() {
       PanasonicV7Decompressor v7(mRaw, bs);
       mRaw->createData();
       v7.decompress();
+      return mRaw;
+    }
+    case 8: {
+      // Most use bps=16, S9 uses bps=12
+      if (bitsPerSample != 16 && bitsPerSample != 12)
+        ThrowRDE("Version %i: unexpected bits per sample: %i", version,
+                 bitsPerSample);
+      PanasonicV8Decompressor v8(mFile, mRaw, *raw);
+      mRaw->createData();
+      v8.decompress();
       return mRaw;
     }
     default:
