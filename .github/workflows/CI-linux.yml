@@ -518,7 +518,7 @@ jobs:
           overwrite: true
       - name: Perform CodeQL static analysis
         timeout-minutes: 11
-        if: inputs.flavor == 'CodeQLAnalysis'
+        if: inputs.flavor == 'CodeQLAnalysis' && !cancelled()
         uses: github/codeql-action/analyze@v3
       - name: Perform SonarCloud static analysis
         timeout-minutes: 6
