@@ -201,11 +201,12 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
 
 void PanasonicV8Decompressor::decompress() const {
 #ifdef HAVE_OPENMP
-  uint threadCount = std::min(int(mParams.horizontalStripCount),
-                              rawspeed_get_number_of_processor_cores());
+  unsigned threadCount = std::min(int(mParams.horizontalStripCount),
+                                  rawspeed_get_number_of_processor_cores());
 #pragma omp parallel for num_threads(threadCount) schedule(static) default(none)
 #endif
-  for (uint stripIdx = 0; stripIdx < mParams.horizontalStripCount; ++stripIdx) {
+  for (unsigned stripIdx = 0; stripIdx < mParams.horizontalStripCount;
+       ++stripIdx) {
     const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
     const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
 
@@ -221,7 +222,7 @@ void PanasonicV8Decompressor::decompress() const {
 }
 
 void PanasonicV8Decompressor::decompressStrip(
-    const uint stripIdx, InternalHuffDecoder decoder,
+    const unsigned stripIdx, InternalHuffDecoder decoder,
     Array2DRef<uint16_t> outBuffer) const {
   const uint32_t stripWidth = mParams.stripWidths[stripIdx];
   const uint32_t stripHeight = mParams.stripHeights[stripIdx];
@@ -230,12 +231,13 @@ void PanasonicV8Decompressor::decompressStrip(
   std::vector<uint16_t> lineBuffer(stripWidth * 2);
   Bayer2x2 predicted = mParams.initialPrediction;
 
-  for (uint row = 0; row < stripHeight; row += 2) {
+  for (unsigned row = 0; row < stripHeight; row += 2) {
     // Each decoded 'row' is actually two rows of pixels in the raw image
     // because the image is encoded in rows of 2x2 CFA tiles. Likewise the
     // effective width here is 2x the strip width.
-    for (uint column = 0; column < stripWidth * 2; ++column) {
-      const uint ccIdx = column % 4; // CFA color component index: r, g1, g2, b
+    for (unsigned column = 0; column < stripWidth * 2; ++column) {
+      const unsigned ccIdx =
+          column % 4; // CFA color component index: r, g1, g2, b
       const int32_t diff = decoder.decodeNextDiffValue();
       const int32_t decodedValue = predicted[ccIdx] + diff;
       assert(decodedValue > 0);
@@ -255,7 +257,7 @@ void PanasonicV8Decompressor::decompressStrip(
     assert(mGammaLUT.empty());
 
     // Copy lineBuffer into output buffer.
-    for (uint linePos = 0; linePos < stripWidth * 2; linePos += 4) {
+    for (unsigned linePos = 0; linePos < stripWidth * 2; linePos += 4) {
       const uint32_t dstStartCol = stripOutputOffset + linePos / 2;
 
       if (mGammaLUT.empty()) [[likely]] {
@@ -378,9 +380,9 @@ void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
 
   // Populates LUT by checking for a bitwise match between each value and the
   // prefix codes recorded in the table.
-  for (uint li = 0; li < mHuffmanLUT.size(); ++li) {
+  for (unsigned li = 0; li < mHuffmanLUT.size(); ++li) {
     PanasonicV8Decompressor::HuffmanLUTEntry& lutVal = mHuffmanLUT[li];
-    for (uint ti = 0; ti < huffTable.size(); ++ti) {
+    for (unsigned ti = 0; ti < huffTable.size(); ++ti) {
       if ((uint16_t(li) & huffTable[ti].mask) == huffTable[ti].symbol) {
         lutVal.bitcount = uint8_t(huffTable[ti].bitcount);
         lutVal.diffCat = uint8_t(ti);
@@ -435,7 +437,7 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
     };
     std::array<GammaPoint, 6> gammaPoints;
     std::array<GammaSlope, 6> gammaSlopes;
-    for (uint i = 0; i < 6; ++i) {
+    for (unsigned i = 0; i < 6; ++i) {
       gammaPoints[i] = {uint16_t(encodedGammaPoints[i] & 0xFFFF),
                         uint16_t(encodedGammaPoints[i] >> 16)};
       gammaSlopes[i].sign = encodedGammaSlopes[i] & 0x10 ? 1 : 0;
@@ -452,7 +454,7 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
 
     // Evaluates the gamma curve for value x in the piece-wise function segment
     // 'i'
-    const auto fnGamma = [&](const uint32_t x, const uint i) -> uint16_t {
+    const auto fnGamma = [&](const uint32_t x, const unsigned i) -> uint16_t {
       assert(i < gammaPoints.size());
       const GammaPoint& pt = gammaPoints[i];
       const GammaSlope& slope = gammaSlopes[i];
@@ -482,7 +484,7 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
 
     mGammaLUT.resize(1 << UINT16_WIDTH);
 
-    uint interval = 0;
+    unsigned interval = 0;
     // Evaluate the gamma curve for all uint16_t values.
     for (uint32_t x = 0; x <= UINT16_MAX; ++x) {
       // Advance interval as needed, skipping over possible redundant intervals.
