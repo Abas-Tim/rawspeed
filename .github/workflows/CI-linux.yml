@@ -405,6 +405,7 @@ jobs:
           set -xe
           . "$PWD/codechecker/venv/bin/activate"
           export PATH="$PWD/codechecker/build/CodeChecker/bin:$PATH"
+          [ -d "${BUILD_DIR}/clang-tidy/" ] || exit 0
           set +e
           report-converter -t clang-tidy-yaml -o "${BUILD_DIR}/codechecker_clangtidy_results" "${BUILD_DIR}/clang-tidy/"
           CodeChecker parse -e sarif "${BUILD_DIR}/codechecker_clangtidy_results" -o "${GITHUB_WORKSPACE}/codechecker_clangtidy_report.json"
