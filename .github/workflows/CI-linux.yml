@@ -278,6 +278,9 @@ jobs:
           cmake -E make_directory "${INSTALL_PREFIX}"
           export ECO="${ECO} -DRAWSPEED_REFERENCE_SAMPLE_ARCHIVE=${RPUU_DST}"
           export ECO="${ECO} -DCMAKE_CXX_CLANG_TIDY_EXPORT_FIXES_DIR=${BUILD_DIR}/clang-tidy/"
+          if [ "$FLAVOR" = "ClangTidy" ] || [ "$FLAVOR" = "ClangStaticAnalysis" ] || [ "$FLAVOR" = "ClangCTUStaticAnalysis" ] || [ "$FLAVOR" = "CodeQLAnalysis" ]; then
+            export ECO="${ECO} -DRAWSPEED_ENABLE_WERROR=OFF"
+          fi
           "${SRC_DIR}/.ci/ci-script.sh"
       - name: Build
         timeout-minutes: ${{ inputs.flavor != 'ClangTidy' && (inputs.flavor != 'CodeQLAnalysis' && 7 || 12) || 25 }}
