@@ -405,14 +405,14 @@ jobs:
           set -xe
           . "$PWD/codechecker/venv/bin/activate"
           export PATH="$PWD/codechecker/build/CodeChecker/bin:$PATH"
-          [ -d "${BUILD_DIR}/clang-tidy/" ] || exit 0
+          bugs=$(find "${BUILD_DIR}/clang-tidy/" -type f -printf found -quit | wc -l)
+          [ $bugs -ne 0 ] || exit 0
           set +e
           report-converter -t clang-tidy-yaml -o "${BUILD_DIR}/codechecker_clangtidy_results" "${BUILD_DIR}/clang-tidy/"
           CodeChecker parse -e sarif "${BUILD_DIR}/codechecker_clangtidy_results" -o "${GITHUB_WORKSPACE}/codechecker_clangtidy_report.json"
           CodeChecker parse -e html "${BUILD_DIR}/codechecker_clangtidy_results" -o "${GITHUB_WORKSPACE}/codechecker_clangtidy_report"
-          bugs=$?
           set -xe
-          [ $bugs -eq 0 ] || exit 1
+          exit $bugs
       - name: Upload results of clang-tidy static analysis [YAML]
         timeout-minutes: 1
         if: inputs.flavor == 'ClangTidy' && failure() && steps.CC-CTSA.conclusion == 'failure'
