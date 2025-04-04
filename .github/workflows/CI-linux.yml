@@ -184,7 +184,7 @@ jobs:
         timeout-minutes: 1
         run: |
           set -xe
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
       - name: Fetch/Checkout RawSpeed git repo
         timeout-minutes: 1
         uses: actions/checkout@v4
@@ -396,6 +396,7 @@ jobs:
           BUILD_DIR: ${{ github.workspace }}/rawspeed-build
           CC: ${{ inputs.compiler-CC }}
           CXX: ${{ inputs.compiler-CXX }}
+        id: CC-CSA-plain
         run: |
           set -xe
           . "$PWD/codechecker/venv/bin/activate"
@@ -403,17 +404,28 @@ jobs:
           set +e
           CodeChecker check --logfile "${BUILD_DIR}/compile_commands.json" --analyzers clangsa --jobs "$(nproc --all)" --file "${SRC_DIR}/*" --disable deadcode.DeadStores -o "${BUILD_DIR}/codechecker_results"
           bugs=$?
-          CodeChecker parse -e html "${BUILD_DIR}/codechecker_results" -o "${BUILD_DIR}/codechecker_report"
+          CodeChecker parse -e sarif "${BUILD_DIR}/codechecker_results" -o "${GITHUB_WORKSPACE}/codechecker_report.json"
+          CodeChecker parse -e html "${BUILD_DIR}/codechecker_results" -o "${GITHUB_WORKSPACE}/codechecker_report"
           set -xe
-          tar -cvJ -f "$GITHUB_WORKSPACE/codechecker_report.tar.xz" -C "${BUILD_DIR}" "codechecker_report"
           [ $bugs -eq 0 ] || exit 1
-      - name: Upload results of clang static analysis (plain mode)
+      - name: Upload results of clang static analysis [SARIF] (plain mode)
         timeout-minutes: 1
-        if: failure()
+        if: inputs.flavor == 'ClangStaticAnalysis' && failure() && steps.CC-CSA-plain.conclusion == 'failure'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "${{ github.workspace }}/codechecker_report.json"
+          checkout_path: "${{ github.workspace }}/rawspeed"
+          category: CodeChecker-CSA-plain
+      - name: Upload results of clang static analysis [HTML] (plain mode)
+        timeout-minutes: 1
+        if: inputs.flavor == 'ClangStaticAnalysis' && failure() && steps.CC-CSA-plain.conclusion == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: codechecker_report.tar.xz
-          path: ${{ github.workspace }}/codechecker_report.tar.xz
+          name: codechecker_report
+          path: ${{ github.workspace }}/codechecker_report/
+          if-no-files-found: error
+          compression-level: 9
+          overwrite: true
       - name: Perform clang static analysis (CTU mode)
         timeout-minutes: 25
         if: inputs.flavor == 'ClangCTUStaticAnalysis'
@@ -422,6 +434,7 @@ jobs:
           BUILD_DIR: ${{ github.workspace }}/rawspeed-build
           CC: ${{ inputs.compiler-CC }}
           CXX: ${{ inputs.compiler-CXX }}
+        id: CC-CSA-CTU
         run: |
           set -xe
           . "$PWD/codechecker/venv/bin/activate"
@@ -429,17 +442,28 @@ jobs:
           set +e
           CodeChecker check --ctu --ctu-reanalyze-on-failure --logfile "${BUILD_DIR}/compile_commands.json" --analyzers clangsa --jobs "$(nproc --all)" --file "${SRC_DIR}/*" --disable deadcode.DeadStores -o "${BUILD_DIR}/codechecker_ctu_results"
           bugs=$?
-          CodeChecker parse -e html "${BUILD_DIR}/codechecker_ctu_results" -o "${BUILD_DIR}/codechecker_ctu_report"
+          CodeChecker parse -e sarif "${BUILD_DIR}/codechecker_ctu_results" -o "${GITHUB_WORKSPACE}/codechecker_ctu_report.json"
+          CodeChecker parse -e html "${BUILD_DIR}/codechecker_ctu_results" -o "${GITHUB_WORKSPACE}/codechecker_ctu_report"
           set -xe
-          tar -cvJ -f "$GITHUB_WORKSPACE/codechecker_ctu_report.tar.xz" -C "${BUILD_DIR}" "codechecker_ctu_report"
           [ $bugs -eq 0 ] || exit 1
-      - name: Upload results of clang static analysis (CTU mode)
+      - name: Upload results of clang static analysis [SARIF] (plain mode)
         timeout-minutes: 1
-        uses: actions/upload-artifact@v4
-        if: failure()
+        if: inputs.flavor == 'ClangCTUStaticAnalysis' && failure() && steps.CC-CSA-CTU.conclusion == 'failure'
+        uses: github/codeql-action/upload-sarif@v3
         with:
-          name: codechecker_ctu_report.tar.xz
-          path: ${{ github.workspace }}/codechecker_ctu_report.tar.xz
+          sarif_file: "${{ github.workspace }}/codechecker_ctu_report.json"
+          checkout_path: "${{ github.workspace }}/rawspeed"
+          category: CodeChecker-CSA-ctu
+      - name: Upload results of clang static analysis [HTML] (CTU mode)
+        timeout-minutes: 1
+        if: inputs.flavor == 'ClangCTUStaticAnalysis' && failure() && steps.CC-CSA-CTU.conclusion == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: codechecker_ctu_report
+          path: ${{ github.workspace }}/codechecker_ctu_report/
+          if-no-files-found: error
+          compression-level: 9
+          overwrite: true
       - name: Perform CodeQL static analysis
         timeout-minutes: 11
         if: inputs.flavor == 'CodeQLAnalysis'
