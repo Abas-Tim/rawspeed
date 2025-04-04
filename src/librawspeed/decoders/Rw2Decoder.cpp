@@ -172,8 +172,8 @@ RawImage Rw2Decoder::decodeRawInternal() {
       return mRaw;
     }
     case 8: {
-      // Most use bps=16, S9 uses bps=12
-      if (bitsPerSample != 16 && bitsPerSample != 12)
+      // Known values are 12, 14, and 16. Other less than 16 should decompress fine. 
+      if (bitsPerSample > 16)
         ThrowRDE("Version %i: unexpected bits per sample: %i", version,
                  bitsPerSample);
       PanasonicV8Decompressor v8(mFile, mRaw, *raw);

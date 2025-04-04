@@ -11549,6 +11549,8 @@
 	</Camera>
 	<Camera make="Panasonic" model="DC-G9M2">
 		<ID make="Panasonic" model="DC-G9M2">Panasonic DC-G9M2</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="2048" white="65535"/>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">8325 -3456 -623</ColorMatrixRow>
@@ -11559,6 +11561,8 @@
 	</Camera>
 	<Camera make="Panasonic" model="DC-G9M2" mode="4:3">
 		<ID make="Panasonic" model="DC-G9M2">Panasonic DC-G9M2</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="2048" white="65535"/>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">8325 -3456 -623</ColorMatrixRow>
