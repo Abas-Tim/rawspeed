@@ -25,22 +25,22 @@
 #include "common/RawImage.h"
 #include "decompressors/AbstractDecompressor.h"
 #include "tiff/TiffIFD.h"
-#include <vector>
 #include <array>
 #include <cstdint>
+#include <vector>
 
 namespace rawspeed {
 
-/// Decompressor for Panasonic's RW2 version 8 format. 
+/// Decompressor for Panasonic's RW2 version 8 format.
 ///
 /// V8 is similar to lossless JPEG compression from the JPEG 92 spec and DNG
-/// Each raw file is broken up into a number of separate strips, each of which was separately encoded, 
-/// and which can be decoded independently. For each strip, an initial predicted value is provided.
-/// The strip's data buffer is then decoded using the Huffman table provided in metadata. Each value
-/// decoded from the strip is a difference between the predicted value and actual value, allowing the 
-/// actual value to be reconstructed. 
-class PanasonicV8Decompressor final : public AbstractDecompressor
-{
+/// Each raw file is broken up into a number of separate strips, each of which
+/// was separately encoded, and which can be decoded independently. For each
+/// strip, an initial predicted value is provided. The strip's data buffer is
+/// then decoded using the Huffman table provided in metadata. Each value
+/// decoded from the strip is a difference between the predicted value and
+/// actual value, allowing the actual value to be reconstructed.
+class PanasonicV8Decompressor final : public AbstractDecompressor {
 private:
   Buffer mInputFile;
   mutable RawImage mRawOutput;
@@ -48,41 +48,48 @@ private:
   /// Four values, one for each component of the sensor's color filter array.
   using Bayer2x2 = std::array<uint16_t, 4>;
 
-  /// Decompressor parameters populated from tags. They remain constant after construction.
+  /// Decompressor parameters populated from tags. They remain constant after
+  /// construction.
   struct DecompressorParams {
     std::vector<uint32_t> stripByteOffsets, stripLineOffsets, stripBitLengths;
     std::vector<uint16_t> stripWidths, stripHeights;
     uint16_t horizontalStripCount, verticalStripCount;
-    
+
     Bayer2x2 initialPrediction;
-    
-    /// Huffman decoding shift down value. Appears to be unused. 
+
+    /// Huffman decoding shift down value. Appears to be unused.
     std::vector<uint16_t> huffShiftDown;
-  
+
     uint16_t gammaClipVal;
   } mParams;
 
   // Pre-cached Huffman decoded values for rapid lookup.
-  struct HuffmanLUTEntry { uint8_t bitcount = 7, diffCat = 0; };
+  struct HuffmanLUTEntry {
+    uint8_t bitcount = 7, diffCat = 0;
+  };
   using HuffmanLUT = std::vector<HuffmanLUTEntry>;
   HuffmanLUT mHuffmanLUT;
 
   // Lookup table for the raw's gamma curve. Appears to be unused.
-  // All known samples utilize an identity function. 
+  // All known samples utilize an identity function.
   std::vector<uint16_t> mGammaLUT;
 
-  /// Huffman decoder helper class. Defined only in the cpp file. 
+  /// Huffman decoder helper class. Defined only in the cpp file.
   class InternalHuffDecoder;
-  
-  /// Thread safe function for decompressing a single data-stripstrip within a Rw2V8 raw image. 
-  void decompressStrip(const uint stripIdx, InternalHuffDecoder decoder, Array2DRef<uint16_t> outBuffer) const;
-  
+
+  /// Thread safe function for decompressing a single data-stripstrip within a
+  /// Rw2V8 raw image.
+  void decompressStrip(const uint stripIdx, InternalHuffDecoder decoder,
+                       Array2DRef<uint16_t> outBuffer) const;
+
   // Helpers called from the constructor
   void validateParams();
   void populateHuffmanLUT(const TiffIFD& ifd);
   void populateGammaLUT(const TiffIFD& ifd);
+
 public:
-  PanasonicV8Decompressor(Buffer inputFile, RawImage outputImg, const TiffIFD& ifd);
+  PanasonicV8Decompressor(Buffer inputFile, RawImage outputImg,
+                          const TiffIFD& ifd);
 
   /// Run the decompressor on the provided raw image
   void decompress() const;
