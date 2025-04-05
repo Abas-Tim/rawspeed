@@ -172,7 +172,8 @@ RawImage Rw2Decoder::decodeRawInternal() {
       return mRaw;
     }
     case 8: {
-      // Known values are 12, 14, and 16. Other less than 16 should decompress fine. 
+      // Known values are 12, 14, and 16. Other less than 16 should decompress
+      // fine.
       if (bitsPerSample > 16)
         ThrowRDE("Version %i: unexpected bits per sample: %i", version,
                  bitsPerSample);
