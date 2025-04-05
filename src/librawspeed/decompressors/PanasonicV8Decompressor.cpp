@@ -376,7 +376,7 @@ void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
   }
 
   // Cache of Huffman table results for all possible 16-bit values.
-  mHuffmanLUT.resize(1 << UINT16_WIDTH);
+  mHuffmanLUT.resize(1 + UINT16_MAX);
 
   // Populates LUT by checking for a bitwise match between each value and the
   // prefix codes recorded in the table.
@@ -482,7 +482,7 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
       return uint16_t(std::min(uint32_t(mParams.gammaClipVal), mx + pt.y));
     };
 
-    mGammaLUT.resize(1 << UINT16_WIDTH);
+    mGammaLUT.resize(1 + UINT16_MAX);
 
     unsigned interval = 0;
     // Evaluate the gamma curve for all uint16_t values.
