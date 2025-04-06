@@ -132,7 +132,7 @@ set(GOOGLEBENCHMARK_PATH "/usr/src/googlebenchmark" CACHE PATH
 
 set(LIB_FUZZING_ENGINE "OFF" CACHE STRING "Either OFF, or overrides the fuzzing engine library (e.g. libFuzzer) that needs to be linked with all fuzz targets.")
 
-set(RAWSPEED_REFERENCE_SAMPLE_ARCHIVE "~/raw-camera-samples/raw.pixls.us-unique" CACHE PATH "The location of the reference sample set to use. Should contain filelist.sha1 and timestamp.txt")
+set(RAWSPEED_REFERENCE_SAMPLE_ARCHIVE "~/raw-camera-samples/raw.pixls.us-unique" CACHE PATH "The location of the reference sample set to use. Should contain filelist.sha256 and timestamp.txt")
 
 set(RAWSPEED_PROFDATA_FILE "${PROJECT_BINARY_DIR}/rawspeed.profdata"
     CACHE FILEPATH "The location of the .profdata file")
