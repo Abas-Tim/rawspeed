@@ -6862,7 +6862,7 @@
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="SP510UZ">
 		<ID make="Olympus" model="SP510UZ">Olympus SP510UZ</ID>
-		<Crop x="0" y="0" width="3088" height="2309"/>
+		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
