@@ -146,6 +146,7 @@ jobs:
             eatmydata apt install clang-format-${{ inputs.compiler-version }} clang-tidy-${{ inputs.compiler-version }}
 
             eatmydata apt install curl gpg
+            mkdir /etc/apt/sources.list.d
             echo 'deb https://ftp.gwdg.de//pub/opensuse/repositories/graphics%3A/darktable%3A/master/Debian_Unstable/ /' | tee /etc/apt/sources.list.d/rawspeed.list
             curl -fsSL https://download.opensuse.org/repositories/graphics:darktable:master/Debian_Unstable/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/graphics_darktable_master.gpg > /dev/null
             apt update
@@ -283,6 +284,7 @@ jobs:
           fi
           "${SRC_DIR}/.ci/ci-script.sh"
       - name: Build
+        id: build
         timeout-minutes: ${{ inputs.flavor != 'ClangTidy' && (inputs.flavor != 'CodeQLAnalysis' && 7 || 12) || 25 }}
         env:
           SRC_DIR: ${{ github.workspace }}/rawspeed
@@ -394,7 +396,7 @@ jobs:
           "${SRC_DIR}/.ci/ci-script.sh"
       - name: Perform clang-tidy static analysis
         timeout-minutes: 1
-        if: inputs.flavor == 'ClangTidy' && !cancelled()
+        if: inputs.flavor == 'ClangTidy' && !cancelled() && steps.build.conclusion != 'skipped'
         env:
           SRC_DIR: ${{ github.workspace }}/rawspeed
           BUILD_DIR: ${{ github.workspace }}/rawspeed-build
@@ -519,7 +521,7 @@ jobs:
           overwrite: true
       - name: Perform CodeQL static analysis
         timeout-minutes: 11
-        if: inputs.flavor == 'CodeQLAnalysis' && !cancelled()
+        if: inputs.flavor == 'CodeQLAnalysis' && !cancelled() && steps.build.conclusion != 'skipped'
         uses: github/codeql-action/analyze@v3
       - name: Perform SonarCloud static analysis
         timeout-minutes: 6
