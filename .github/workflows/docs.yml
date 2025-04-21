@@ -23,48 +23,29 @@ defaults:
     shell: bash
 
 jobs:
-  # Build job
-  build:
+  build-docs:
+    strategy:
+      matrix:
+        os: [ linux ]
+        compiler:
+          - { distro: "debian:unstable-slim", family: LLVM, version: 18, CC: clang-18, CXX: clang++-18 }
+        flavor: [ WWW ]
+    uses: ./.github/workflows/CI-linux.yml
+    with:
+      os: ${{ matrix.os }}
+      distro: ${{ matrix.compiler.distro }}
+      compiler-family: ${{ matrix.compiler.family }}
+      compiler-version: ${{ matrix.compiler.version }}
+      compiler-CC: ${{ matrix.compiler.CC }}
+      compiler-CXX: ${{ matrix.compiler.CXX }}
+      flavor: ${{ matrix.flavor }}
+  publish-pages:
+    needs: build-docs
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Install deps
-        run: |
-          sudo apt-get -y install \
-            intltool \
-            libatk1.0-dev \
-            libjpeg-dev \
-            libjson-glib-dev \
-            libpugixml-dev \
-            libxml2-dev \
-            libxml2-utils \
-            python3-jsonschema \
-            xsltproc \
-            doxygen \
-            graphviz \
-            python3-sphinx \
-            python3-sphinx-rtd-theme;
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - name: Minimal project build with docs
-        env:
-          SRC_DIR: ${{ github.workspace }}
-          BUILD_DIR: ${{ github.workspace }}/build
-          ECO: -DBUILD_DOCS=ON -DBUILD_BENCHMARKING=OFF -DBUILD_TESTING=OFF
-        run: |
-          mkdir $BUILD_DIR
-          cd $BUILD_DIR
-          cmake ${ECO} "$SRC_DIR"
-          cmake --build "$BUILD_DIR" -t sphinx doxygen
-      - name: Upload page artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./build/docs/html
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v2
