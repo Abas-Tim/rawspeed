@@ -5,6 +5,7 @@ Camera Support
 .. exec::
     from xml.dom.minidom import parse
     import xml.dom.minidom
+    import csv
 
     DOMTree = xml.dom.minidom.parse("data/cameras.xml")
     cameras = DOMTree.documentElement.getElementsByTagName("Camera")
@@ -61,31 +62,38 @@ Camera Support
     print(
         "Any support is impossible without the samples.\nCurrently, |rpu-button-cameras| cameras have samples, with total count of |rpu-button-samples| unique samples. **Please contribute samples**!\n\n")
 
-    for make, models in unique_makes.items():
-        print(make)
-        print('=' * len(make), "\n")
+    with open('docs/cameras.csv', 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',',
+                               quotechar='\"', quoting=csv.QUOTE_ALL)
 
-        print("Known cameras: ", len(models), "\n")
+        # Header
+        csvwriter.writerow(['Maker', 'Camera', 'Supported', 'Aliases', 'Modes'])
 
-        models = OrderedDict(sorted(models.items()))
-        for model, content in models.items():
-            if len(content['modes']) > 1 or 'Default mode' in content['modes']:
-                print("* ", model, "\n")
-            else:
-                print("* ", model, " - *unsupported*\n")
+        # Rows
+        for make, models in unique_makes.items():
+            models = OrderedDict(sorted(models.items()))
+            for model, content in models.items():
+                # Leaf cameras have aliases in their model name, we need to split them here
+                aliases = model.split("/")
+                model_name = aliases[0]
 
-            if len(content['modes']) > 1:
-                print("  modes:\n")
-                for mode in content['modes']:
-                    print("  * ", mode, "\n")
+                # Concatenate official aliases with the ones we found above
+                aliases = list(content['aliases']) + aliases[1:]
 
-            if len(content['aliases']) > 1:
-                print("  aliases:\n")
-                for alias in content['aliases']:
-                    print("  * ", alias, "\n")
+                modes = [mode for mode in content['modes']
+                        if "unsupported" not in mode]
 
-        print("\n\n")
+                if len(modes) == 0:
+                    supported = "✗"
+                else:
+                    supported = "✓"
 
+                csvwriter.writerow([make, model_name, supported, ', '.join(aliases), ', '.join(content['modes'])])
+
+
+.. csv-table:: Supported cameras
+   :file: cameras.csv
+   :header-rows: 1
 
 .. |rpu-button-cameras| image:: https://raw.pixls.us/button-cameras.svg
     :target: https://raw.pixls.us/
