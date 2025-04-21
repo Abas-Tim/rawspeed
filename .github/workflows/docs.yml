@@ -51,9 +51,6 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v2
       - name: Minimal project build with docs
         env:
           SRC_DIR: ${{ github.workspace }}
@@ -68,6 +65,9 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./build/docs/html
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v2
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
