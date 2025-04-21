@@ -5,7 +5,6 @@ on:
   push:
     branches: [ develop, stable ]
   pull_request:
-    branches: [ develop, stable ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -14,7 +13,21 @@ concurrency:
 # FIXME: add no-openmp, and maybe -DCMAKE_BUILD_TYPE=Debug jobs
 
 jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - if: github.event_name == 'pull_request' && github.base_ref != 'develop'
+        name: Close Pull
+        run: gh pr close --comment "Pull Requests should only be submitted to `develop` branch"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - if: github.event_name == 'pull_request' && github.head_ref == github.base_ref
+        name: Close Pull
+        run: gh pr close --comment "Pull Requests source branch should be branched off of the Pull Request's target branch"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   cache-rpuu:
+    needs: validation
     strategy:
       fail-fast: false
       matrix:
@@ -25,7 +38,7 @@ jobs:
     with:
       distro: ${{ matrix.distro }}
   linux-fast:
-    needs: cache-rpuu
+    needs: [ validation, cache-rpuu ]
     strategy:
       fail-fast: false
       matrix:
@@ -48,6 +61,7 @@ jobs:
       enable-sample-based-testing: true
       rpuu-cache-key: ${{ needs.cache-rpuu.outputs.rpuu-cache-key }}
   linux-legacy:
+    needs: validation
     strategy:
       fail-fast: false
       matrix:
@@ -69,6 +83,7 @@ jobs:
       compiler-CLANG_TIDY: ${{ matrix.compiler.CLANG_TIDY }}
       flavor: ${{ matrix.flavor }}
   linux-static-analysis:
+    needs: validation
     strategy:
       fail-fast: false
       matrix:
@@ -97,7 +112,7 @@ jobs:
       compiler-CLANG_TIDY: ${{ matrix.compiler.CLANG_TIDY }}
       flavor: ${{ matrix.flavor }}
   linux-coverage:
-    needs: cache-rpuu
+    needs: [ validation, cache-rpuu ]
     strategy:
       fail-fast: false
       matrix:
@@ -119,6 +134,7 @@ jobs:
       enable-sample-based-testing: true
       rpuu-cache-key: ${{ needs.cache-rpuu.outputs.rpuu-cache-key }}
   linux-sonarcloud-static-analysis:
+    needs: validation
     if: github.repository == 'darktable-org/rawspeed' && github.event_name != 'pull_request' && github.ref_type == 'branch' && (github.ref_name == 'develop' || github.ref_name == 'stable')
     strategy:
       fail-fast: false
@@ -143,6 +159,7 @@ jobs:
       SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
       SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
   linux-ossfuzz:
+    needs: validation
     if: github.repository == 'darktable-org/rawspeed' && (github.event_name == 'pull_request' || (github.ref_type == 'branch' && github.ref_name == 'develop'))
     strategy:
       fail-fast: false
@@ -152,6 +169,7 @@ jobs:
     with:
       sanitizer: ${{ matrix.sanitizer }}
   windows-msys2-fast:
+    needs: validation
     strategy:
       fail-fast: false
       matrix:
@@ -172,6 +190,7 @@ jobs:
       compiler-CXX: ${{ matrix.msys2.CXX }}
       flavor: ${{ matrix.flavor }}
   windows-msys2-coverage:
+    needs: validation
     strategy:
       fail-fast: false
       matrix:
@@ -189,6 +208,7 @@ jobs:
       compiler-CXX: ${{ matrix.msys2.CXX }}
       flavor: ${{ matrix.flavor }}
   macOS-fast:
+    needs: validation
     strategy:
       fail-fast: false
       matrix:
@@ -206,6 +226,7 @@ jobs:
       compiler-CXX: ${{ matrix.compiler.CXX }}
       flavor: ${{ matrix.flavor }}
   macOS-coverage:
+    needs: validation
     strategy:
       fail-fast: false
       matrix:
@@ -222,7 +243,7 @@ jobs:
       compiler-CXX: ${{ matrix.compiler.CXX }}
       flavor: ${{ matrix.flavor }}
   codecov:
-    needs: [ linux-coverage, macOS-coverage, windows-msys2-coverage ]
+    needs: [ validation, linux-coverage, macOS-coverage, windows-msys2-coverage ]
     strategy:
       fail-fast: false
     uses: ./.github/workflows/CI-codecov.yml
