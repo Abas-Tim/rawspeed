@@ -48,6 +48,3 @@ bw-output/
 *.gcno
 *.gcda
 *.gcov
-
-# supported cameras table
-*.csv
