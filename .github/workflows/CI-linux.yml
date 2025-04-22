@@ -319,6 +319,7 @@ jobs:
       - name: Build docs
         id: build-docs
         timeout-minutes: 1
+        if: inputs.flavor == 'WWW'
         env:
           SRC_DIR: ${{ github.workspace }}/rawspeed
           BUILD_DIR: ${{ github.workspace }}/rawspeed-build
