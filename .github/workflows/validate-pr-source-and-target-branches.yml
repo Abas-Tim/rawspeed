@@ -13,14 +13,14 @@ jobs:
         with:
           path: 'rawspeed'
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - if: github.event_name == 'pull_request' && github.base_ref != 'develop'
+      - if: github.event_name == 'pull_request_target' && github.base_ref != 'develop'
         name: Close Pull
         run: |
           cd rawspeed
           gh pr close --comment "Pull Requests should only be submitted to `develop` branch" ${{ github.event.number }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - if: github.event_name == 'pull_request' && github.head_ref == github.base_ref
+      - if: github.event_name == 'pull_request_target' && github.head_ref == github.base_ref
         name: Close Pull
         run: |
           cd rawspeed
