@@ -6507,6 +6507,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="4095"/>
+		<Aliases>
+			<Alias>COOLPIX P1100</Alias>
+		</Aliases>
 		<Hints>
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
