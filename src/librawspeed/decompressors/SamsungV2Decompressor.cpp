@@ -54,6 +54,9 @@ enum struct SamsungV2Decompressor::OptFlags : uint8_t {
   ALL = SKIP | MV | QP,
 };
 
+namespace {
+
+[[maybe_unused]]
 constexpr SamsungV2Decompressor::OptFlags
 operator|(SamsungV2Decompressor::OptFlags lhs,
           SamsungV2Decompressor::OptFlags rhs) {
@@ -73,6 +76,8 @@ constexpr bool operator&(SamsungV2Decompressor::OptFlags lhs,
              static_cast<
                  std::underlying_type_t<SamsungV2Decompressor::OptFlags>>(rhs));
 }
+
+} // namespace
 
 inline __attribute__((always_inline)) int16_t
 SamsungV2Decompressor::getDiff(BitStreamerMSB32& pump, uint32_t len) {
