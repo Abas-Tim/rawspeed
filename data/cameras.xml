@@ -5099,43 +5099,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="14bit-uncompressed" supported="no">
-		<ID make="Nikon" model="D7200">Nikon D7200</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="600" white="15892"/>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">8322 -3112 -1047</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-6367 14342 2179</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-988 1638 6394</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="12bit-compressed">
-		<ID make="Nikon" model="D7200">Nikon D7200</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="150" white="3972"/>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">8322 -3112 -1047</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-6367 14342 2179</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-988 1638 6394</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D7200" mode="12bit-uncompressed" supported="no">
 		<ID make="Nikon" model="D7200">Nikon D7200</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -5208,24 +5172,6 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D80" mode="12bit-compressed">
-		<ID make="Nikon" model="D80">Nikon D80</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">GREEN</Color>
-			<Color x="1" y="0">BLUE</Color>
-			<Color x="0" y="1">RED</Color>
-			<Color x="1" y="1">GREEN</Color>
-		</CFA>
-		<Crop x="0" y="0" width="3900" height="2611"/>
-		<Sensor black="0" white="3880"/>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">8629 -2410 -883</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-9055 16940 2171</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-1490 1363 8520</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D80" mode="12bit-uncompressed" supported="no-samples">
 		<ID make="Nikon" model="D80">Nikon D80</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -5684,24 +5630,6 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D90" mode="12bit-uncompressed" supported="no-samples">
-		<ID make="Nikon" model="D90">Nikon D90</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">GREEN</Color>
-			<Color x="1" y="0">BLUE</Color>
-			<Color x="0" y="1">RED</Color>
-			<Color x="1" y="1">GREEN</Color>
-		</CFA>
-		<Crop x="0" y="0" width="4310" height="2868"/>
-		<Sensor black="0" white="3767"/>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">7309 -1403 -519</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-8474 16008 2622</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-2434 2826 8064</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 J1" mode="12bit-compressed" decoder_version="4">
 		<ID make="Nikon" model="1 J1">Nikon 1 J1</ID>
 		<CFA width="2" height="2">
@@ -5792,24 +5720,6 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 J5" mode="12bit-uncompressed" supported="no-samples">
-		<ID make="Nikon" model="1 J5">Nikon 1 J5</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="200" white="3800"/>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">7520 -2518 -645</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-3844 12102 1945</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-913 2249 6835</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 S1" mode="12bit-compressed" decoder_version="4">
 		<ID make="Nikon" model="1 S1">Nikon 1 S1</ID>
 		<CFA width="2" height="2">
@@ -5883,24 +5793,6 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 V3" mode="12bit-compressed" decoder_version="4">
-		<ID make="Nikon" model="1 V3">Nikon 1 V3</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="200" white="4000"/>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">5958 -1559 -571</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-4021 11453 2939</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-634 1548 5087</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON 1 V3" mode="12bit-uncompressed" decoder_version="4" supported="no-samples">
 		<ID make="Nikon" model="1 V3">Nikon 1 V3</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
