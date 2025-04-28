@@ -200,8 +200,25 @@ jobs:
       fail-fast: false
       matrix:
         compiler:
-          - { os: macos-14, family: XCode, version: 15.2, deployment_target: 13.5, CC: cc, CXX: c++ } # AArch64, LLVM16, native
+          - { os: macos-15, family: XCode, version: 16.3, deployment_target: 15.2, CC: cc, CXX: c++ } # AArch64, LLVM19, native
           - { os: macos-13, family: XCode, version: 15.2, deployment_target: 13.5, CC: cc, CXX: c++ } # x86_64,  LLVM16, native
+        flavor: [ ReleaseWithAsserts, Release ]
+    uses: ./.github/workflows/CI-macOS.yml
+    with:
+      os: ${{ matrix.compiler.os }}
+      os-deployment_target: ${{ matrix.compiler.deployment_target }}
+      compiler-family: ${{ matrix.compiler.family }}
+      compiler-version: ${{ matrix.compiler.version }}
+      compiler-CC: ${{ matrix.compiler.CC }}
+      compiler-CXX: ${{ matrix.compiler.CXX }}
+      flavor: ${{ matrix.flavor }}
+  macOS-legacy:
+    needs: [ cache-rpuu, macOS-fast ]
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - { os: macos-14, family: XCode, version: 16.2, deployment_target: 14.5, CC: cc, CXX: c++ } # AArch64, LLVM17, native
         flavor: [ ReleaseWithAsserts, Release ]
     uses: ./.github/workflows/CI-macOS.yml
     with:
@@ -218,7 +235,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - compiler: { os: macos-14, family: XCode, version: 15.2, deployment_target: 13.5, CC: cc, CXX: c++ } # LLVM16, native
+          - compiler: { os: macos-15, family: XCode, version: 16.3, deployment_target: 15.2, CC: cc, CXX: c++ } # AArch64, LLVM19, native
             flavor: Coverage
     uses: ./.github/workflows/CI-macOS.yml
     with:
