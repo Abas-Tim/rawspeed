@@ -499,7 +499,7 @@ jobs:
           . "$PWD/codechecker/venv/bin/activate"
           export PATH="$PWD/codechecker/build/CodeChecker/bin:$PATH"
           set +e
-          CodeChecker check --logfile "${BUILD_DIR}/compile_commands.json" --analyzers clangsa --jobs "$(nproc --all)" --file "${SRC_DIR}/*" --disable deadcode.DeadStores --disable alpha.unix.Stream -o "${BUILD_DIR}/codechecker_results"
+          CodeChecker check --logfile "${BUILD_DIR}/compile_commands.json" --analyzers clangsa --jobs "$(nproc --all)" --file "${SRC_DIR}/*" --disable deadcode.DeadStores -o "${BUILD_DIR}/codechecker_results"
           bugs=$?
           CodeChecker parse -e sarif "${BUILD_DIR}/codechecker_results" -o "${GITHUB_WORKSPACE}/codechecker_report.json"
           CodeChecker parse -e html "${BUILD_DIR}/codechecker_results" -o "${GITHUB_WORKSPACE}/codechecker_report"
@@ -537,7 +537,7 @@ jobs:
           . "$PWD/codechecker/venv/bin/activate"
           export PATH="$PWD/codechecker/build/CodeChecker/bin:$PATH"
           set +e
-          CodeChecker check --ctu --ctu-reanalyze-on-failure --logfile "${BUILD_DIR}/compile_commands.json" --analyzers clangsa --jobs "$(nproc --all)" --file "${SRC_DIR}/*" --disable deadcode.DeadStores --disable alpha.unix.Stream -o "${BUILD_DIR}/codechecker_ctu_results"
+          CodeChecker check --ctu --ctu-reanalyze-on-failure --logfile "${BUILD_DIR}/compile_commands.json" --analyzers clangsa --jobs "$(nproc --all)" --file "${SRC_DIR}/*" --disable deadcode.DeadStores -o "${BUILD_DIR}/codechecker_ctu_results"
           bugs=$?
           CodeChecker parse -e sarif "${BUILD_DIR}/codechecker_ctu_results" -o "${GITHUB_WORKSPACE}/codechecker_ctu_report.json"
           CodeChecker parse -e html "${BUILD_DIR}/codechecker_ctu_results" -o "${GITHUB_WORKSPACE}/codechecker_ctu_report"
