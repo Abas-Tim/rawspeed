@@ -17915,6 +17915,7 @@
 			<Alias id="X1D II 50C">Hasselblad X1DM2-50c</Alias>
 			<Alias id="CFV II 50C">Hasselblad CFV II 50C</Alias>
 			<Alias id="CFV II 50C">CFV II 50C/907X</Alias>
+			<Alias id="CFV II 50C">CFV II 50C/Electronic Shutter</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -17938,6 +17939,7 @@
 			<Alias id="X2D 100C">Hasselblad X2D 100C</Alias>
 			<Alias id="CFV 100C">Hasselblad CFV 100C</Alias>
 			<Alias id="CFV 100C">CFV 100C/907X</Alias>
+			<Alias id="CFV 100C">CFV 100C/Electronic Shutter</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
