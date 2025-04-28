@@ -170,7 +170,7 @@ OlympusDecompressorImpl::decompressGroup(
   const Array2DRef<uint16_t> out(mRaw->getU16DataAsUncroppedArray2DRef());
 
   for (int c = 0; c != 2; ++c) {
-    const int col = 2 * group + c;
+    const int col = (2 * group) + c;
     OlympusDifferenceDecoder& carry = acarry[c];
 
     int diff = carry.getDiff(bits);

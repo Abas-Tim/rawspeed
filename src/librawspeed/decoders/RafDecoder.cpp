@@ -322,8 +322,8 @@ void RafDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
 
       for (int y = 0; y < 6; y++) {
         for (int x = 0; x < 6; x++)
-          blackLevelSeparate1D(2 * (y % 2) + (x % 2)) +=
-              sep_black->getU32(6 * y + x);
+          blackLevelSeparate1D((2 * (y % 2)) + (x % 2)) +=
+              sep_black->getU32((6 * y) + x);
       }
 
       for (int& k : blackLevelSeparate1D)

@@ -239,7 +239,7 @@ TEST_P(DoubleIdentityTest, ValuesAreLinearlyInterpolated) {
 TEST_P(DoubleIdentityTest, SegmentCoeffients) { CheckSegments(); }
 
 template <typename T> T lerp(T v0, T v1, T t) {
-  return (1.0 - t) * v0 + t * v1;
+  return ((1.0 - t) * v0) + (t * v1);
 }
 
 template <typename T = int>

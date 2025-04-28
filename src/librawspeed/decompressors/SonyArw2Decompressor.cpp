@@ -104,7 +104,7 @@ void SonyArw2Decompressor::decompressRow(int row) const {
       }
       rawdata.setWithLookUp(
           implicit_cast<uint16_t>(p << 1),
-          reinterpret_cast<std::byte*>(&out(row, col + i * 2)), &random);
+          reinterpret_cast<std::byte*>(&out(row, col + (i * 2))), &random);
     }
   }
 }

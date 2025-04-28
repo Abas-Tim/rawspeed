@@ -245,7 +245,8 @@ void CrwDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
       /* CANON EOS D60, CANON EOS 10D, CANON EOS 300D */
       if (wb_index > 9)
         ThrowRDE("Invalid white balance index");
-      int wb_offset = 1 + (std::string_view("0134567028")[wb_index] - '0') * 4;
+      int wb_offset =
+          1 + ((std::string_view("0134567028")[wb_index] - '0') * 4);
       mRaw->metadata.wbCoeffs[0] = wb_data->getU16(wb_offset + 0);
       mRaw->metadata.wbCoeffs[1] = wb_data->getU16(wb_offset + 1);
       mRaw->metadata.wbCoeffs[2] = wb_data->getU16(wb_offset + 3);

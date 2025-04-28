@@ -304,7 +304,7 @@ SamsungV2Decompressor::decodeDifferences(BitStreamerMSB32& pump, int row) {
   // And finally widen and scale the differences.
   std::array<int, 16> scaled;
   for (int i = 0; i < 16; i++) {
-    int scaledDiff = int(shuffled[i]) * (scale * 2 + 1) + scale;
+    int scaledDiff = (int(shuffled[i]) * (scale * 2 + 1)) + scale;
     scaled[i] = scaledDiff;
   }
 
