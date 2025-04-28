@@ -130,8 +130,8 @@ void CrwDecoder::checkSupportInternal(const CameraMetaData* meta) {
       data[0]->getEntry(CiffTag::MAKEMODEL)->getStrings();
   if (makemodel.size() < 2)
     ThrowRDE("wrong number of strings for make/model");
-  std::string make = makemodel[0];
-  std::string model = makemodel[1];
+  const std::string& make = makemodel[0];
+  const std::string& model = makemodel[1];
 
   this->checkCameraSupported(meta, make, model, "");
 }
@@ -164,8 +164,8 @@ void CrwDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
       data[0]->getEntry(CiffTag::MAKEMODEL)->getStrings();
   if (makemodel.size() < 2)
     ThrowRDE("wrong number of strings for make/model");
-  std::string make = makemodel[0];
-  std::string model = makemodel[1];
+  const std::string& make = makemodel[0];
+  const std::string& model = makemodel[1];
   std::string mode;
 
   if (mRootIFD->hasEntryRecursive(CiffTag::SHOTINFO)) {
