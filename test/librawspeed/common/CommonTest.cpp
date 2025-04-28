@@ -47,6 +47,8 @@ using std::vector;
 
 namespace rawspeed_test {
 
+namespace {
+
 using RoundDownType = std::tuple<uint64_t, uint64_t, uint64_t>;
 class RoundDownTest : public ::testing::TestWithParam<RoundDownType> {
 protected:
@@ -329,5 +331,7 @@ TEST_P(CopyPixelsTest, CopyPixelsTest) {
   copy();
   compare();
 }
+
+} // namespace
 
 } // namespace rawspeed_test
