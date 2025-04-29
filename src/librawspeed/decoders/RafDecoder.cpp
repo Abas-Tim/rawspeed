@@ -79,8 +79,9 @@ RawImage RafDecoder::decodeRawInternal() {
     const TiffEntry* e = raw->getEntry(TiffTag::FUJI_RAWIMAGEFULLSIZE);
     height = e->getU16(0);
     width = e->getU16(1);
-  } else
+  } else {
     ThrowRDE("Unable to locate image size");
+  }
 
   if (width == 0 || height == 0 || width > 11808 || height > 8754)
     ThrowRDE("Unexpected image dimensions found: (%u; %u)", width, height);
@@ -219,8 +220,9 @@ void RafDecoder::applyCorrections(const Camera* cam) {
     if (new_size.x <= 0) {
       new_size.x =
           mRaw->dim.x / (double_width ? 2 : 1) - crop_offset.x + new_size.x;
-    } else
+    } else {
       new_size.x /= (double_width ? 2 : 1);
+    }
     if (new_size.y <= 0)
       new_size.y = mRaw->dim.y - crop_offset.y + new_size.y;
   }
@@ -385,8 +387,9 @@ int RafDecoder::isCompressed() const {
     const TiffEntry* e = raw->getEntry(TiffTag::IMAGEWIDTH);
     height = e->getU16(0);
     width = e->getU16(1);
-  } else
+  } else {
     ThrowRDE("Unable to locate image size");
+  }
 
   if (width == 0 || height == 0 || width > 11808 || height > 8754)
     ThrowRDE("Unexpected image dimensions found: (%u; %u)", width, height);

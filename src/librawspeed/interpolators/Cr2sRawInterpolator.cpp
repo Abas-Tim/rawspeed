@@ -538,8 +538,9 @@ void Cr2sRawInterpolator::interpolate(int version) {
     default:
       __builtin_unreachable();
     }
-  } else
+  } else {
     ThrowRDE("Unknown subsampling: (%i; %i)", subSampling.x, subSampling.y);
+  }
 }
 
 } // namespace rawspeed

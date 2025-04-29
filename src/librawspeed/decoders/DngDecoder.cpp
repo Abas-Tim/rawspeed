@@ -807,8 +807,9 @@ bool DngDecoder::decodeBlackLevels(const TiffIFD* raw) const {
       // Let's only allow somewhat unambiguous case of 1x1 repeat dimensions.
       if (blackdim != iPoint2D(1, 1))
         return false;
-    } else
+    } else {
       return false;
+    }
   }
 
   if (!blackdim.hasPositiveArea())

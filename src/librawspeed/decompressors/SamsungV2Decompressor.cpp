@@ -225,8 +225,9 @@ SamsungV2Decompressor::prepareBaselineValues(BitStreamerMSB32& pump, int row,
     // the next
     if (doAverage) {
       baseline[i] = (img(refRow, refCol) + img(refRow, refCol + 2) + 1) >> 1;
-    } else
+    } else {
       baseline[i] = img(refRow, refCol);
+    }
   }
 
   return baseline;

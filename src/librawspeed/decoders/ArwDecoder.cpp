@@ -253,8 +253,9 @@ RawImage ArwDecoder::decodeRawInternal() {
     mRaw->createData();
     a.decompress(input);
     mShiftDownScaleForExif = 2;
-  } else
+  } else {
     DecodeARW2(input, width, height, bitPerPixel);
+  }
 
   if (bitPerPixel == 12)
     mShiftDownScaleForExif = 2;

@@ -875,8 +875,9 @@ FujiDecompressor::FujiDecompressor(RawImage img, ByteStream input_)
     if (p != BayerPhase::RGGB)
       ThrowRDE("Unexpected Bayer phase: %i. Please file a bug!",
                static_cast<int>(*p));
-  } else
+  } else {
     ThrowRDE("Unexpected CFA size");
+  }
 
   // read block sizes
   std::vector<uint32_t> block_sizes;

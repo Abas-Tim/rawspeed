@@ -156,8 +156,9 @@ OlympusDecompressorImpl::getPred(const Array2DRef<uint16_t> out, int row,
         pred = left + upMinusNw;
       else
         pred = (left + up) >> 1;
-    } else
+    } else {
       pred = std::abs(leftMinusNw) > std::abs(upMinusNw) ? left : up;
+    }
   }
 
   return pred;
