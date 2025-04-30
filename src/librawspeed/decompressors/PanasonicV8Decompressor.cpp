@@ -200,13 +200,15 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
 }
 
 void PanasonicV8Decompressor::decompress() const {
+  const unsigned totalStrips =
+      mParams.horizontalStripCount * mParams.verticalStripCount;
 #ifdef HAVE_OPENMP
-  unsigned threadCount = std::min(int(mParams.horizontalStripCount),
-                                  rawspeed_get_number_of_processor_cores());
-#pragma omp parallel for num_threads(threadCount) schedule(static) default(none)
+  unsigned threadCount =
+      std::min(int(totalStrips), rawspeed_get_number_of_processor_cores());
+#pragma omp parallel for num_threads(threadCount)                              \
+    schedule(static) default(none) shared(totalStrips)
 #endif
-  for (unsigned stripIdx = 0; stripIdx < mParams.horizontalStripCount;
-       ++stripIdx) {
+  for (unsigned stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
     const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
     const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
 
@@ -226,7 +228,8 @@ void PanasonicV8Decompressor::decompressStrip(
     Array2DRef<uint16_t> outBuffer) const {
   const uint32_t stripWidth = mParams.stripWidths[stripIdx];
   const uint32_t stripHeight = mParams.stripHeights[stripIdx];
-  const uint32_t stripOutputOffset = mParams.stripLineOffsets[stripIdx];
+  const uint32_t stripOutputX = mParams.stripLineOffsets[stripIdx] & 0xFFFF;
+  const uint32_t stripOutputY = mParams.stripLineOffsets[stripIdx] >> 16;
 
   std::vector<uint16_t> lineBuffer(stripWidth * 2);
   Bayer2x2 predicted = mParams.initialPrediction;
@@ -258,25 +261,25 @@ void PanasonicV8Decompressor::decompressStrip(
 
     // Copy lineBuffer into output buffer.
     for (unsigned linePos = 0; linePos < stripWidth * 2; linePos += 4) {
-      const uint32_t dstStartCol = stripOutputOffset + linePos / 2;
+      const uint32_t dstStartCol = stripOutputX + linePos / 2;
 
       if (mGammaLUT.empty()) [[likely]] {
-        outBuffer[row + 0](dstStartCol + 0) =
+        outBuffer[stripOutputY + row + 0](dstStartCol + 0) =
             lineBuffer[linePos + 0]; // Top Red
-        outBuffer[row + 0](dstStartCol + 1) =
+        outBuffer[stripOutputY + row + 0](dstStartCol + 1) =
             lineBuffer[linePos + 2]; // Top Green
-        outBuffer[row + 1](dstStartCol + 0) =
+        outBuffer[stripOutputY + row + 1](dstStartCol + 0) =
             lineBuffer[linePos + 1]; // Bottom Green
-        outBuffer[row + 1](dstStartCol + 1) =
+        outBuffer[stripOutputY + row + 1](dstStartCol + 1) =
             lineBuffer[linePos + 3]; // Bottom Blue
       } else [[unlikely]] {
-        outBuffer[row + 0](dstStartCol + 0) =
+        outBuffer[stripOutputY + row + 0](dstStartCol + 0) =
             mGammaLUT[lineBuffer[linePos + 0]]; // Top Red
-        outBuffer[row + 0](dstStartCol + 1) =
+        outBuffer[stripOutputY + row + 0](dstStartCol + 1) =
             mGammaLUT[lineBuffer[linePos + 2]]; // Top Green
-        outBuffer[row + 1](dstStartCol + 0) =
+        outBuffer[stripOutputY + row + 1](dstStartCol + 0) =
             mGammaLUT[lineBuffer[linePos + 1]]; // Bottom Green
-        outBuffer[row + 1](dstStartCol + 1) =
+        outBuffer[stripOutputY + row + 1](dstStartCol + 1) =
             mGammaLUT[lineBuffer[linePos + 3]]; // Bottom Blue
       }
     }
@@ -331,24 +334,23 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
 }
 
 void PanasonicV8Decompressor::validateParams() {
-  if (mParams.verticalStripCount != 1)
-    ThrowRDE("RW2v8 file contains %d vertical strips. This is unsupported",
-             mParams.verticalStripCount);
+  const unsigned totalStrips =
+      mParams.horizontalStripCount * mParams.verticalStripCount;
 
   // Check that we won't be going OOB on any of these strip lists
-  if (mParams.horizontalStripCount > mParams.stripByteOffsets.size())
+  if (totalStrips > mParams.stripByteOffsets.size())
     ThrowRDE("Strip byte offset list does not have enough entries for the "
              "number of strips!");
-  if (mParams.horizontalStripCount > mParams.stripWidths.size())
+  if (totalStrips > mParams.stripWidths.size())
     ThrowRDE("Strip widths list does not have enough entries for the number of "
              "strips!");
-  if (mParams.horizontalStripCount > mParams.stripHeights.size())
+  if (totalStrips > mParams.stripHeights.size())
     ThrowRDE("Strip heights list does not have enough entries for the number "
              "of strips!");
-  if (mParams.horizontalStripCount > mParams.stripLineOffsets.size())
+  if (totalStrips > mParams.stripLineOffsets.size())
     ThrowRDE("Strip line offset list does not have enough entries for the "
              "number of strips!");
-  if (mParams.horizontalStripCount > mParams.stripBitLengths.size())
+  if (totalStrips > mParams.stripBitLengths.size())
     ThrowRDE("Strip bit length list does not have enough entries for the "
              "number of strips!");
 
