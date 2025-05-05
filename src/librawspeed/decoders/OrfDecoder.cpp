@@ -167,7 +167,6 @@ int OrfDecoder::getBitsPerPixel() const {
   return result;
 }
 
-
 void OrfDecoder::decodeUncompressedInterleaved(ByteStream s, uint32_t w,
                                                uint32_t h,
                                                uint32_t size) const {
@@ -381,7 +380,7 @@ void OrfDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
         // range is the same)
         mRaw->whitePoint =
             *mRaw->whitePoint - (mRaw->blackLevel - blackLevelSeparate1D(0));
-        if ( getBitsPerPixel() == 14 ) {
+        if (getBitsPerPixel() == 14) {
           mRaw->whitePoint = *mRaw->whitePoint * 4;
           mRaw->blackLevel = mRaw->blackLevel * 4;
           for (int i = 0; i < 4; i++) {
