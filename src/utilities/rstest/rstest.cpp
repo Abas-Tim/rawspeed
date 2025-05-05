@@ -143,8 +143,8 @@ md5::MD5Hasher::state_type imgDataHash(const RawImage& raw) {
 #pragma GCC diagnostic ignored "-Wframe-larger-than="
 #pragma GCC diagnostic ignored "-Wstack-usage="
 
-void __attribute__((format(printf, 2, 3)))
-APPEND(ostringstream* oss, const char* format, ...) {
+void __attribute__((format(printf, 2, 3))) APPEND(ostringstream* oss,
+                                                  const char* format, ...) {
   std::array<char, 1024> line;
 
   va_list args;
