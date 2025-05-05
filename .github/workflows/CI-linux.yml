@@ -37,6 +37,9 @@ on:
       SONAR_TOKEN:
       SONAR_PROJECT_KEY:
       SONAR_ORGANIZATION:
+    outputs:
+      clang-format-artifact-url:
+        value: ${{ jobs.linux.outputs.clang-format-artifact-url }}
 
 env:
   RPUU_DST: ${{ github.workspace }}/raw-camera-samples/raw.pixls.us-unique
@@ -51,6 +54,8 @@ jobs:
     container:
       image: ${{ inputs.distro }}
       options: --tmpfs /tmp:exec --tmpfs /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}:exec
+    outputs:
+      clang-format-artifact-url: ${{ steps.clang-format-upload.outputs.artifact-url }}
     steps:
       - name: Configure APT
         timeout-minutes: 1
@@ -121,35 +126,41 @@ jobs:
         run: |
           set -xe
           eatmydata apt install ca-certificates \
-                                    cmake \
-                                    git \
-                                    googletest \
-                                    binutils-gold \
-                                    libjpeg-dev \
-                                    libpugixml-dev \
-                                    libxml2-utils \
-                                    ninja-build \
-                                    zlib1g-dev
-          if [ "$COMPILER_FAMILY" = "GNU" ]; then
-            eatmydata apt install g++-${{ inputs.compiler-version }} \
-                                      gcc \
-                                      gcc-${{ inputs.compiler-version }}
-          fi
-          if [ "$COMPILER_FAMILY" = "LLVM" ]; then
-            eatmydata apt install clang-${{ inputs.compiler-version }} \
-                                      libomp-${{ inputs.compiler-version }}-dev
+                                git
+          if [ "$FLAVOR" != "ClangFormat" ]; then
+            eatmydata apt install cmake \
+                                  googletest \
+                                  binutils-gold \
+                                  libjpeg-dev \
+                                  libpugixml-dev \
+                                  libxml2-utils \
+                                  ninja-build \
+                                  zlib1g-dev
+            if [ "$COMPILER_FAMILY" = "GNU" ]; then
+              eatmydata apt install g++-${{ inputs.compiler-version }} \
+                                    gcc \
+                                    gcc-${{ inputs.compiler-version }}
+            fi
+            if [ "$COMPILER_FAMILY" = "LLVM" ]; then
+              eatmydata apt install clang-${{ inputs.compiler-version }} \
+                                    libomp-${{ inputs.compiler-version }}-dev
+            fi
           fi
           if [ "$ENABLE_SAMPLE_BASED_TESTING" = "true" ]; then
             eatmydata apt install zstd
           fi
           if [ "$FLAVOR" = "ClangTidy" ]; then
-            eatmydata apt install clang-format-${{ inputs.compiler-version }} clang-tidy-${{ inputs.compiler-version }}
+            eatmydata apt install clang-tidy-${{ inputs.compiler-version }}
 
             eatmydata apt install curl gpg
+            mkdir -p /etc/apt/sources.list.d
             echo 'deb https://ftp.gwdg.de//pub/opensuse/repositories/graphics%3A/darktable%3A/master/Debian_Unstable/ /' | tee /etc/apt/sources.list.d/rawspeed.list
             curl -fsSL https://download.opensuse.org/repositories/graphics:darktable:master/Debian_Unstable/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/graphics_darktable_master.gpg > /dev/null
             apt update
             eatmydata apt install rawspeed-clang-tidy-module
+          fi
+          if [ "$FLAVOR" = "ClangFormat" ]; then
+            eatmydata apt install clang-format-${{ inputs.compiler-version }}
           fi
           if [ "$FLAVOR" = "ClangTidy" ] || [ "$FLAVOR" = "ClangStaticAnalysis" ] || [ "$FLAVOR" = "ClangCTUStaticAnalysis" ]; then
             eatmydata apt install clang-tools-${{ inputs.compiler-version }} \
@@ -179,19 +190,30 @@ jobs:
             ln -s /usr/bin/${{ inputs.compiler-CC  }} /usr/local/bin/x86_64-linux-gnu-gcc
             ln -s /usr/bin/${{ inputs.compiler-CXX }} /usr/local/bin/x86_64-linux-gnu-g++
           fi
+          if [ "$FLAVOR" = "WWW" ]; then
+            eatmydata apt install doxygen \
+                                  graphviz \
+                                  python3-sphinx \
+                                  python3-sphinx-rtd-theme;
+          fi
           ln -s /usr/bin/ld.gold /usr/bin/ld
-      - name: Configure git
-        timeout-minutes: 1
-        run: |
-          set -xe
-          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
       - name: Fetch/Checkout RawSpeed git repo
         timeout-minutes: 1
         uses: actions/checkout@v4
         with:
           path: 'rawspeed'
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Cache raw.pixls.us masterset
+          set-safe-directory: ${{ github.workspace }}
+      - name: Switch to the Pull Request's merge commit
+        if: github.event_name == 'pull_request_target'
+        env:
+          PR: ${{ github.event.number }}
+        run: |
+          set -xe
+          cd rawspeed
+          git fetch origin pull/${PR}/merge:pr/${PR}/merge
+          git switch pr/${PR}/merge
+      - name: Get cache of raw.pixls.us masterset
         timeout-minutes: 1
         if: inputs.enable-sample-based-testing
         uses: actions/cache/restore@v4
@@ -199,6 +221,17 @@ jobs:
           path: ${{ env.RPUU_DST }}
           key: ${{ inputs.rpuu-cache-key }}
           fail-on-cache-miss: true
+      - name: Checkout raw.pixls.us masterset
+        if: inputs.enable-sample-based-testing
+        timeout-minutes: 1
+        env:
+          RPUU_DST: ${{ env.RPUU_DST }}
+        run: |
+          set -xe
+          eatmydata apt install git-lfs
+          cd ${RPUU_DST}
+          git checkout -f
+          git lfs dedup || /bin/true
       - name: Fetch/Checkout CodeChecker git repo (for clang static analysis)
         timeout-minutes: 1
         if: inputs.flavor == 'ClangTidy' || inputs.flavor == 'ClangStaticAnalysis' || inputs.flavor == 'ClangCTUStaticAnalysis'
@@ -250,16 +283,31 @@ jobs:
           unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
           echo "$HOME/.sonar/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
       - name: Verify that the source code is properly formatted
+        id: clang-format
         timeout-minutes: 1
-        if: inputs.flavor == 'ClangTidy'
+        if: inputs.flavor == 'ClangFormat'
         env:
           SRC_DIR: ${{ github.workspace }}/rawspeed
         run: |
           set -xe
           cd "$SRC_DIR"
-          git ls-tree -r --name-only HEAD | grep -vf .clang-format-ignore | xargs clang-format-${{ inputs.compiler-version }} --verbose --dry-run -Werror
+          git ls-tree -r --name-only HEAD | grep -vf .clang-format-ignore | xargs clang-format-${{ inputs.compiler-version }} -i
+          git diff -p -U8 > "${GITHUB_WORKSPACE}/clang-format.patch"
+          git diff --exit-code --quiet
+      - name: Upload clang-format patch
+        id: clang-format-upload
+        timeout-minutes: 1
+        if: inputs.flavor == 'ClangFormat' && failure() && steps.clang-format.conclusion == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-format.patch
+          path: ${{ github.workspace }}/clang-format.patch
+          if-no-files-found: error
+          compression-level: 9
+          overwrite: true
       - name: Configure
         timeout-minutes: 1
+        if: inputs.flavor != 'ClangFormat'
         env:
           CC: ${{ inputs.compiler-CC }}
           CXX: ${{ inputs.compiler-CXX }}
@@ -281,9 +329,14 @@ jobs:
           if [ "$FLAVOR" = "ClangTidy" ] || [ "$FLAVOR" = "ClangStaticAnalysis" ] || [ "$FLAVOR" = "ClangCTUStaticAnalysis" ] || [ "$FLAVOR" = "CodeQLAnalysis" ]; then
             export ECO="${ECO} -DRAWSPEED_ENABLE_WERROR=OFF"
           fi
+          if [ "$FLAVOR" = "WWW" ]; then
+            export ECO="${ECO} -DBUILD_DOCS=ON"
+          fi
           "${SRC_DIR}/.ci/ci-script.sh"
       - name: Build
+        id: build
         timeout-minutes: ${{ inputs.flavor != 'ClangTidy' && (inputs.flavor != 'CodeQLAnalysis' && 7 || 12) || 25 }}
+        if: inputs.flavor != 'ClangFormat' && inputs.flavor != 'WWW'
         env:
           SRC_DIR: ${{ github.workspace }}/rawspeed
           BUILD_DIR: ${{ github.workspace }}/rawspeed-build
@@ -293,8 +346,28 @@ jobs:
         run: |
           set -xe
           "${SRC_DIR}/.ci/ci-script.sh"
+      - name: Build docs
+        id: build-docs
+        timeout-minutes: 1
+        if: inputs.flavor == 'WWW'
+        env:
+          SRC_DIR: ${{ github.workspace }}/rawspeed
+          BUILD_DIR: ${{ github.workspace }}/rawspeed-build
+          INSTALL_PREFIX: ${{ github.workspace }}/rawspeed-install
+          FLAVOR: ${{ inputs.flavor }}
+          TARGET: WWW
+        run: |
+          set -xe
+          "${SRC_DIR}/.ci/ci-script.sh"
+      - name: Upload docs artifact
+        timeout-minutes: 1
+        if: inputs.flavor == 'WWW'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ github.workspace }}/rawspeed-build/docs/html
       - name: Test (unit tests)
         timeout-minutes: 1
+        if: inputs.flavor != 'ClangFormat' && inputs.flavor != 'WWW'
         env:
           SRC_DIR: ${{ github.workspace }}/rawspeed
           BUILD_DIR: ${{ github.workspace }}/rawspeed-build
@@ -321,6 +394,7 @@ jobs:
           mv "${BUILD_DIR}/gcov-reports-unittest" "${COVERAGE_REPORT_PREFIX}/unittests"
       - name: Test (benchmarks)
         timeout-minutes: 1
+        if: inputs.flavor != 'ClangFormat' && inputs.flavor != 'WWW'
         env:
           SRC_DIR: ${{ github.workspace }}/rawspeed
           BUILD_DIR: ${{ github.workspace }}/rawspeed-build
@@ -383,6 +457,7 @@ jobs:
           enableCrossOsArchive: true
       - name: Install
         timeout-minutes: 1
+        if: inputs.flavor != 'ClangFormat' && inputs.flavor != 'WWW'
         env:
           SRC_DIR: ${{ github.workspace }}/rawspeed
           BUILD_DIR: ${{ github.workspace }}/rawspeed-build
@@ -394,7 +469,7 @@ jobs:
           "${SRC_DIR}/.ci/ci-script.sh"
       - name: Perform clang-tidy static analysis
         timeout-minutes: 1
-        if: inputs.flavor == 'ClangTidy' && !cancelled()
+        if: inputs.flavor == 'ClangTidy' && !cancelled() && steps.build.conclusion != 'skipped'
         env:
           SRC_DIR: ${{ github.workspace }}/rawspeed
           BUILD_DIR: ${{ github.workspace }}/rawspeed-build
@@ -455,7 +530,7 @@ jobs:
           . "$PWD/codechecker/venv/bin/activate"
           export PATH="$PWD/codechecker/build/CodeChecker/bin:$PATH"
           set +e
-          CodeChecker check --logfile "${BUILD_DIR}/compile_commands.json" --analyzers clangsa --jobs "$(nproc --all)" --file "${SRC_DIR}/*" --disable deadcode.DeadStores --disable alpha.unix.Stream -o "${BUILD_DIR}/codechecker_results"
+          CodeChecker check --logfile "${BUILD_DIR}/compile_commands.json" --analyzers clangsa --jobs "$(nproc --all)" --file "${SRC_DIR}/*" --disable deadcode.DeadStores -o "${BUILD_DIR}/codechecker_results"
           bugs=$?
           CodeChecker parse -e sarif "${BUILD_DIR}/codechecker_results" -o "${GITHUB_WORKSPACE}/codechecker_report.json"
           CodeChecker parse -e html "${BUILD_DIR}/codechecker_results" -o "${GITHUB_WORKSPACE}/codechecker_report"
@@ -493,7 +568,7 @@ jobs:
           . "$PWD/codechecker/venv/bin/activate"
           export PATH="$PWD/codechecker/build/CodeChecker/bin:$PATH"
           set +e
-          CodeChecker check --ctu --ctu-reanalyze-on-failure --logfile "${BUILD_DIR}/compile_commands.json" --analyzers clangsa --jobs "$(nproc --all)" --file "${SRC_DIR}/*" --disable deadcode.DeadStores --disable alpha.unix.Stream -o "${BUILD_DIR}/codechecker_ctu_results"
+          CodeChecker check --ctu --ctu-reanalyze-on-failure --logfile "${BUILD_DIR}/compile_commands.json" --analyzers clangsa --jobs "$(nproc --all)" --file "${SRC_DIR}/*" --disable deadcode.DeadStores -o "${BUILD_DIR}/codechecker_ctu_results"
           bugs=$?
           CodeChecker parse -e sarif "${BUILD_DIR}/codechecker_ctu_results" -o "${GITHUB_WORKSPACE}/codechecker_ctu_report.json"
           CodeChecker parse -e html "${BUILD_DIR}/codechecker_ctu_results" -o "${GITHUB_WORKSPACE}/codechecker_ctu_report"
@@ -519,7 +594,7 @@ jobs:
           overwrite: true
       - name: Perform CodeQL static analysis
         timeout-minutes: 11
-        if: inputs.flavor == 'CodeQLAnalysis' && !cancelled()
+        if: inputs.flavor == 'CodeQLAnalysis' && !cancelled() && steps.build.conclusion != 'skipped'
         uses: github/codeql-action/analyze@v3
       - name: Perform SonarCloud static analysis
         timeout-minutes: 6
