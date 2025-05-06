@@ -11608,42 +11608,6 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="PENTAX" model="PENTAX K100D" supported="no-samples">
-		<ID make="Pentax" model="K100D">Pentax K100D</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="3040" height="2024"/>
-		<Sensor black="127" white="3950"/>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">11095 -3157 -1324</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-8377 15834 2720</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-1108 947 11688</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
-	<Camera make="PENTAX" model="PENTAX K110D" supported="no-samples">
-		<ID make="Pentax" model="K110D">Pentax K110D</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="127" white="4095"/>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">11095 -3157 -1324</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-8377 15834 2720</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-1108 947 11688</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
 	<Camera make="PENTAX Corporation" model="PENTAX *ist D">
 		<ID make="Pentax" model="*ist D">Pentax *ist D</ID>
 		<CFA width="2" height="2">
@@ -11737,7 +11701,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="PENTAX Corporation" model="PENTAX K20D" supported="no-samples">
+	<Camera make="PENTAX Corporation" model="PENTAX K20D">
 		<ID make="Pentax" model="K20D">Pentax K20D</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -11773,7 +11737,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="PENTAX Corporation" model="PENTAX K200D" supported="no-samples">
+	<Camera make="PENTAX Corporation" model="PENTAX K200D">
 		<ID make="Pentax" model="K200D">Pentax K200D</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
