@@ -3860,7 +3860,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Z5_2" supported="unknown-no-samples">
+	<Camera make="NIKON CORPORATION" model="NIKON Z5_2" supported="unknown">
 		<ID make="Nikon" model="Z5_2">Nikon Z 5 2</ID>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON Z 6" mode="14bit-compressed">
@@ -10797,10 +10797,10 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Panasonic" model="DC-S1RM2" supported="unknown-no-samples">
+	<Camera make="Panasonic" model="DC-S1RM2" supported="unknown">
 		<ID make="Panasonic" model="DC-S1RM2">Panasonic DC-S1RM2</ID>
 	</Camera>
-	<Camera make="Panasonic" model="DC-S9" supported="unknown-no-samples">
+	<Camera make="Panasonic" model="DC-S9" supported="unknown">
 		<ID make="Panasonic" model="DC-S9">Panasonic DC-S9</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60">
@@ -15143,7 +15143,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="FUJIFILM" model="GFX100S II" supported="unknown-no-samples">
+	<Camera make="FUJIFILM" model="GFX100S II" supported="unknown">
 		<ID make="Fujifilm" model="GFX100S II">Fujifilm GFX100S II</ID>
 	</Camera>
 	<Camera make="FUJIFILM" model="GFX100 II">
