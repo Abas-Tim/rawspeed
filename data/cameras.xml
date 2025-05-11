@@ -12860,6 +12860,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-12" height="0"/>
 		<Sensor black="800" white="16300"/>
+		<Aliases>
+			<Alias>DSC-RX100M7A</Alias>
+		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">10315 -4390 -937</ColorMatrixRow>
@@ -14226,6 +14229,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-8" height="0"/>
 		<Sensor black="800" white="16300"/>
+		<Aliases>
+			<Alias>ZV-1A</Alias>
+		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">8280 -2987 -703</ColorMatrixRow>
@@ -14286,6 +14292,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-24" height="0"/>
 		<Sensor black="512" white="16383"/>
+		<Aliases>
+			<Alias>ILME-FX3A</Alias>
+		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">6912 -2127 -469</ColorMatrixRow>
