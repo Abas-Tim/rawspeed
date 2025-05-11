@@ -4007,7 +4007,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Z6_3" mode="14bit-compressed" supported="no-samples">
+	<Camera make="NIKON CORPORATION" model="NIKON Z6_3" mode="14bit-compressed">
 		<ID make="Nikon" model="Z6_3">Nikon Z 6 3</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -4295,7 +4295,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Z50_2" mode="14bit-compressed" supported="no-samples">
+	<Camera make="NIKON CORPORATION" model="NIKON Z50_2" mode="14bit-compressed">
 		<ID make="Nikon" model="Z50_2">Nikon Z 50 2</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -7075,7 +7075,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="OM Digital Solutions" model="OM-3" supported="no-samples">
+	<Camera make="OM Digital Solutions" model="OM-3">
 		<ID make="OM System" model="OM-3">OM Digital Solutions OM-3</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -13619,7 +13619,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="SONY" model="ILCE-1M2" supported="no-samples">
+	<Camera make="SONY" model="ILCE-1M2">
 		<ID make="Sony" model="ILCE-1M2">Sony ILCE-1M2</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -15692,7 +15692,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="FUJIFILM" model="X-M5" supported="no-samples">
+	<Camera make="FUJIFILM" model="X-M5">
 		<ID make="Fujifilm" model="X-M5">Fujifilm X-M5</ID>
 		<CFA2 width="6" height="6">
 			<ColorRow y="0">GGRGGB</ColorRow>
@@ -15711,7 +15711,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="FUJIFILM" model="X-M5" mode="compressed" supported="no-samples">
+	<Camera make="FUJIFILM" model="X-M5" mode="compressed">
 		<ID make="Fujifilm" model="X-M5">Fujifilm X-M5</ID>
 		<CFA2 width="6" height="6">
 			<ColorRow y="0">GGRGGB</ColorRow>
@@ -16376,7 +16376,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="FUJIFILM" model="X-T50" supported="no-samples">
+	<Camera make="FUJIFILM" model="X-T50">
 		<ID make="Fujifilm" model="X-T50">Fujifilm X-T50</ID>
 		<CFA2 width="6" height="6">
 			<ColorRow y="0">GGRGGB</ColorRow>
@@ -16395,7 +16395,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="FUJIFILM" model="X-T50" mode="compressed" supported="no-samples">
+	<Camera make="FUJIFILM" model="X-T50" mode="compressed">
 		<ID make="Fujifilm" model="X-T50">Fujifilm X-T50</ID>
 		<CFA2 width="6" height="6">
 			<ColorRow y="0">GGRGGB</ColorRow>
@@ -16579,7 +16579,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Minolta Co., Ltd." model="DiMAGE 5" supported="no-samples">
+	<Camera make="Minolta Co., Ltd." model="DiMAGE 5">
 		<ID make="Minolta" model="DiMAGE 5">Minolta DiMAGE 5</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
