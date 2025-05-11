@@ -10797,10 +10797,10 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Panasonic" model="DC-S1RM2" supported="unknown">
+	<Camera make="Panasonic" model="DC-S1RM2" supported="no">
 		<ID make="Panasonic" model="DC-S1RM2">Panasonic DC-S1RM2</ID>
 	</Camera>
-	<Camera make="Panasonic" model="DC-S9" supported="unknown">
+	<Camera make="Panasonic" model="DC-S9" supported="no">
 		<ID make="Panasonic" model="DC-S9">Panasonic DC-S9</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60">
