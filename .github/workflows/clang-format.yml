@@ -6,7 +6,7 @@ on:
   pull_request_target:
 
 jobs:
-  clang-format:
+  clang-format-check:
     uses: ./.github/workflows/CI-linux.yml
     with:
       os: linux
@@ -16,9 +16,9 @@ jobs:
       compiler-CC: clang-18
       compiler-CXX: clang++-18
       flavor: ClangFormat
-  clang-format-comment:
-    needs: [ clang-format ]
-    if: always() && github.event_name == 'pull_request_target' && needs.clang-format.outputs.clang-format-artifact-url != ''
+  clang-format-complain:
+    needs: [ clang-format-check ]
+    if: always() && github.event_name == 'pull_request_target' && needs.clang-format-check.outputs.clang-format-artifact-url != ''
     runs-on: ubuntu-latest
     steps:
       - name: Create comment
@@ -30,7 +30,7 @@ jobs:
             To make this check pass, download the following patch
             (via browser, you must be logged-in in order for this URL to work),
             (NOTE: save it into the repo checkout dir for the snippet to work)
-            ${{ needs.clang-format.outputs.clang-format-artifact-url }}
+            ${{ needs.clang-format-check.outputs.clang-format-artifact-url }}
             ... and run:
             ```bash
             cd <path/to/repo/checkout> # NOTE: use your own path here
