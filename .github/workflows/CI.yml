@@ -28,6 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        runs-on: [ ubuntu-latest, ubuntu-24.04-arm ]
         os: [ linux ]
         compiler:
           - { distro: "debian:trixie-slim",   family: GNU,  version: 14, CC: gcc-14,   CXX: g++-14 }
@@ -35,6 +36,7 @@ jobs:
         flavor: [ ReleaseWithAsserts, Release ]
     uses: ./.github/workflows/CI-linux.yml
     with:
+      runs-on: ${{ matrix.runs-on }}
       os: ${{ matrix.os }}
       distro: ${{ matrix.compiler.distro }}
       compiler-family: ${{ matrix.compiler.family }}
