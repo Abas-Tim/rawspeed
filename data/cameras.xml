@@ -3860,8 +3860,23 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON Z5_2" supported="unknown">
+	<Camera make="NIKON CORPORATION" model="NIKON Z5_2" mode="14bit-compressed">
 		<ID make="Nikon" model="Z5_2">Nikon Z 5 2</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="1008" white="15892"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">9874 -3784 -823</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-4728 12673 2286</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-648 1513 6375</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON Z 6" mode="14bit-compressed">
 		<ID make="Nikon" model="Z 6">Nikon Z 6</ID>
