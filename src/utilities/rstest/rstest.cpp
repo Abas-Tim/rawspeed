@@ -26,6 +26,7 @@
 #include "adt/DefaultInitAllocatorAdaptor.h"
 #include "adt/NotARational.h"
 #include "io/FileIOException.h"
+#include "io/MMapReader.h"
 #include "md5.h"
 #include <array>
 #include <bit>
@@ -383,6 +384,12 @@ int64_t process(const std::string& filename, const CameraMetaData* metadata,
   cout << left << setw(55) << filename << ": starting decoding ... " << '\n';
 #endif
 
+#if !defined(_WIN32) &&                                                        \
+    !(__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__))
+  MMapReader reader(filename);
+
+  rawspeed::Buffer buf = reader.getAsBuffer();
+#else
   FileReader reader(filename.c_str());
 
   std::unique_ptr<std::vector<
@@ -391,6 +398,7 @@ int64_t process(const std::string& filename, const CameraMetaData* metadata,
       storage;
   rawspeed::Buffer buf;
   std::tie(storage, buf) = reader.readFile();
+#endif
 
   Timer t;
 
