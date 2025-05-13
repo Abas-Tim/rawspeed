@@ -10752,6 +10752,12 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DC-S1M2" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-S1M2">Panasonic DC-S1M2</ID>
+	</Camera>
+	<Camera make="Panasonic" model="DC-S1M2ES" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-S1M2ES">Panasonic DC-S1M2ES</ID>
+	</Camera>
 	<Camera make="Panasonic" model="DC-S5">
 		<ID make="Panasonic" model="DC-S5">Panasonic DC-S5</ID>
 		<Crop x="0" y="0" width="-50" height="0"/>
