@@ -108,7 +108,7 @@ jobs:
       matrix:
         include:
           - os: linux
-            compiler: { distro: "debian:trixie-slim", family: GNU, version: 13, CC: gcc-13, CXX: g++-13, GCOV: gcov-13 }
+            compiler: { distro: "debian:trixie-slim", family: GNU, version: 14, CC: gcc-14, CXX: g++-14, GCOV: gcov-14 }
             flavor: Coverage
     uses: ./.github/workflows/CI-linux.yml
     with:
