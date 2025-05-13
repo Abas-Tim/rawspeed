@@ -10860,8 +10860,41 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Panasonic" model="DC-S1RM2" supported="no">
+	<Camera make="Panasonic" model="DC-S1RM2">
 		<ID make="Panasonic" model="DC-S1RM2">Panasonic DC-S1RM2</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="512" white="16380"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">9941 -4056 -871</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-3745 11604 2433</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-254 1132 5526</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DC-S1RM2" mode="3:2">
+		<ID make="Panasonic" model="DC-S1RM2">Panasonic DC-S1RM2</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="512" white="16380"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">9941 -4056 -871</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-3745 11604 2433</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-254 1132 5526</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DC-S9">
 		<ID make="Panasonic" model="DC-S9">Panasonic DC-S9</ID>
