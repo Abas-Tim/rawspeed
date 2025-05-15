@@ -292,7 +292,7 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
     decodeNextDiffValue() {
   // Retrieve the difference category, which indicates magnitude of the
   // difference between the predicted and actual value.
-  const uint16_t next16 = uint16_t(mBitPump.peekBits(16));
+  const auto next16 = uint16_t(mBitPump.peekBits(16));
   const auto& [bits, diffCat] = mLUT[next16];
   if (diffCat == 0 && bits == 7)
     ThrowRDE("Huffman decoding encountered an invalid value!");
