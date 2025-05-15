@@ -414,7 +414,8 @@ void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
 /// completely unused.
 void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
   // Retrieve encoded gamma curve from tags.
-  std::vector<uint32_t> encodedGammaPoints, encodedGammaSlopes;
+  std::vector<uint32_t> encodedGammaPoints;
+  std::vector<uint32_t> encodedGammaSlopes;
   getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_GAMMA_POINTS,
                          encodedGammaPoints);
   getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_GAMMA_SLOPES,
