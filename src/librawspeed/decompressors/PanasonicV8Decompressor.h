@@ -79,7 +79,7 @@ private:
 
   /// Thread safe function for decompressing a single data-stripstrip within a
   /// Rw2V8 raw image.
-  void decompressStrip(const unsigned stripIdx, InternalHuffDecoder decoder,
+  void decompressStrip(unsigned stripIdx, InternalHuffDecoder decoder,
                        Array2DRef<uint16_t> outBuffer) const;
 
   // Helpers called from the constructor
