@@ -304,7 +304,7 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
   const uint8_t shiftDown = mShiftDownList[diffCat] & 0x1F;
   assert(shiftDown == 0);
 
-  const uint8_t diffBitCount = diffCat >= shiftDown ? diffCat - shiftDown : 0u;
+  const uint8_t diffBitCount = diffCat >= shiftDown ? diffCat - shiftDown : 0U;
   if (diffBitCount > 0) {
     // Decode difference value. The scheme here encodes signed integers in a
     // manner similar to offset binary encoding. Here, the encoding is biased by
@@ -371,9 +371,9 @@ void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
 
   for (HuffEntry& entry : huffTable) {
     entry.bitcount = stream.getU16(); // Number of bits in symbol
-    entry.symbol = uint16_t(stream.getU16() << (16u - entry.bitcount));
+    entry.symbol = uint16_t(stream.getU16() << (16U - entry.bitcount));
     entry.mask = uint16_t(
-        0xffffu << (16u -
+        0xffffU << (16U -
                     entry.bitcount)); // mask of the bits overlapping symbol
   }
 
@@ -411,10 +411,10 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
   // currently true of all tested RW2 files.
   const bool gamamPointsAreIdentity =
       std::all_of(encodedGammaPoints.cbegin(), encodedGammaPoints.cend(),
-                  [](const uint32_t p) { return p == 0u; });
+                  [](const uint32_t p) { return p == 0U; });
   const bool gammaSlopesAreIdentity =
       std::all_of(encodedGammaSlopes.cbegin(), encodedGammaSlopes.cend(),
-                  [](const uint32_t s) { return s == 65536u; });
+                  [](const uint32_t s) { return s == 65536U; });
 
   if (!gamamPointsAreIdentity || !gammaSlopesAreIdentity) {
     // Generate gamma LUT based on retrieved curve.
