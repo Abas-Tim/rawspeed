@@ -318,7 +318,7 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
     if (sign == 1)
       // Positive value in range [2^{n-1}, 2^{n})
       return val;
-    else if (shiftDown == 0) [[likely]]
+    if (shiftDown == 0) [[likely]]
       // Negative value in interval (-2^{n}, -2^{n-1}]
       return val + (-1 << diffCat) + 1;
     else [[unlikely]] {
