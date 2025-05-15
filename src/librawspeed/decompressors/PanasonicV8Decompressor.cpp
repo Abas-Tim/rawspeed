@@ -22,18 +22,30 @@
 
 #include "rawspeedconfig.h"
 #include "decompressors/PanasonicV8Decompressor.h"
+#include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
+#include "adt/Invariant.h"
+#include "bitstreams/BitStream.h"
 #include "bitstreams/BitStreamer.h"
-#include "bitstreams/BitStreamerMSB.h"
+#include "bitstreams/BitStreamerMSB.h" // IWYU pragma: keep
+#include "bitstreams/BitStreams.h"
+#include "common/Common.h"
+#include "common/RawImage.h"
 #include "common/RawspeedException.h"
 #include "decoders/RawDecoderException.h"
 #include "io/Buffer.h"
 #include "io/ByteStream.h"
 #include "io/Endianness.h"
+#include "io/IOException.h"
+#include "tiff/TiffIFD.h"
 #include "tiff/TiffTag.h"
 #include <algorithm>
+#include <array>
+#include <cassert>
+#include <cstddef>
 #include <cstdint>
-#include <functional>
+#include <utility>
+#include <vector>
 
 namespace rawspeed {
 
@@ -209,17 +221,25 @@ void PanasonicV8Decompressor::decompress() const {
     schedule(static) default(none) shared(totalStrips)
 #endif
   for (unsigned stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
-    const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
-    const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
+    try {
+      const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
+      const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
 
-    // Note: Relying on Buffer to catch OOB access attempts
-    DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize),
-                           Endianness::big);
-    InternalHuffDecoder decoder(mHuffmanLUT, mParams.huffShiftDown,
-                                stripBuffer.getAsArray1DRef());
+      // Note: Relying on Buffer to catch OOB access attempts
+      DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize),
+                             Endianness::big);
+      InternalHuffDecoder decoder(mHuffmanLUT, mParams.huffShiftDown,
+                                  stripBuffer.getAsArray1DRef());
 
-    decompressStrip(stripIdx, decoder,
-                    mRawOutput->getU16DataAsUncroppedArray2DRef());
+      decompressStrip(stripIdx, decoder,
+                      mRawOutput->getU16DataAsUncroppedArray2DRef());
+    } catch (const RawspeedException& err) {
+      // Propagate the exception out of OpenMP magic.
+      mRawOutput->setError(err.what());
+    } catch (...) {
+      // We should not get any other exception type here.
+      __builtin_unreachable();
+    }
   }
 }
 
@@ -292,7 +312,7 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
     decodeNextDiffValue() {
   // Retrieve the difference category, which indicates magnitude of the
   // difference between the predicted and actual value.
-  const uint16_t next16 = uint16_t(mBitPump.peekBits(16));
+  const auto next16 = uint16_t(mBitPump.peekBits(16));
   const auto& [bits, diffCat] = mLUT[next16];
   if (diffCat == 0 && bits == 7)
     ThrowRDE("Huffman decoding encountered an invalid value!");
@@ -304,7 +324,7 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
   const uint8_t shiftDown = mShiftDownList[diffCat] & 0x1F;
   assert(shiftDown == 0);
 
-  const uint8_t diffBitCount = diffCat >= shiftDown ? diffCat - shiftDown : 0u;
+  const uint8_t diffBitCount = diffCat >= shiftDown ? diffCat - shiftDown : 0U;
   if (diffBitCount > 0) {
     // Decode difference value. The scheme here encodes signed integers in a
     // manner similar to offset binary encoding. Here, the encoding is biased by
@@ -318,10 +338,12 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
     if (sign == 1)
       // Positive value in range [2^{n-1}, 2^{n})
       return val;
-    else if (shiftDown == 0) [[likely]]
-      // Negative value in interval (-2^{n}, -2^{n-1}]
-      return val + (-1 << diffCat) + 1;
-    else [[unlikely]] {
+    if (shiftDown == 0) {
+      [[likely]]
+          // Negative value in interval (-2^{n}, -2^{n-1}]
+          return val +
+          (-1 << diffCat) + 1;
+    } else [[unlikely]] {
       // Unreachable in all known samples but should be correct
       // Same as negative value above, but accounting for down shift
       // values in range [-2^n - 2^{d-1}, -(2^{n-1} + d)]
@@ -371,9 +393,9 @@ void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
 
   for (HuffEntry& entry : huffTable) {
     entry.bitcount = stream.getU16(); // Number of bits in symbol
-    entry.symbol = uint16_t(stream.getU16() << (16u - entry.bitcount));
+    entry.symbol = uint16_t(stream.getU16() << (16U - entry.bitcount));
     entry.mask = uint16_t(
-        0xffffu << (16u -
+        0xffffU << (16U -
                     entry.bitcount)); // mask of the bits overlapping symbol
   }
 
@@ -400,7 +422,8 @@ void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
 /// completely unused.
 void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
   // Retrieve encoded gamma curve from tags.
-  std::vector<uint32_t> encodedGammaPoints, encodedGammaSlopes;
+  std::vector<uint32_t> encodedGammaPoints;
+  std::vector<uint32_t> encodedGammaSlopes;
   getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_GAMMA_POINTS,
                          encodedGammaPoints);
   getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_GAMMA_SLOPES,
@@ -411,10 +434,10 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
   // currently true of all tested RW2 files.
   const bool gamamPointsAreIdentity =
       std::all_of(encodedGammaPoints.cbegin(), encodedGammaPoints.cend(),
-                  [](const uint32_t p) { return p == 0u; });
+                  [](const uint32_t p) { return p == 0U; });
   const bool gammaSlopesAreIdentity =
       std::all_of(encodedGammaSlopes.cbegin(), encodedGammaSlopes.cend(),
-                  [](const uint32_t s) { return s == 65536u; });
+                  [](const uint32_t s) { return s == 65536U; });
 
   if (!gamamPointsAreIdentity || !gammaSlopesAreIdentity) {
     // Generate gamma LUT based on retrieved curve.
