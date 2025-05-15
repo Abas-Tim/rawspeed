@@ -25,6 +25,7 @@
 
 namespace rawspeed_test {
 
+// NOLINTNEXTLINE(google-build-namespaces)
 namespace {
 
 template <typename T> struct intPair final {
