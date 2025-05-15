@@ -221,17 +221,25 @@ void PanasonicV8Decompressor::decompress() const {
     schedule(static) default(none) shared(totalStrips)
 #endif
   for (unsigned stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
-    const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
-    const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
+    try {
+      const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
+      const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
 
-    // Note: Relying on Buffer to catch OOB access attempts
-    DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize),
-                           Endianness::big);
-    InternalHuffDecoder decoder(mHuffmanLUT, mParams.huffShiftDown,
-                                stripBuffer.getAsArray1DRef());
+      // Note: Relying on Buffer to catch OOB access attempts
+      DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize),
+                             Endianness::big);
+      InternalHuffDecoder decoder(mHuffmanLUT, mParams.huffShiftDown,
+                                  stripBuffer.getAsArray1DRef());
 
-    decompressStrip(stripIdx, decoder,
-                    mRawOutput->getU16DataAsUncroppedArray2DRef());
+      decompressStrip(stripIdx, decoder,
+                      mRawOutput->getU16DataAsUncroppedArray2DRef());
+    } catch (const RawspeedException& err) {
+      // Propagate the exception out of OpenMP magic.
+      mRawOutput->setError(err.what());
+    } catch (...) {
+      // We should not get any other exception type here.
+      __builtin_unreachable();
+    }
   }
 }
 
