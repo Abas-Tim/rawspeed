@@ -35,7 +35,7 @@ class MMapReader final {
 public:
   explicit MMapReader(const std::string& fname);
 
-  Buffer getAsBuffer() const;
+  [[nodiscard]] Buffer getAsBuffer() const;
 
   ~MMapReader();
 };
