@@ -15,7 +15,7 @@ concurrency:
 
 env:
   RPUU_DST: ${{ github.workspace }}/raw-camera-samples/raw.pixls.us-unique
-  SHOULD_UPDATE: ${{ github.workflow == 'CI-rpuu' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+  CACHE_WARMUP_ONLY: ${{ github.workflow != 'Update raw.pixls.us masterset cache management' }}
 
 jobs:
   linux:
@@ -80,17 +80,17 @@ jobs:
           git config --global user.email "bot@local"
       - name: Check raw.pixls.us masterset cache availability
         timeout-minutes: 1
-        id: cache
+        id: cache-restore
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.RPUU_DST }}
           key: "raw.pixls.us-masterset"
           fail-on-cache-miss: false
-          lookup-only: ${{ env.SHOULD_UPDATE != 'true' }}
+          lookup-only: ${{ env.CACHE_WARMUP_ONLY == 'true' }}
       - name: Fetch raw.pixls.us masterset
         timeout-minutes: 3
         id: cache-get
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache-restore.outputs.cache-matched-key == ''
         env:
           RPUU_DST: ${{ env.RPUU_DST }}
         run: |
@@ -102,7 +102,7 @@ jobs:
       - name: Update raw.pixls.us masterset
         timeout-minutes: 3
         id: cache-update
-        if: env.SHOULD_UPDATE == 'true' && steps.cache.outputs.cache-hit == 'true'
+        if: env.CACHE_WARMUP_ONLY != 'true' && steps.cache-restore.outputs.cache-matched-key != ''
         env:
           RPUU_DST: ${{ env.RPUU_DST }}
         run: |
@@ -117,13 +117,25 @@ jobs:
           git-annex dropunused all --force
           git repack -a -d -f -F --depth=4095 --window=1000000
           sha256sum -c --strict filelist.sha256
+      - name: Get the raw.pixls.us masterset cache key
+        timeout-minutes: 1
+        env:
+          RPUU_DST: ${{ env.RPUU_DST }}
+        id: memoize-key
+        run: |
+          set -xe
+          if [ -f "${RPUU_DST}/timestamp.txt" ]; then
+          echo "rpuu-cache-key=raw.pixls.us-masterset-$(cat ${RPUU_DST}/timestamp.txt)" >> $GITHUB_OUTPUT
+          else
+          echo "rpuu-cache-key=${{ steps.cache-restore.outputs.cache-matched-key }}" >> $GITHUB_OUTPUT
+          fi
       - name: Save updated raw.pixls.us masterset cache
-        if: ((steps.cache-get.outcome == 'success') || (steps.cache-update.outcome == 'success'))
+        if: ((steps.cache-get.outcome == 'success') || (steps.cache-update.outcome == 'success')) && (steps.memoize-key.outputs.rpuu-cache-key != steps.cache-restore.outputs.cache-matched-key)
         timeout-minutes: 1
         id: cache-save
         uses: actions/cache/save@v4
         with:
           path: ${{ env.RPUU_DST }}
-          key: "raw.pixls.us-masterset"
+          key: ${{ steps.memoize-key.outputs.rpuu-cache-key }}
     outputs:
-      rpuu-cache-key: "raw.pixls.us-masterset"
+      rpuu-cache-key: ${{ steps.memoize-key.outputs.rpuu-cache-key }}
