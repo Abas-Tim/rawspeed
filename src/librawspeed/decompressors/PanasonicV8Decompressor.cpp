@@ -22,18 +22,30 @@
 
 #include "rawspeedconfig.h"
 #include "decompressors/PanasonicV8Decompressor.h"
+#include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
+#include "adt/Invariant.h"
+#include "bitstreams/BitStream.h"
 #include "bitstreams/BitStreamer.h"
-#include "bitstreams/BitStreamerMSB.h"
+#include "bitstreams/BitStreamerMSB.h" // IWYU pragma: keep
+#include "bitstreams/BitStreams.h"
+#include "common/Common.h"
+#include "common/RawImage.h"
 #include "common/RawspeedException.h"
 #include "decoders/RawDecoderException.h"
 #include "io/Buffer.h"
 #include "io/ByteStream.h"
 #include "io/Endianness.h"
+#include "io/IOException.h"
+#include "tiff/TiffIFD.h"
 #include "tiff/TiffTag.h"
 #include <algorithm>
+#include <array>
+#include <cassert>
+#include <cstddef>
 #include <cstdint>
-#include <functional>
+#include <utility>
+#include <vector>
 
 namespace rawspeed {
 
