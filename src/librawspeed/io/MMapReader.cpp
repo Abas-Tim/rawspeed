@@ -30,8 +30,9 @@
 
 namespace rawspeed {
 
-MMapReader::MMapReader(const std::string& fname) {
-  fd = open(fname.c_str(), O_RDONLY);
+MMapReader::MMapReader(const std::string& fname)
+    : fd(open(fname.c_str(), O_RDONLY)) {
+
   if (fd == -1)
     ThrowFIE("Could not open file \"%s\".", fname.c_str());
 
