@@ -1618,7 +1618,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS M200" supported="no">
+	<Camera make="Canon" model="Canon EOS M200" supported="unknown-no-samples">
 		<ID make="Canon" model="EOS M200">Canon EOS M200</ID>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS R" supported="no">
@@ -1642,7 +1642,7 @@
 	<Camera make="Canon" model="Canon EOS R5m2" supported="no">
 		<ID make="Canon" model="EOS R5 Mark II">Canon EOS R5 Mark II</ID>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS R5 C" supported="no">
+	<Camera make="Canon" model="Canon EOS R5 C" supported="unknown-no-samples">
 		<ID make="Canon" model="EOS R5 C">Canon EOS R5 C</ID>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS R6" supported="no">
