@@ -41,7 +41,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <utility>
-#include <vector>
 
 namespace rawspeed {
 
@@ -194,12 +193,6 @@ void PanasonicV8Decompressor::decompress() const {
 
 void PanasonicV8Decompressor::decompressStrip(
     const Array2DRef<uint16_t> out, InternalHuffDecoder decoder) const {
-  std::vector<uint16_t> lineBuffer(2 * out.width());
-
-  const auto tmp = Array2DRef(
-      Array1DRef(lineBuffer.data(), implicit_cast<int>(lineBuffer.size())),
-      /*width=*/2, /*height=*/out.width(), /*pitch=*/2);
-
   Bayer2x2 predictedStorage = mParams.initialPrediction;
   const auto predicted = Array2DRef(predictedStorage.data(), 2, 2);
 
@@ -218,26 +211,27 @@ void PanasonicV8Decompressor::decompressStrip(
                                               /*croppedHeight=*/2)
                                 .getAsArray2DRef();
 
-      const auto tmpBlock = CroppedArray2DRef(tmp,
-                                              /*offsetCols=*/0,
-                                              /*offsetRows=*/2 * blockIdx,
-                                              /*croppedWidth=*/2,
-                                              /*croppedHeight=*/2)
-                                .getAsArray2DRef();
-
       for (int j = 0; j != 2; ++j) {
         for (int i = 0; i != 2; ++i) {
           const int32_t diff = decoder.decodeNextDiffValue();
           const int32_t decodedValue = predicted(j, i) + diff;
           assert(decodedValue > 0);
-          outBlock(i, j) = tmpBlock(j, i) = predicted(j, i) = uint16_t(
+          outBlock(i, j) = predicted(j, i) = uint16_t(
               std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
         }
       }
     }
+    const auto tmp = CroppedArray2DRef(out, /*offsetCols=*/0,
+                                       /*offsetRows=*/row,
+                                       /*croppedWidth=*/2,
+                                       /*croppedHeight=*/2)
+                         .getAsArray2DRef();
+
     // At the end of the line, reset predicted value to the first tile of the
     // prior line.
-    std::copy_n(&lineBuffer[0], 4, predictedStorage.data());
+    for (int j = 0; j != 2; ++j)
+      for (int i = 0; i != 2; ++i)
+        predicted(j, i) = tmp(i, j);
   }
 }
 
