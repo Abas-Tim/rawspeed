@@ -34,9 +34,7 @@
 #include "common/RawspeedException.h"
 #include "decoders/RawDecoderException.h"
 #include "io/Buffer.h"
-#include "io/Endianness.h"
 #include "io/IOException.h"
-#include "tiff/TiffIFD.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -144,41 +142,15 @@ public:
   int32_t decodeNextDiffValue();
 };
 
-namespace {
-
-std::vector<Array1DRef<const uint8_t>>
-getInputStrips(const PanasonicV8Decompressor::DecompressorParams& mParams,
-               Buffer mInputFile) {
-  std::vector<Array1DRef<const uint8_t>> mStrips;
-
-  const int totalStrips =
-      mParams.horizontalStripCount * mParams.verticalStripCount;
-
-  for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
-    const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
-    const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
-
-    // Note: Relying on Buffer to catch OOB access attempts
-    DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize),
-                           Endianness::big);
-    mStrips.emplace_back(stripBuffer.getAsArray1DRef());
-  }
-
-  return mStrips;
-}
-
-} // namespace
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Constructor populates decompressor parameters with values from ifd
 PanasonicV8Decompressor::PanasonicV8Decompressor(
-    Buffer inputFile, RawImage outputImg, const TiffIFD& ifd,
-    DecompressorParams mParams_, HuffmanLUT mHuffmanLUT_,
-    std::vector<uint16_t> mGammaLUT_)
+    Buffer inputFile, RawImage outputImg, DecompressorParams mParams_,
+    HuffmanLUT mHuffmanLUT_, std::vector<uint16_t> mGammaLUT_,
+    std::vector<Array1DRef<const uint8_t>> mStrips_)
     : mRawOutput(std::move(outputImg)), mParams(std::move(mParams_)),
       mHuffmanLUT(std::move(mHuffmanLUT_)), mGammaLUT(std::move(mGammaLUT_)),
-      mStrips(getInputStrips(mParams, inputFile)) {
+      mStrips(std::move(mStrips_)) {
   if (mRawOutput->getCpp() != 1 ||
       mRawOutput->getDataType() != RawImageType::UINT16 ||
       mRawOutput->getBpp() != sizeof(uint16_t)) {

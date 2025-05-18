@@ -305,14 +305,38 @@ populateGammaLUT(const PanasonicV8Decompressor::DecompressorParams& mParams,
 
 #pragma GCC diagnostic pop
 
+std::vector<Array1DRef<const uint8_t>>
+getInputStrips(const PanasonicV8Decompressor::DecompressorParams& mParams,
+               Buffer mInputFile) {
+  std::vector<Array1DRef<const uint8_t>> mStrips;
+
+  const int totalStrips =
+      mParams.horizontalStripCount * mParams.verticalStripCount;
+
+  for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
+    const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
+    const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
+
+    // Note: Relying on Buffer to catch OOB access attempts
+    DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize),
+                           Endianness::big);
+    mStrips.emplace_back(stripBuffer.getAsArray1DRef());
+  }
+
+  return mStrips;
+}
+
 } // namespace
 
 RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
   const PanasonicV8Decompressor::DecompressorParams mParams(raw);
   PanasonicV8Decompressor::HuffmanLUT mHuffmanLUT = populateHuffmanLUT(raw);
   std::vector<uint16_t> mGammaLUT = populateGammaLUT(mParams, raw);
+  std::vector<Array1DRef<const uint8_t>> mStrips =
+      getInputStrips(mParams, mFile);
 
-  PanasonicV8Decompressor v8(mFile, mRaw, raw, mParams, mHuffmanLUT, mGammaLUT);
+  PanasonicV8Decompressor v8(mFile, mRaw, mParams, mHuffmanLUT, mGammaLUT,
+                             mStrips);
   mRaw->createData();
   v8.decompress();
   return mRaw;
