@@ -212,15 +212,15 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
 }
 
 void PanasonicV8Decompressor::decompress() const {
-  const unsigned totalStrips =
+  const int totalStrips =
       mParams.horizontalStripCount * mParams.verticalStripCount;
 #ifdef HAVE_OPENMP
   unsigned threadCount =
-      std::min(int(totalStrips), rawspeed_get_number_of_processor_cores());
+      std::min(totalStrips, rawspeed_get_number_of_processor_cores());
 #pragma omp parallel for num_threads(threadCount)                              \
     schedule(static) default(none) shared(totalStrips)
 #endif
-  for (unsigned stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
+  for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
     try {
       const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
       const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
