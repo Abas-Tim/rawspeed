@@ -24,10 +24,8 @@
 
 #include "common/RawImage.h"
 #include "decompressors/AbstractDecompressor.h"
-#include "tiff/TiffIFD.h"
 #include <array>
 #include <cstdint>
-#include <vector>
 
 namespace rawspeed {
 
