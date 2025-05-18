@@ -200,7 +200,8 @@ void PanasonicV8Decompressor::decompressStrip(
       Array1DRef(lineBuffer.data(), implicit_cast<int>(lineBuffer.size())),
       /*width=*/2, /*height=*/out.width(), /*pitch=*/2);
 
-  Bayer2x2 predicted = mParams.initialPrediction;
+  Bayer2x2 predictedStorage = mParams.initialPrediction;
+  const auto predicted = Array2DRef(predictedStorage.data(), 2, 2);
 
   invariant(out.height() % 2 == 0);
   invariant(out.width() % 2 == 0);
@@ -210,22 +211,30 @@ void PanasonicV8Decompressor::decompressStrip(
     // because the image is encoded in rows of 2x2 CFA tiles. Likewise the
     // effective width here is 2x the strip width.
     for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
-      for (int ccIdx = 0; ccIdx != 4; ++ccIdx) {
-        int column = 4 * blockIdx + ccIdx;
-        const int32_t diff = decoder.decodeNextDiffValue();
-        const int32_t decodedValue = predicted[ccIdx] + diff;
-        assert(decodedValue > 0);
-        lineBuffer[column] = uint16_t(
-            std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
+      const auto tmpBlock = CroppedArray2DRef(tmp,
+                                              /*offsetCols=*/0,
+                                              /*offsetRows=*/2 * blockIdx,
+                                              /*croppedWidth=*/2,
+                                              /*croppedHeight=*/2)
+                                .getAsArray2DRef();
+
+      for (int j = 0; j != 2; ++j) {
+        for (int i = 0; i != 2; ++i) {
+          const int32_t diff = decoder.decodeNextDiffValue();
+          const int32_t decodedValue = predicted(j, i) + diff;
+          assert(decodedValue > 0);
+          tmpBlock(j, i) = uint16_t(
+              std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
+        }
       }
 
       // Completed decoding a 2x2 CFA tile. Update the predicted value to
       // equal the decoded value.
-      std::copy_n(&lineBuffer[4 * blockIdx], 4, predicted.data());
+      std::copy_n(&lineBuffer[4 * blockIdx], 4, predictedStorage.data());
     }
     // At the end of the line, reset predicted value to the first tile of the
     // prior line.
-    std::copy_n(&lineBuffer[0], 4, predicted.data());
+    std::copy_n(&lineBuffer[0], 4, predictedStorage.data());
 
     // Copy lineBuffer into output buffer.
     for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
