@@ -63,8 +63,9 @@ public:
 
     uint16_t gammaClipVal;
 
-    DecompressorParams() = delete;
+    void validate() const;
 
+    DecompressorParams() = delete;
     explicit DecompressorParams(const TiffIFD& ifd);
   };
 
@@ -89,9 +90,6 @@ private:
   /// Rw2V8 raw image.
   void decompressStrip(unsigned stripIdx, InternalHuffDecoder decoder,
                        Array2DRef<uint16_t> outBuffer) const;
-
-  // Helpers called from the constructor
-  void validateParams();
 
 public:
   PanasonicV8Decompressor(Buffer inputFile, RawImage outputImg,

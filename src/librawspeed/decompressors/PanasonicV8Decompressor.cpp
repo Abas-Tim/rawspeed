@@ -141,6 +141,33 @@ void getPanasonicTiffVector(const TiffIFD& ifd, TiffTag tag,
     v = bs.get<T>();
 }
 
+void PanasonicV8Decompressor::DecompressorParams::validate() const {
+  const unsigned totalStrips = horizontalStripCount * verticalStripCount;
+
+  // Check that we won't be going OOB on any of these strip lists
+  if (totalStrips > stripByteOffsets.size())
+    ThrowRDE("Strip byte offset list does not have enough entries for the "
+             "number of strips!");
+  if (totalStrips > stripWidths.size())
+    ThrowRDE("Strip widths list does not have enough entries for the number of "
+             "strips!");
+  if (totalStrips > stripHeights.size())
+    ThrowRDE("Strip heights list does not have enough entries for the number "
+             "of strips!");
+  if (totalStrips > stripLineOffsets.size())
+    ThrowRDE("Strip line offset list does not have enough entries for the "
+             "number of strips!");
+  if (totalStrips > stripBitLengths.size())
+    ThrowRDE("Strip bit length list does not have enough entries for the "
+             "number of strips!");
+
+  if (std::any_of(huffShiftDown.begin(), huffShiftDown.end(),
+                  [](uint16_t x) { return x != 0; })) {
+    ThrowRDE("Non-zero shift down value encountered! Shift down decoding has "
+             "never been tested!");
+  }
+}
+
 PanasonicV8Decompressor::DecompressorParams::DecompressorParams(
     const TiffIFD& ifd) {
   // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
@@ -177,6 +204,8 @@ PanasonicV8Decompressor::DecompressorParams::DecompressorParams(
 
   gammaClipVal = ifd.getEntry(TiffTag::PANASONIC_V8_CLIP_VAL)->getU16();
   // NOLINTEND(cppcoreguidelines-prefer-member-initializer)
+
+  validate();
 }
 
 namespace {
@@ -220,7 +249,6 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
     ThrowRDE("Unexpected component count / data type");
   }
 
-  validateParams();
   mHuffmanLUT = populateHuffmanLUT(ifd);
   mGammaLUT = populateGammaLUT(mParams, ifd);
 }
@@ -367,34 +395,6 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
   // diffBitCount of zero indicates no difference (next pixel is same as
   // predicted)
   return 0;
-}
-
-void PanasonicV8Decompressor::validateParams() {
-  const unsigned totalStrips =
-      mParams.horizontalStripCount * mParams.verticalStripCount;
-
-  // Check that we won't be going OOB on any of these strip lists
-  if (totalStrips > mParams.stripByteOffsets.size())
-    ThrowRDE("Strip byte offset list does not have enough entries for the "
-             "number of strips!");
-  if (totalStrips > mParams.stripWidths.size())
-    ThrowRDE("Strip widths list does not have enough entries for the number of "
-             "strips!");
-  if (totalStrips > mParams.stripHeights.size())
-    ThrowRDE("Strip heights list does not have enough entries for the number "
-             "of strips!");
-  if (totalStrips > mParams.stripLineOffsets.size())
-    ThrowRDE("Strip line offset list does not have enough entries for the "
-             "number of strips!");
-  if (totalStrips > mParams.stripBitLengths.size())
-    ThrowRDE("Strip bit length list does not have enough entries for the "
-             "number of strips!");
-
-  if (std::any_of(mParams.huffShiftDown.begin(), mParams.huffShiftDown.end(),
-                  [](uint16_t x) { return x != 0; })) {
-    ThrowRDE("Non-zero shift down value encountered! Shift down decoding has "
-             "never been tested!");
-  }
 }
 
 namespace {
