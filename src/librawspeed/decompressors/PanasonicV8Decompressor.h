@@ -93,7 +93,9 @@ private:
 
 public:
   PanasonicV8Decompressor(Buffer inputFile, RawImage outputImg,
-                          const TiffIFD& ifd);
+                          const TiffIFD& ifd, DecompressorParams mParams_,
+                          HuffmanLUT mHuffmanLUT_,
+                          std::vector<uint16_t> mGammaLUT_);
 
   /// Run the decompressor on the provided raw image
   void decompress() const;

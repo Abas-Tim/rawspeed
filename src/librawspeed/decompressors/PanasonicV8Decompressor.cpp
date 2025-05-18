@@ -34,11 +34,9 @@
 #include "common/RawspeedException.h"
 #include "decoders/RawDecoderException.h"
 #include "io/Buffer.h"
-#include "io/ByteStream.h"
 #include "io/Endianness.h"
 #include "io/IOException.h"
 #include "tiff/TiffIFD.h"
-#include "tiff/TiffTag.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -128,95 +126,6 @@ public:
   using Base::Base;
 };
 
-/// Retrieve list of values from Panasonic TiffTag
-template <typename T>
-void getPanasonicTiffVector(const TiffIFD& ifd, TiffTag tag,
-                            std::vector<T>& output) {
-  ByteStream bs = ifd.getEntry(tag)->getData();
-  output.resize(bs.getU16());
-
-  // Note: Relying on ByteStream and its parent classes to prevent out-of-bounds
-  // reading.
-  for (T& v : output)
-    v = bs.get<T>();
-}
-
-void PanasonicV8Decompressor::DecompressorParams::validate() const {
-  const unsigned totalStrips = horizontalStripCount * verticalStripCount;
-
-  // Check that we won't be going OOB on any of these strip lists
-  if (totalStrips > stripByteOffsets.size())
-    ThrowRDE("Strip byte offset list does not have enough entries for the "
-             "number of strips!");
-  if (totalStrips > stripWidths.size())
-    ThrowRDE("Strip widths list does not have enough entries for the number of "
-             "strips!");
-  if (totalStrips > stripHeights.size())
-    ThrowRDE("Strip heights list does not have enough entries for the number "
-             "of strips!");
-  if (totalStrips > stripLineOffsets.size())
-    ThrowRDE("Strip line offset list does not have enough entries for the "
-             "number of strips!");
-  if (totalStrips > stripBitLengths.size())
-    ThrowRDE("Strip bit length list does not have enough entries for the "
-             "number of strips!");
-
-  if (std::any_of(huffShiftDown.begin(), huffShiftDown.end(),
-                  [](uint16_t x) { return x != 0; })) {
-    ThrowRDE("Non-zero shift down value encountered! Shift down decoding has "
-             "never been tested!");
-  }
-}
-
-PanasonicV8Decompressor::DecompressorParams::DecompressorParams(
-    const TiffIFD& ifd) {
-  // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
-  horizontalStripCount =
-      ifd.getEntry(TiffTag::PANASONIC_V8_NUMBER_OF_STRIPS_H)->getU16();
-  verticalStripCount =
-      ifd.getEntry(TiffTag::PANASONIC_V8_NUMBER_OF_STRIPS_V)->getU16();
-
-  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_BYTE_OFFSETS,
-                         stripByteOffsets);
-  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_LINE_OFFSETS,
-                         stripLineOffsets);
-  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_DATA_SIZE,
-                         stripBitLengths);
-  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_WIDTHS, stripWidths);
-  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_HEIGHTS,
-                         stripHeights);
-
-  // Get decoder's initial prediction value:
-  // Note, the positions of the green samples are swapped. This is intentional,
-  // the original implementation did this each swap redundantly during decoding
-  // of each tile.
-  initialPrediction[0] =
-      ifd.getEntry(TiffTag::PANASONIC_V8_INIT_PRED_RED)->getU16();
-  initialPrediction[2] =
-      ifd.getEntry(TiffTag::PANASONIC_V8_INIT_PRED_GREEN1)->getU16();
-  initialPrediction[1] =
-      ifd.getEntry(TiffTag::PANASONIC_V8_INIT_PRED_GREEN2)->getU16();
-  initialPrediction[3] =
-      ifd.getEntry(TiffTag::PANASONIC_V8_INIT_PRED_BLUE)->getU16();
-
-  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_HUF_SHIFT_DOWN,
-                         huffShiftDown);
-
-  gammaClipVal = ifd.getEntry(TiffTag::PANASONIC_V8_CLIP_VAL)->getU16();
-  // NOLINTEND(cppcoreguidelines-prefer-member-initializer)
-
-  validate();
-}
-
-namespace {
-
-PanasonicV8Decompressor::HuffmanLUT populateHuffmanLUT(const TiffIFD& ifd);
-std::vector<uint16_t>
-populateGammaLUT(const PanasonicV8Decompressor::DecompressorParams& mParams,
-                 const TiffIFD& ifd);
-
-} // namespace
-
 /// Utility class for Panasonic V8 entropy decoding
 class PanasonicV8Decompressor::InternalHuffDecoder {
 private:
@@ -238,19 +147,18 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Constructor populates decompressor parameters with values from ifd
-PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
-                                                 RawImage outputImg,
-                                                 const TiffIFD& ifd)
+PanasonicV8Decompressor::PanasonicV8Decompressor(
+    Buffer inputFile, RawImage outputImg, const TiffIFD& ifd,
+    DecompressorParams mParams_, HuffmanLUT mHuffmanLUT_,
+    std::vector<uint16_t> mGammaLUT_)
     : mInputFile(inputFile), mRawOutput(std::move(outputImg)),
-      mParams(DecompressorParams(ifd)) {
+      mParams(std::move(mParams_)), mHuffmanLUT(std::move(mHuffmanLUT_)),
+      mGammaLUT(std::move(mGammaLUT_)) {
   if (mRawOutput->getCpp() != 1 ||
       mRawOutput->getDataType() != RawImageType::UINT16 ||
       mRawOutput->getBpp() != sizeof(uint16_t)) {
     ThrowRDE("Unexpected component count / data type");
   }
-
-  mHuffmanLUT = populateHuffmanLUT(ifd);
-  mGammaLUT = populateGammaLUT(mParams, ifd);
 }
 
 void PanasonicV8Decompressor::decompress() const {
@@ -396,162 +304,5 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
   // predicted)
   return 0;
 }
-
-namespace {
-
-PanasonicV8Decompressor::HuffmanLUT populateHuffmanLUT(const TiffIFD& ifd) {
-  PanasonicV8Decompressor::HuffmanLUT mHuffmanLUT;
-
-  ByteStream stream = ifd.getEntry(TiffTag::PANASONIC_V8_HUF_TABLE)->getData();
-
-  struct HuffEntry {
-    uint16_t bitcount, symbol, mask;
-  };
-  std::vector<HuffEntry> huffTable(stream.getU16());
-
-  for (HuffEntry& entry : huffTable) {
-    entry.bitcount = stream.getU16(); // Number of bits in symbol
-    entry.symbol = uint16_t(stream.getU16() << (16U - entry.bitcount));
-    entry.mask = uint16_t(
-        0xffffU << (16U -
-                    entry.bitcount)); // mask of the bits overlapping symbol
-  }
-
-  // Cache of Huffman table results for all possible 16-bit values.
-  mHuffmanLUT.resize(1 + UINT16_MAX);
-
-  // Populates LUT by checking for a bitwise match between each value and the
-  // prefix codes recorded in the table.
-  for (unsigned li = 0; li < mHuffmanLUT.size(); ++li) {
-    PanasonicV8Decompressor::HuffmanLUTEntry& lutVal = mHuffmanLUT[li];
-    for (unsigned ti = 0; ti < huffTable.size(); ++ti) {
-      if ((uint16_t(li) & huffTable[ti].mask) == huffTable[ti].symbol) {
-        lutVal.bitcount = uint8_t(huffTable[ti].bitcount);
-        lutVal.diffCat = uint8_t(ti);
-        break;
-      }
-    }
-  }
-
-  return mHuffmanLUT;
-}
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunreachable-code"
-/// Maybe the most complicated part of the entire file format, and seemingly,
-/// completely unused.
-std::vector<uint16_t>
-populateGammaLUT(const PanasonicV8Decompressor::DecompressorParams& mParams,
-                 const TiffIFD& ifd) {
-  std::vector<uint16_t> mGammaLUT;
-
-  // Retrieve encoded gamma curve from tags.
-  std::vector<uint32_t> encodedGammaPoints;
-  std::vector<uint32_t> encodedGammaSlopes;
-  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_GAMMA_POINTS,
-                         encodedGammaPoints);
-  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_GAMMA_SLOPES,
-                         encodedGammaSlopes);
-
-  // Determine if the points and slopes are all set to zero and 65536
-  // respectively. If so, no gamma function needs to be applied. This is
-  // currently true of all tested RW2 files.
-  const bool gamamPointsAreIdentity =
-      std::all_of(encodedGammaPoints.cbegin(), encodedGammaPoints.cend(),
-                  [](const uint32_t p) { return p == 0U; });
-  const bool gammaSlopesAreIdentity =
-      std::all_of(encodedGammaSlopes.cbegin(), encodedGammaSlopes.cend(),
-                  [](const uint32_t s) { return s == 65536U; });
-
-  if (!gamamPointsAreIdentity || !gammaSlopesAreIdentity) {
-    // Generate gamma LUT based on retrieved curve.
-    ThrowRDE("Non-identity gamma curve encountered. Never encountered in any "
-             "testing samples!");
-
-    if (encodedGammaPoints.size() != 6 || encodedGammaSlopes.size() != 6) {
-      ThrowRDE("Gamma curve point and/or slope list is not the expected length "
-               "of 6");
-    }
-
-    // Decode point and slope lists. Defines a piece-wise function for the gamma
-    // curve. Each point is an x,y intercept of a line segment with slope
-    // encoded with a power of two exponent and sign bit. The x position of the
-    // points must be ordered such that together they create six non-overlapping
-    // intervals covering [0, UINT16_MAX].
-    struct GammaPoint {
-      uint16_t x, y;
-    };
-    struct GammaSlope {
-      uint8_t sign, exp;
-    };
-    std::array<GammaPoint, 6> gammaPoints;
-    std::array<GammaSlope, 6> gammaSlopes;
-    for (unsigned i = 0; i < 6; ++i) {
-      gammaPoints[i] = {uint16_t(encodedGammaPoints[i] & 0xFFFF),
-                        uint16_t(encodedGammaPoints[i] >> 16)};
-      gammaSlopes[i].sign = encodedGammaSlopes[i] & 0x10 ? 1 : 0;
-      gammaSlopes[i].exp = uint8_t(encodedGammaSlopes[i] & 0x0F);
-    }
-
-    // Validate that the points are non-strictly ordered
-    const bool pointsAreOrdered = std::is_sorted(
-        gammaPoints.cbegin(), gammaPoints.cend(),
-        [](const GammaPoint& a, const GammaPoint& b) { return a.x <= b.x; });
-    if (!pointsAreOrdered) {
-      ThrowRDE("Points in the gamma curve are out of order!");
-    }
-
-    // Evaluates the gamma curve for value x in the piece-wise function segment
-    // 'i'
-    const auto fnGamma = [&](const uint32_t x, const unsigned i) -> uint16_t {
-      assert(i < gammaPoints.size());
-      const GammaPoint& pt = gammaPoints[i];
-      const GammaSlope& slope = gammaSlopes[i];
-
-      uint32_t mx = 0;
-      if (slope.exp == 15 && slope.sign == 1) {
-        // An exponent of 15 and sign of 1 signals a special case where mx
-        // becomes the y-intercept of the next curve segment or UINT16_MAX if
-        // there is no next segment.
-        mx = i <= 5 ? gammaPoints[i + 1].y : UINT16_MAX;
-      } else if (slope.exp == 0) {
-        // Exponent is zero, meaning the slope is 1 (no multiplication).
-        mx = x - pt.x;
-      } else if (slope.sign == 1) {
-        mx = (x - pt.x) << slope.exp; // Positive slope
-      } else {
-        // Negative slope
-        uint32_t h =
-            1 << (slope.exp - 1); // Add slope/2 so that integer arithmetic for
-                                  // `mx` will round correctly.
-        mx = (x - pt.x + h) >> slope.exp;
-      }
-
-      // Add y-intercept and clamp to clipping value.
-      return uint16_t(std::min(uint32_t(mParams.gammaClipVal), mx + pt.y));
-    };
-
-    mGammaLUT.resize(1 + UINT16_MAX);
-
-    unsigned interval = 0;
-    // Evaluate the gamma curve for all uint16_t values.
-    for (uint32_t x = 0; x <= UINT16_MAX; ++x) {
-      // Advance interval as needed, skipping over possible redundant intervals.
-      while (interval + 1 < gammaPoints.size() &&
-             x >= gammaPoints[interval + 1].x)
-        ++interval;
-      assert(gammaPoints[interval].x <= x);
-      assert(interval + 1 == gammaPoints.size() ||
-             gammaPoints[interval + 1].x > x);
-      mGammaLUT[x] = fnGamma(x, interval);
-    }
-  }
-
-  return mGammaLUT;
-}
-
-#pragma GCC diagnostic pop
-
-} // namespace
 
 } // namespace rawspeed
