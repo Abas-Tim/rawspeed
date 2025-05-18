@@ -24,6 +24,7 @@
 #include "decompressors/PanasonicV8Decompressor.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
+#include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
 #include "bitstreams/BitStream.h"
 #include "bitstreams/BitStreamer.h"
@@ -194,6 +195,11 @@ void PanasonicV8Decompressor::decompress() const {
 void PanasonicV8Decompressor::decompressStrip(
     const Array2DRef<uint16_t> out, InternalHuffDecoder decoder) const {
   std::vector<uint16_t> lineBuffer(2 * out.width());
+
+  const auto tmp = Array2DRef(
+      Array1DRef(lineBuffer.data(), implicit_cast<int>(lineBuffer.size())),
+      /*width=*/2, /*height=*/out.width(), /*pitch=*/2);
+
   Bayer2x2 predicted = mParams.initialPrediction;
 
   for (int row = 0; row < out.height(); row += 2) {
@@ -223,10 +229,17 @@ void PanasonicV8Decompressor::decompressStrip(
     for (int linePos = 0; linePos < 2 * out.width(); linePos += 4) {
       const int dstStartCol = linePos / 2;
 
-      out(row + 0, dstStartCol + 0) = lineBuffer[linePos + 0]; // Top Red
-      out(row + 0, dstStartCol + 1) = lineBuffer[linePos + 2]; // Top Green
-      out(row + 1, dstStartCol + 0) = lineBuffer[linePos + 1]; // Bottom Green
-      out(row + 1, dstStartCol + 1) = lineBuffer[linePos + 3]; // Bottom Blue
+      const auto tmpBlock = CroppedArray2DRef(tmp,
+                                              /*offsetCols=*/0,
+                                              /*offsetRows=*/dstStartCol,
+                                              /*croppedWidth=*/2,
+                                              /*croppedHeight=*/2)
+                                .getAsArray2DRef();
+
+      out(row + 0, dstStartCol + 0) = tmpBlock(0, 0); // Top Red
+      out(row + 0, dstStartCol + 1) = tmpBlock(1, 0); // Top Green
+      out(row + 1, dstStartCol + 0) = tmpBlock(0, 1); // Bottom Green
+      out(row + 1, dstStartCol + 1) = tmpBlock(1, 1); // Bottom Blue
     }
     // TODO: Investigate if it makes sense performance wise to structure
     // lineBuffer such that it can be memcpy'd into the output Buffer.
