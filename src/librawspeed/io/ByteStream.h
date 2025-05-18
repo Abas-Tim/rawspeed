@@ -161,6 +161,14 @@ public:
     return ret;
   }
 
+  template <typename T, int N> std::array<T, N> getArray() {
+    std::array<T, N> out;
+    auto bs = getStream(N, sizeof(T));
+    std::generate(out.begin(), out.end(), [&bs]() { return bs.get<T>(); });
+    invariant(bs.getRemainSize() == 0);
+    return out;
+  }
+
   [[nodiscard]] uint8_t peekByte(size_type i = 0) const {
     return peek<uint8_t>(i);
   }

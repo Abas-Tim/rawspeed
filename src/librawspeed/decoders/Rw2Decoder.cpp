@@ -21,6 +21,7 @@
 
 #include "decoders/Rw2Decoder.h"
 #include "adt/Array1DRef.h"
+#include "adt/Array1DRefExtras.h"
 #include "adt/Array2DRef.h"
 #include "adt/CroppedArray2DRef.h"
 #include "adt/Point.h"
@@ -70,11 +71,6 @@ bool Rw2Decoder::isAppropriateDecoder(const TiffRootIFD* rootIFD,
 }
 
 namespace {
-
-template <typename T>
-[[nodiscard]] Array1DRef<const T> getAsArray1DRef(const std::vector<T>& vec) {
-  return {vec.data(), implicit_cast<int>(vec.size())};
-}
 
 /// Retrieve list of values from Panasonic TiffTag
 template <typename T>
