@@ -144,6 +144,39 @@ public:
   int32_t decodeNextDiffValue();
 };
 
+namespace {
+
+std::vector<Array1DRef<const uint8_t>>
+getInputStrips(const PanasonicV8Decompressor::DecompressorParams& mParams,
+               Buffer mInputFile, const RawImage& mRawOutput) {
+  std::vector<Array1DRef<const uint8_t>> mStrips;
+
+  const int totalStrips =
+      mParams.horizontalStripCount * mParams.verticalStripCount;
+
+  for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
+    try {
+      const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
+      const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
+
+      // Note: Relying on Buffer to catch OOB access attempts
+      DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize),
+                             Endianness::big);
+      mStrips.emplace_back(stripBuffer.getAsArray1DRef());
+    } catch (const RawspeedException& err) {
+      // Propagate the exception out of OpenMP magic.
+      mRawOutput->setError(err.what());
+    } catch (...) {
+      // We should not get any other exception type here.
+      __builtin_unreachable();
+    }
+  }
+
+  return mStrips;
+}
+
+} // namespace
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Constructor populates decompressor parameters with values from ifd
@@ -151,9 +184,9 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(
     Buffer inputFile, RawImage outputImg, const TiffIFD& ifd,
     DecompressorParams mParams_, HuffmanLUT mHuffmanLUT_,
     std::vector<uint16_t> mGammaLUT_)
-    : mInputFile(inputFile), mRawOutput(std::move(outputImg)),
-      mParams(std::move(mParams_)), mHuffmanLUT(std::move(mHuffmanLUT_)),
-      mGammaLUT(std::move(mGammaLUT_)) {
+    : mRawOutput(std::move(outputImg)), mParams(std::move(mParams_)),
+      mHuffmanLUT(std::move(mHuffmanLUT_)), mGammaLUT(std::move(mGammaLUT_)),
+      mStrips(getInputStrips(mParams, inputFile, mRawOutput)) {
   if (mRawOutput->getCpp() != 1 ||
       mRawOutput->getDataType() != RawImageType::UINT16 ||
       mRawOutput->getBpp() != sizeof(uint16_t)) {
@@ -172,14 +205,9 @@ void PanasonicV8Decompressor::decompress() const {
 #endif
   for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
     try {
-      const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
-      const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
+      Array1DRef<const uint8_t> strip = mStrips[stripIdx];
 
-      // Note: Relying on Buffer to catch OOB access attempts
-      DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize),
-                             Endianness::big);
-      InternalHuffDecoder decoder(mHuffmanLUT, mParams.huffShiftDown,
-                                  stripBuffer.getAsArray1DRef());
+      InternalHuffDecoder decoder(mHuffmanLUT, mParams.huffShiftDown, strip);
 
       decompressStrip(stripIdx, decoder,
                       mRawOutput->getU16DataAsUncroppedArray2DRef());

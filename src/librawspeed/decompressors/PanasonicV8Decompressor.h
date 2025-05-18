@@ -42,7 +42,6 @@ namespace rawspeed {
 /// actual value, allowing the actual value to be reconstructed.
 class PanasonicV8Decompressor final : public AbstractDecompressor {
 private:
-  Buffer mInputFile;
   mutable RawImage mRawOutput;
 
 public:
@@ -82,6 +81,8 @@ private:
   // Lookup table for the raw's gamma curve. Appears to be unused.
   // All known samples utilize an identity function.
   std::vector<uint16_t> mGammaLUT;
+
+  std::vector<Array1DRef<const uint8_t>> mStrips;
 
   /// Huffman decoder helper class. Defined only in the cpp file.
   class InternalHuffDecoder;
