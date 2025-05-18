@@ -194,14 +194,14 @@ void PanasonicV8Decompressor::decompress() const {
 void PanasonicV8Decompressor::decompressStrip(
     const Array2DRef<uint16_t> out, InternalHuffDecoder decoder) const {
   Bayer2x2 predictedStorage = mParams.initialPrediction;
-  const auto predicted = Array2DRef(predictedStorage.data(), 2, 2);
+  const auto pred = Array2DRef(predictedStorage.data(), 2, 2);
 
   invariant(out.height() % 2 == 0);
   invariant(out.width() % 2 == 0);
 
   for (int j = 0; j != 2; ++j)
     for (int i = 0; i != 2; ++i)
-      predicted(i, j) = predicted(j, i);
+      pred(i, j) = pred(j, i);
 
   for (int rowGroup = 0; rowGroup < out.height() / 2; ++rowGroup) {
     const auto outRow = CroppedArray2DRef(out,
@@ -225,11 +225,11 @@ void PanasonicV8Decompressor::decompressStrip(
       for (int j = 0; j != 2; ++j) {
         for (int i = 0; i != 2; ++i) {
           const int32_t diff = decoder.decodeNextDiffValue();
-          const int32_t decodedValue = predicted(i, j) + diff;
+          const int32_t decodedValue = pred(i, j) + diff;
           assert(decodedValue > 0);
-          predicted(i, j) = uint16_t(
+          pred(i, j) = uint16_t(
               std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
-          outBlock(i, j) = predicted(i, j);
+          outBlock(i, j) = pred(i, j);
         }
       }
     }
@@ -245,7 +245,7 @@ void PanasonicV8Decompressor::decompressStrip(
     // prior line.
     for (int j = 0; j != 2; ++j)
       for (int i = 0; i != 2; ++i)
-        predicted(i, j) = tmp(i, j);
+        pred(i, j) = tmp(i, j);
   }
 }
 
