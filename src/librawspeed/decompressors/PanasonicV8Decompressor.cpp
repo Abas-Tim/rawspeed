@@ -24,8 +24,8 @@
 #include "decompressors/PanasonicV8Decompressor.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
-#include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
+#include "adt/TiledArray2DRef.h"
 #include "bitstreams/BitStream.h"
 #include "bitstreams/BitStreamer.h"
 #include "bitstreams/BitStreamerMSB.h" // IWYU pragma: keep
@@ -197,24 +197,24 @@ void PanasonicV8Decompressor::decompressStrip(
     for (int i = 0; i != 2; ++i)
       pred(i, j) = pred(j, i);
 
-  for (int rowGroup = 0; rowGroup < out.height() / 2; ++rowGroup) {
-    const auto outRow = CroppedArray2DRef(out,
-                                          /*offsetCols=*/0,
-                                          /*offsetRows=*/2 * rowGroup,
-                                          /*croppedWidth=*/out.width(),
-                                          /*croppedHeight=*/2)
-                            .getAsArray2DRef();
+  const auto rowGroups = TiledArray2DRef(out,
+                                         /*tileWidth=*/out.width(),
+                                         /*tileHeight_=*/2);
+
+  invariant(rowGroups.numCols() == 1);
+  for (int rowGroup = 0; rowGroup != rowGroups.numRows(); ++rowGroup) {
+    const auto outRow = rowGroups(rowGroup, 0).getAsArray2DRef();
+
+    const auto outBlocks = TiledArray2DRef(outRow,
+                                           /*tileWidth=*/2,
+                                           /*tileHeight=*/2);
 
     // Each decoded 'row' is actually two rows of pixels in the raw image
     // because the image is encoded in rows of 2x2 CFA tiles. Likewise the
     // effective width here is 2x the strip width.
-    for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
-      const auto outBlock = CroppedArray2DRef(outRow,
-                                              /*offsetCols=*/2 * blockIdx,
-                                              /*offsetRows=*/0,
-                                              /*croppedWidth=*/2,
-                                              /*croppedHeight=*/2)
-                                .getAsArray2DRef();
+    invariant(outBlocks.numRows() == 1);
+    for (int blockIdx = 0; blockIdx < outBlocks.numCols(); ++blockIdx) {
+      const auto outBlock = outBlocks(0, blockIdx).getAsArray2DRef();
 
       for (int j = 0; j != 2; ++j) {
         for (int i = 0; i != 2; ++i) {
@@ -228,15 +228,9 @@ void PanasonicV8Decompressor::decompressStrip(
       }
     }
 
-    const auto tmp = CroppedArray2DRef(outRow,
-                                       /*offsetCols=*/0,
-                                       /*offsetRows=*/0,
-                                       /*croppedWidth=*/2,
-                                       /*croppedHeight=*/2)
-                         .getAsArray2DRef();
-
     // At the end of the line, reset predicted value to the first tile of the
     // prior line.
+    const auto tmp = outBlocks(0, 0).getAsArray2DRef();
     for (int j = 0; j != 2; ++j)
       for (int i = 0; i != 2; ++i)
         pred(i, j) = tmp(i, j);
