@@ -61,7 +61,9 @@ private:
     std::vector<uint16_t> huffShiftDown;
 
     uint16_t gammaClipVal;
-  } mParams;
+  };
+
+  DecompressorParams mParams;
 
   // Pre-cached Huffman decoded values for rapid lookup.
   struct HuffmanLUTEntry {
