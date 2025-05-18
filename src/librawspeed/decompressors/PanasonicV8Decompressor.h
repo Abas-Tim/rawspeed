@@ -54,8 +54,6 @@ public:
 
     const Bayer2x2 initialPrediction;
 
-    const uint16_t gammaClipVal;
-
     void validate() const;
   };
 

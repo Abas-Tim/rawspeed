@@ -48,6 +48,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -137,6 +138,12 @@ void DecompressorV8Params::validate() const {
                   [](uint16_t x) { return x != 0; })) {
     ThrowRDE("Non-zero shift down value encountered! Shift down decoding has "
              "never been tested!");
+  }
+
+  if (gammaClipVal != std::numeric_limits<uint16_t>::max()) {
+    ThrowRDE("Got non-no-op gammaClipVal (%u). Not known to happen "
+             "in-the-wild. Please file a bug!",
+             gammaClipVal);
   }
 }
 
@@ -325,7 +332,6 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
       .mStrips = getAsArray1DRef(mStrips),
       .mOutTiles = getAsArray1DRef(mOutTiles),
       .initialPrediction = mParams.initialPrediction,
-      .gammaClipVal = mParams.gammaClipVal,
   };
 
   PanasonicV8Decompressor v8(mRaw, mParams2, getAsArray1DRef(mHuffmanLUT));
