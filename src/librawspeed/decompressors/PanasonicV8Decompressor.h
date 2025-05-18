@@ -62,6 +62,10 @@ public:
     std::vector<uint16_t> huffShiftDown;
 
     uint16_t gammaClipVal;
+
+    DecompressorParams() = delete;
+
+    explicit DecompressorParams(const TiffIFD& ifd);
   };
 
   // Pre-cached Huffman decoded values for rapid lookup.

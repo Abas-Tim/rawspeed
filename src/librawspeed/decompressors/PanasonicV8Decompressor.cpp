@@ -141,48 +141,45 @@ void getPanasonicTiffVector(const TiffIFD& ifd, TiffTag tag,
     v = bs.get<T>();
 }
 
-namespace {
-
-PanasonicV8Decompressor::DecompressorParams
-getDecompressorParams(const TiffIFD& ifd) {
-  PanasonicV8Decompressor::DecompressorParams mParams;
-
-  mParams.horizontalStripCount =
+PanasonicV8Decompressor::DecompressorParams::DecompressorParams(
+    const TiffIFD& ifd) {
+  // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
+  horizontalStripCount =
       ifd.getEntry(TiffTag::PANASONIC_V8_NUMBER_OF_STRIPS_H)->getU16();
-  mParams.verticalStripCount =
+  verticalStripCount =
       ifd.getEntry(TiffTag::PANASONIC_V8_NUMBER_OF_STRIPS_V)->getU16();
 
   getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_BYTE_OFFSETS,
-                         mParams.stripByteOffsets);
+                         stripByteOffsets);
   getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_LINE_OFFSETS,
-                         mParams.stripLineOffsets);
+                         stripLineOffsets);
   getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_DATA_SIZE,
-                         mParams.stripBitLengths);
-  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_WIDTHS,
-                         mParams.stripWidths);
+                         stripBitLengths);
+  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_WIDTHS, stripWidths);
   getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_STRIP_HEIGHTS,
-                         mParams.stripHeights);
+                         stripHeights);
 
   // Get decoder's initial prediction value:
   // Note, the positions of the green samples are swapped. This is intentional,
   // the original implementation did this each swap redundantly during decoding
   // of each tile.
-  mParams.initialPrediction[0] =
+  initialPrediction[0] =
       ifd.getEntry(TiffTag::PANASONIC_V8_INIT_PRED_RED)->getU16();
-  mParams.initialPrediction[2] =
+  initialPrediction[2] =
       ifd.getEntry(TiffTag::PANASONIC_V8_INIT_PRED_GREEN1)->getU16();
-  mParams.initialPrediction[1] =
+  initialPrediction[1] =
       ifd.getEntry(TiffTag::PANASONIC_V8_INIT_PRED_GREEN2)->getU16();
-  mParams.initialPrediction[3] =
+  initialPrediction[3] =
       ifd.getEntry(TiffTag::PANASONIC_V8_INIT_PRED_BLUE)->getU16();
 
   getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_HUF_SHIFT_DOWN,
-                         mParams.huffShiftDown);
+                         huffShiftDown);
 
-  mParams.gammaClipVal = ifd.getEntry(TiffTag::PANASONIC_V8_CLIP_VAL)->getU16();
-
-  return mParams;
+  gammaClipVal = ifd.getEntry(TiffTag::PANASONIC_V8_CLIP_VAL)->getU16();
+  // NOLINTEND(cppcoreguidelines-prefer-member-initializer)
 }
+
+namespace {
 
 PanasonicV8Decompressor::HuffmanLUT populateHuffmanLUT(const TiffIFD& ifd);
 std::vector<uint16_t>
@@ -216,7 +213,7 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
                                                  RawImage outputImg,
                                                  const TiffIFD& ifd)
     : mInputFile(inputFile), mRawOutput(std::move(outputImg)),
-      mParams(getDecompressorParams(ifd)) {
+      mParams(DecompressorParams(ifd)) {
   if (mRawOutput->getCpp() != 1 ||
       mRawOutput->getDataType() != RawImageType::UINT16 ||
       mRawOutput->getBpp() != sizeof(uint16_t)) {
