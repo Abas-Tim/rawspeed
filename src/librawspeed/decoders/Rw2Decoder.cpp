@@ -81,9 +81,34 @@ void getPanasonicTiffVector(const TiffIFD& ifd, TiffTag tag,
     v = bs.get<T>();
 }
 
-} // namespace
+/// Decompressor parameters populated from tags. They remain constant after
+/// construction.
+struct DecompressorV8Params {
+  std::vector<uint32_t> stripByteOffsets;
+  std::vector<uint32_t> stripLineOffsets;
+  std::vector<uint32_t> stripBitLengths;
+  std::vector<uint16_t> stripWidths;
+  std::vector<uint16_t> stripHeights;
+  uint16_t horizontalStripCount;
+  uint16_t verticalStripCount;
 
-void PanasonicV8Decompressor::DecompressorParams::validate() const {
+  PanasonicV8Decompressor::Bayer2x2 initialPrediction;
+
+  /// Huffman decoding shift down value. Appears to be unused.
+  std::vector<uint16_t> huffShiftDown;
+
+  uint16_t gammaClipVal;
+
+  void validate() const;
+
+  DecompressorV8Params() = delete;
+
+  explicit DecompressorV8Params(const TiffIFD& ifd);
+
+  explicit operator PanasonicV8Decompressor::DecompressorParams() const;
+};
+
+void DecompressorV8Params::validate() const {
   const unsigned totalStrips = horizontalStripCount * verticalStripCount;
 
   // Check that we won't be going OOB on any of these strip lists
@@ -110,8 +135,7 @@ void PanasonicV8Decompressor::DecompressorParams::validate() const {
   }
 }
 
-PanasonicV8Decompressor::DecompressorParams::DecompressorParams(
-    const TiffIFD& ifd) {
+DecompressorV8Params::DecompressorV8Params(const TiffIFD& ifd) {
   // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
   horizontalStripCount =
       ifd.getEntry(TiffTag::PANASONIC_V8_NUMBER_OF_STRIPS_H)->getU16();
@@ -150,7 +174,20 @@ PanasonicV8Decompressor::DecompressorParams::DecompressorParams(
   validate();
 }
 
-namespace {
+DecompressorV8Params::operator PanasonicV8Decompressor::DecompressorParams()
+    const {
+  PanasonicV8Decompressor::DecompressorParams mParams;
+
+  mParams.stripLineOffsets = stripLineOffsets;
+  mParams.stripWidths = stripWidths;
+  mParams.stripHeights = stripHeights;
+  mParams.horizontalStripCount = horizontalStripCount;
+  mParams.verticalStripCount = verticalStripCount;
+  mParams.initialPrediction = initialPrediction;
+  mParams.gammaClipVal = gammaClipVal;
+
+  return mParams;
+}
 
 PanasonicV8Decompressor::HuffmanLUT populateHuffmanLUT(const TiffIFD& ifd) {
   PanasonicV8Decompressor::HuffmanLUT mHuffmanLUT;
@@ -191,9 +228,7 @@ PanasonicV8Decompressor::HuffmanLUT populateHuffmanLUT(const TiffIFD& ifd) {
 
 /// Maybe the most complicated part of the entire file format, and seemingly,
 /// completely unused.
-void populateGammaLUT(
-    const PanasonicV8Decompressor::DecompressorParams& mParams,
-    const TiffIFD& ifd) {
+void populateGammaLUT(const DecompressorV8Params& mParams, const TiffIFD& ifd) {
   std::vector<uint16_t> mGammaLUT;
 
   // Retrieve encoded gamma curve from tags.
@@ -230,8 +265,7 @@ void populateGammaLUT(
 }
 
 std::vector<Array1DRef<const uint8_t>>
-getInputStrips(const PanasonicV8Decompressor::DecompressorParams& mParams,
-               Buffer mInputFile) {
+getInputStrips(const DecompressorV8Params& mParams, Buffer mInputFile) {
   std::vector<Array1DRef<const uint8_t>> mStrips;
 
   const int totalStrips =
@@ -253,13 +287,15 @@ getInputStrips(const PanasonicV8Decompressor::DecompressorParams& mParams,
 } // namespace
 
 RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
-  const PanasonicV8Decompressor::DecompressorParams mParams(raw);
+  const DecompressorV8Params mParams(raw);
   PanasonicV8Decompressor::HuffmanLUT mHuffmanLUT = populateHuffmanLUT(raw);
   populateGammaLUT(mParams, raw);
   std::vector<Array1DRef<const uint8_t>> mStrips =
       getInputStrips(mParams, mFile);
 
-  PanasonicV8Decompressor v8(mFile, mRaw, mParams, mHuffmanLUT, mStrips);
+  PanasonicV8Decompressor::DecompressorParams mParams2(mParams);
+
+  PanasonicV8Decompressor v8(mFile, mRaw, mParams2, mHuffmanLUT, mStrips);
   mRaw->createData();
   v8.decompress();
   return mRaw;

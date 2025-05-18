@@ -51,9 +51,7 @@ public:
   /// Decompressor parameters populated from tags. They remain constant after
   /// construction.
   struct DecompressorParams {
-    std::vector<uint32_t> stripByteOffsets;
     std::vector<uint32_t> stripLineOffsets;
-    std::vector<uint32_t> stripBitLengths;
     std::vector<uint16_t> stripWidths;
     std::vector<uint16_t> stripHeights;
     uint16_t horizontalStripCount;
@@ -61,15 +59,9 @@ public:
 
     Bayer2x2 initialPrediction;
 
-    /// Huffman decoding shift down value. Appears to be unused.
-    std::vector<uint16_t> huffShiftDown;
-
     uint16_t gammaClipVal;
 
     void validate() const;
-
-    DecompressorParams() = delete;
-    explicit DecompressorParams(const TiffIFD& ifd);
   };
 
   // Pre-cached Huffman decoded values for rapid lookup.

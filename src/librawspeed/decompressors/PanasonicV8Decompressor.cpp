@@ -138,6 +138,20 @@ public:
   int32_t decodeNextDiffValue();
 };
 
+void PanasonicV8Decompressor::DecompressorParams::validate() const {
+  const unsigned totalStrips = horizontalStripCount * verticalStripCount;
+
+  if (totalStrips > stripWidths.size())
+    ThrowRDE("Strip widths list does not have enough entries for the number of "
+             "strips!");
+  if (totalStrips > stripHeights.size())
+    ThrowRDE("Strip heights list does not have enough entries for the number "
+             "of strips!");
+  if (totalStrips > stripLineOffsets.size())
+    ThrowRDE("Strip line offset list does not have enough entries for the "
+             "number of strips!");
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 PanasonicV8Decompressor::PanasonicV8Decompressor(
@@ -150,6 +164,7 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(
       mRawOutput->getBpp() != sizeof(uint16_t)) {
     ThrowRDE("Unexpected component count / data type");
   }
+  mParams.validate();
 }
 
 void PanasonicV8Decompressor::decompress() const {
