@@ -202,31 +202,32 @@ void PanasonicV8Decompressor::decompressStrip(
 
   Bayer2x2 predicted = mParams.initialPrediction;
 
+  invariant(out.height() % 2 == 0);
+  invariant(out.width() % 2 == 0);
+
   for (int row = 0; row < out.height(); row += 2) {
     // Each decoded 'row' is actually two rows of pixels in the raw image
     // because the image is encoded in rows of 2x2 CFA tiles. Likewise the
     // effective width here is 2x the strip width.
-    for (int column = 0; column < 2 * out.width(); ++column) {
-      const unsigned ccIdx =
-          column % 4; // CFA color component index: r, g1, g2, b
-      const int32_t diff = decoder.decodeNextDiffValue();
-      const int32_t decodedValue = predicted[ccIdx] + diff;
-      assert(decodedValue > 0);
-      lineBuffer[column] =
-          uint16_t(std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
-
-      if (ccIdx == 3) {
-        // Completed decoding a 2x2 CFA tile. Update the predicted value to
-        // equal the decoded value.
-        std::copy_n(&lineBuffer[column - 3], 4, predicted.data());
+    for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
+      for (int ccIdx = 0; ccIdx != 4; ++ccIdx) {
+        int column = 4 * blockIdx + ccIdx;
+        const int32_t diff = decoder.decodeNextDiffValue();
+        const int32_t decodedValue = predicted[ccIdx] + diff;
+        assert(decodedValue > 0);
+        lineBuffer[column] = uint16_t(
+            std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
       }
+
+      // Completed decoding a 2x2 CFA tile. Update the predicted value to
+      // equal the decoded value.
+      std::copy_n(&lineBuffer[4 * blockIdx], 4, predicted.data());
     }
     // At the end of the line, reset predicted value to the first tile of the
     // prior line.
     std::copy_n(&lineBuffer[0], 4, predicted.data());
 
     // Copy lineBuffer into output buffer.
-    invariant(out.width() % 2 == 0);
     for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
       const auto outBlock = CroppedArray2DRef(out,
                                               /*offsetCols=*/2 * blockIdx,
