@@ -199,6 +199,10 @@ void PanasonicV8Decompressor::decompressStrip(
   invariant(out.height() % 2 == 0);
   invariant(out.width() % 2 == 0);
 
+  for (int j = 0; j != 2; ++j)
+    for (int i = 0; i != 2; ++i)
+      predicted(i, j) = predicted(j, i);
+
   for (int rowGroup = 0; rowGroup < out.height() / 2; ++rowGroup) {
     const auto outRow = CroppedArray2DRef(out,
                                           /*offsetCols=*/0,
@@ -221,10 +225,11 @@ void PanasonicV8Decompressor::decompressStrip(
       for (int j = 0; j != 2; ++j) {
         for (int i = 0; i != 2; ++i) {
           const int32_t diff = decoder.decodeNextDiffValue();
-          const int32_t decodedValue = predicted(j, i) + diff;
+          const int32_t decodedValue = predicted(i, j) + diff;
           assert(decodedValue > 0);
-          outBlock(i, j) = predicted(j, i) = uint16_t(
+          predicted(i, j) = uint16_t(
               std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
+          outBlock(i, j) = predicted(i, j);
         }
       }
     }
@@ -240,7 +245,7 @@ void PanasonicV8Decompressor::decompressStrip(
     // prior line.
     for (int j = 0; j != 2; ++j)
       for (int i = 0; i != 2; ++i)
-        predicted(j, i) = tmp(i, j);
+        predicted(i, j) = tmp(i, j);
   }
 }
 
