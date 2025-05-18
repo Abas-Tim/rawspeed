@@ -211,33 +211,6 @@ void PanasonicV8Decompressor::decompressStrip(
     // because the image is encoded in rows of 2x2 CFA tiles. Likewise the
     // effective width here is 2x the strip width.
     for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
-      const auto tmpBlock = CroppedArray2DRef(tmp,
-                                              /*offsetCols=*/0,
-                                              /*offsetRows=*/2 * blockIdx,
-                                              /*croppedWidth=*/2,
-                                              /*croppedHeight=*/2)
-                                .getAsArray2DRef();
-
-      for (int j = 0; j != 2; ++j) {
-        for (int i = 0; i != 2; ++i) {
-          const int32_t diff = decoder.decodeNextDiffValue();
-          const int32_t decodedValue = predicted(j, i) + diff;
-          assert(decodedValue > 0);
-          tmpBlock(j, i) = uint16_t(
-              std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
-        }
-      }
-
-      // Completed decoding a 2x2 CFA tile. Update the predicted value to
-      // equal the decoded value.
-      std::copy_n(&lineBuffer[4 * blockIdx], 4, predictedStorage.data());
-    }
-    // At the end of the line, reset predicted value to the first tile of the
-    // prior line.
-    std::copy_n(&lineBuffer[0], 4, predictedStorage.data());
-
-    // Copy lineBuffer into output buffer.
-    for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
       const auto outBlock = CroppedArray2DRef(out,
                                               /*offsetCols=*/2 * blockIdx,
                                               /*offsetRows=*/row,
@@ -252,12 +225,23 @@ void PanasonicV8Decompressor::decompressStrip(
                                               /*croppedHeight=*/2)
                                 .getAsArray2DRef();
 
-      for (int j = 0; j != 2; ++j)
-        for (int i = 0; i != 2; ++i)
-          outBlock(j, i) = tmpBlock(i, j);
+      for (int j = 0; j != 2; ++j) {
+        for (int i = 0; i != 2; ++i) {
+          const int32_t diff = decoder.decodeNextDiffValue();
+          const int32_t decodedValue = predicted(j, i) + diff;
+          assert(decodedValue > 0);
+          outBlock(i, j) = tmpBlock(j, i) = uint16_t(
+              std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
+        }
+      }
+
+      // Completed decoding a 2x2 CFA tile. Update the predicted value to
+      // equal the decoded value.
+      std::copy_n(&lineBuffer[4 * blockIdx], 4, predictedStorage.data());
     }
-    // TODO: Investigate if it makes sense performance wise to structure
-    // lineBuffer such that it can be memcpy'd into the output Buffer.
+    // At the end of the line, reset predicted value to the first tile of the
+    // prior line.
+    std::copy_n(&lineBuffer[0], 4, predictedStorage.data());
   }
 }
 
