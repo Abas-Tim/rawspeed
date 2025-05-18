@@ -230,14 +230,10 @@ void PanasonicV8Decompressor::decompressStrip(
           const int32_t diff = decoder.decodeNextDiffValue();
           const int32_t decodedValue = predicted(j, i) + diff;
           assert(decodedValue > 0);
-          outBlock(i, j) = tmpBlock(j, i) = uint16_t(
+          outBlock(i, j) = tmpBlock(j, i) = predicted(j, i) = uint16_t(
               std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
         }
       }
-
-      // Completed decoding a 2x2 CFA tile. Update the predicted value to
-      // equal the decoded value.
-      std::copy_n(&lineBuffer[4 * blockIdx], 4, predictedStorage.data());
     }
     // At the end of the line, reset predicted value to the first tile of the
     // prior line.
