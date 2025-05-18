@@ -24,6 +24,7 @@
 #include "decompressors/PanasonicV8Decompressor.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
+#include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
 #include "bitstreams/BitStream.h"
 #include "bitstreams/BitStreamer.h"
@@ -205,14 +206,21 @@ void PanasonicV8Decompressor::decompressStrip(
   const uint32_t stripOutputX = mParams.stripLineOffsets(stripIdx) & 0xFFFF;
   const uint32_t stripOutputY = mParams.stripLineOffsets(stripIdx) >> 16;
 
-  std::vector<uint16_t> lineBuffer(stripWidth * 2);
+  const auto out =
+      CroppedArray2DRef<uint16_t>(outBuffer, /*offsetCols=*/stripOutputX,
+                                  /*offsetRows=*/stripOutputY,
+                                  /*croppedWidth=*/stripWidth,
+                                  /*croppedHeight=*/stripHeight)
+          .getAsArray2DRef();
+
+  std::vector<uint16_t> lineBuffer(2 * out.width());
   Bayer2x2 predicted = mParams.initialPrediction;
 
-  for (unsigned row = 0; row < stripHeight; row += 2) {
+  for (int row = 0; row < out.height(); row += 2) {
     // Each decoded 'row' is actually two rows of pixels in the raw image
     // because the image is encoded in rows of 2x2 CFA tiles. Likewise the
     // effective width here is 2x the strip width.
-    for (unsigned column = 0; column < stripWidth * 2; ++column) {
+    for (int column = 0; column < 2 * out.width(); ++column) {
       const unsigned ccIdx =
           column % 4; // CFA color component index: r, g1, g2, b
       const int32_t diff = decoder.decodeNextDiffValue();
@@ -232,17 +240,13 @@ void PanasonicV8Decompressor::decompressStrip(
     std::copy_n(&lineBuffer[0], 4, predicted.data());
 
     // Copy lineBuffer into output buffer.
-    for (unsigned linePos = 0; linePos < stripWidth * 2; linePos += 4) {
-      const uint32_t dstStartCol = stripOutputX + linePos / 2;
+    for (int linePos = 0; linePos < 2 * out.width(); linePos += 4) {
+      const int dstStartCol = linePos / 2;
 
-      outBuffer[stripOutputY + row + 0](dstStartCol + 0) =
-          lineBuffer[linePos + 0]; // Top Red
-      outBuffer[stripOutputY + row + 0](dstStartCol + 1) =
-          lineBuffer[linePos + 2]; // Top Green
-      outBuffer[stripOutputY + row + 1](dstStartCol + 0) =
-          lineBuffer[linePos + 1]; // Bottom Green
-      outBuffer[stripOutputY + row + 1](dstStartCol + 1) =
-          lineBuffer[linePos + 3]; // Bottom Blue
+      out(row + 0, dstStartCol + 0) = lineBuffer[linePos + 0]; // Top Red
+      out(row + 0, dstStartCol + 1) = lineBuffer[linePos + 2]; // Top Green
+      out(row + 1, dstStartCol + 0) = lineBuffer[linePos + 1]; // Bottom Green
+      out(row + 1, dstStartCol + 1) = lineBuffer[linePos + 3]; // Bottom Blue
     }
     // TODO: Investigate if it makes sense performance wise to structure
     // lineBuffer such that it can be memcpy'd into the output Buffer.
