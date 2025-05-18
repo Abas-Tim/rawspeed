@@ -317,12 +317,11 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
       getOutputTiles(mParams, mRaw->getU16DataAsUncroppedArray2DRef());
 
   PanasonicV8Decompressor::DecompressorParams mParams2{
-      .horizontalStripCount = mParams.horizontalStripCount,
-      .verticalStripCount = mParams.verticalStripCount,
+      .mStrips = getAsArray1DRef(mStrips),
+      .mOutTiles = getAsArray1DRef(mOutTiles),
       .initialPrediction = mParams.initialPrediction,
       .gammaClipVal = mParams.gammaClipVal,
-      .mStrips = getAsArray1DRef(mStrips),
-      .mOutTiles = getAsArray1DRef(mOutTiles)};
+  };
 
   PanasonicV8Decompressor v8(mRaw, mParams2, getAsArray1DRef(mHuffmanLUT));
   v8.decompress();

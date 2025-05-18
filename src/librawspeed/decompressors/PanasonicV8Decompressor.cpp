@@ -139,12 +139,7 @@ public:
 };
 
 void PanasonicV8Decompressor::DecompressorParams::validate() const {
-  const int totalStrips = horizontalStripCount * verticalStripCount;
-
-  if (totalStrips > mStrips.size())
-    ThrowRDE("Strip byte buffer array does not have enough entries for the "
-             "number of strips!");
-  if (totalStrips > mOutTiles.size())
+  if (mOutTiles.size() != mStrips.size())
     ThrowRDE("Strip byte buffer array does not have enough entries for the "
              "number of strips!");
 }
@@ -165,15 +160,14 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(
 }
 
 void PanasonicV8Decompressor::decompress() const {
-  const int totalStrips =
-      mParams.horizontalStripCount * mParams.verticalStripCount;
+  const int numStrips = mParams.mStrips.size();
 #ifdef HAVE_OPENMP
   unsigned threadCount =
-      std::min(totalStrips, rawspeed_get_number_of_processor_cores());
+      std::min(numStrips, rawspeed_get_number_of_processor_cores());
 #pragma omp parallel for num_threads(threadCount)                              \
-    schedule(static) default(none) shared(totalStrips)
+    schedule(static) default(none) firstprivate(numStrips)
 #endif
-  for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
+  for (int stripIdx = 0; stripIdx < numStrips; ++stripIdx) {
     try {
       Array1DRef<const uint8_t> strip = mParams.mStrips(stripIdx);
       Array2DRef<uint16_t> out = mParams.mOutTiles(stripIdx);
