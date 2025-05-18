@@ -63,6 +63,13 @@ bool Rw2Decoder::isAppropriateDecoder(const TiffRootIFD* rootIFD,
   return make == "Panasonic" || make == "LEICA" || make == "LEICA CAMERA AG";
 }
 
+RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
+  PanasonicV8Decompressor v8(mFile, mRaw, raw);
+  mRaw->createData();
+  v8.decompress();
+  return mRaw;
+}
+
 RawImage Rw2Decoder::decodeRawInternal() {
 
   const TiffIFD* raw = nullptr;
@@ -177,10 +184,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
       if (bitsPerSample > 16)
         ThrowRDE("Version %i: unexpected bits per sample: %i", version,
                  bitsPerSample);
-      PanasonicV8Decompressor v8(mFile, mRaw, *raw);
-      mRaw->createData();
-      v8.decompress();
-      return mRaw;
+      return decodeRawV8(*raw);
     }
     default:
       ThrowRDE("Version %i is unsupported", version);
