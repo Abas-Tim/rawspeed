@@ -51,17 +51,17 @@ public:
   /// Decompressor parameters populated from tags. They remain constant after
   /// construction.
   struct DecompressorParams {
-    std::vector<uint32_t> stripLineOffsets;
-    std::vector<uint16_t> stripWidths;
-    std::vector<uint16_t> stripHeights;
-    uint16_t horizontalStripCount;
-    uint16_t verticalStripCount;
+    const Array1DRef<const uint32_t> stripLineOffsets;
+    const Array1DRef<const uint16_t> stripWidths;
+    const Array1DRef<const uint16_t> stripHeights;
+    const uint16_t horizontalStripCount;
+    const uint16_t verticalStripCount;
 
-    Bayer2x2 initialPrediction;
+    const Bayer2x2 initialPrediction;
 
-    uint16_t gammaClipVal;
+    const uint16_t gammaClipVal;
 
-    std::vector<Array1DRef<const uint8_t>> mStrips;
+    const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
 
     void validate() const;
   };
@@ -71,11 +71,10 @@ public:
     uint8_t bitcount = 7;
     uint8_t diffCat = 0;
   };
-  using HuffmanLUT = std::vector<HuffmanLUTEntry>;
 
 private:
   const DecompressorParams mParams;
-  const HuffmanLUT mHuffmanLUT;
+  const Array1DRef<const HuffmanLUTEntry> mHuffmanLUT;
 
   /// Huffman decoder helper class. Defined only in the cpp file.
   class InternalHuffDecoder;
@@ -87,7 +86,7 @@ private:
 
 public:
   PanasonicV8Decompressor(RawImage outputImg, DecompressorParams mParams_,
-                          HuffmanLUT mHuffmanLUT_);
+                          Array1DRef<const HuffmanLUTEntry> mHuffmanLUT_);
 
   /// Run the decompressor on the provided raw image
   void decompress() const;

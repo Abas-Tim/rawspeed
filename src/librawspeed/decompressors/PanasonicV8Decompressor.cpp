@@ -126,11 +126,12 @@ public:
 /// Utility class for Panasonic V8 entropy decoding
 class PanasonicV8Decompressor::InternalHuffDecoder {
 private:
-  const HuffmanLUT& mLUT; // Reference to PanasonicV8Decompressor::mHuffmanLUT
+  const Array1DRef<const HuffmanLUTEntry>
+      mLUT; // Reference to PanasonicV8Decompressor::mHuffmanLUT
   BitStreamerRevMSB mBitPump;
 
 public:
-  InternalHuffDecoder(const PanasonicV8Decompressor::HuffmanLUT& LUT,
+  InternalHuffDecoder(const Array1DRef<const HuffmanLUTEntry>& LUT,
                       Array1DRef<const uint8_t> bitStream)
       : mLUT(LUT), mBitPump(bitStream) {}
 
@@ -138,7 +139,7 @@ public:
 };
 
 void PanasonicV8Decompressor::DecompressorParams::validate() const {
-  const unsigned totalStrips = horizontalStripCount * verticalStripCount;
+  const int totalStrips = horizontalStripCount * verticalStripCount;
 
   if (totalStrips > stripWidths.size())
     ThrowRDE("Strip widths list does not have enough entries for the number of "
@@ -156,11 +157,11 @@ void PanasonicV8Decompressor::DecompressorParams::validate() const {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-PanasonicV8Decompressor::PanasonicV8Decompressor(RawImage outputImg,
-                                                 DecompressorParams mParams_,
-                                                 HuffmanLUT mHuffmanLUT_)
+PanasonicV8Decompressor::PanasonicV8Decompressor(
+    RawImage outputImg, DecompressorParams mParams_,
+    Array1DRef<const HuffmanLUTEntry> mHuffmanLUT_)
     : mRawOutput(std::move(outputImg)), mParams(std::move(mParams_)),
-      mHuffmanLUT(std::move(mHuffmanLUT_)) {
+      mHuffmanLUT(mHuffmanLUT_) {
   if (mRawOutput->getCpp() != 1 ||
       mRawOutput->getDataType() != RawImageType::UINT16 ||
       mRawOutput->getBpp() != sizeof(uint16_t)) {
@@ -180,7 +181,7 @@ void PanasonicV8Decompressor::decompress() const {
 #endif
   for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
     try {
-      Array1DRef<const uint8_t> strip = mParams.mStrips[stripIdx];
+      Array1DRef<const uint8_t> strip = mParams.mStrips(stripIdx);
 
       InternalHuffDecoder decoder(mHuffmanLUT, strip);
 
@@ -199,10 +200,10 @@ void PanasonicV8Decompressor::decompress() const {
 void PanasonicV8Decompressor::decompressStrip(
     const unsigned stripIdx, InternalHuffDecoder decoder,
     Array2DRef<uint16_t> outBuffer) const {
-  const uint32_t stripWidth = mParams.stripWidths[stripIdx];
-  const uint32_t stripHeight = mParams.stripHeights[stripIdx];
-  const uint32_t stripOutputX = mParams.stripLineOffsets[stripIdx] & 0xFFFF;
-  const uint32_t stripOutputY = mParams.stripLineOffsets[stripIdx] >> 16;
+  const uint32_t stripWidth = mParams.stripWidths(stripIdx);
+  const uint32_t stripHeight = mParams.stripHeights(stripIdx);
+  const uint32_t stripOutputX = mParams.stripLineOffsets(stripIdx) & 0xFFFF;
+  const uint32_t stripOutputY = mParams.stripLineOffsets(stripIdx) >> 16;
 
   std::vector<uint16_t> lineBuffer(stripWidth * 2);
   Bayer2x2 predicted = mParams.initialPrediction;
@@ -253,7 +254,7 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
   // Retrieve the difference category, which indicates magnitude of the
   // difference between the predicted and actual value.
   const auto next16 = uint16_t(mBitPump.peekBits(16));
-  const auto& [bits, diffCat] = mLUT[next16];
+  const auto& [bits, diffCat] = mLUT(next16);
   if (diffCat == 0 && bits == 7)
     ThrowRDE("Huffman decoding encountered an invalid value!");
   mBitPump.skipBits(bits); // Skip the bits that encoded the difference category

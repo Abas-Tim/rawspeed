@@ -68,6 +68,11 @@ bool Rw2Decoder::isAppropriateDecoder(const TiffRootIFD* rootIFD,
 
 namespace {
 
+template <typename T>
+[[nodiscard]] Array1DRef<const T> getAsArray1DRef(const std::vector<T>& vec) {
+  return {vec.data(), implicit_cast<int>(vec.size())};
+}
+
 /// Retrieve list of values from Panasonic TiffTag
 template <typename T>
 void getPanasonicTiffVector(const TiffIFD& ifd, TiffTag tag,
@@ -104,8 +109,6 @@ struct DecompressorV8Params {
   DecompressorV8Params() = delete;
 
   explicit DecompressorV8Params(const TiffIFD& ifd);
-
-  explicit operator PanasonicV8Decompressor::DecompressorParams() const;
 };
 
 void DecompressorV8Params::validate() const {
@@ -174,23 +177,9 @@ DecompressorV8Params::DecompressorV8Params(const TiffIFD& ifd) {
   validate();
 }
 
-DecompressorV8Params::operator PanasonicV8Decompressor::DecompressorParams()
-    const {
-  PanasonicV8Decompressor::DecompressorParams mParams;
-
-  mParams.stripLineOffsets = stripLineOffsets;
-  mParams.stripWidths = stripWidths;
-  mParams.stripHeights = stripHeights;
-  mParams.horizontalStripCount = horizontalStripCount;
-  mParams.verticalStripCount = verticalStripCount;
-  mParams.initialPrediction = initialPrediction;
-  mParams.gammaClipVal = gammaClipVal;
-
-  return mParams;
-}
-
-PanasonicV8Decompressor::HuffmanLUT populateHuffmanLUT(const TiffIFD& ifd) {
-  PanasonicV8Decompressor::HuffmanLUT mHuffmanLUT;
+std::vector<PanasonicV8Decompressor::HuffmanLUTEntry>
+populateHuffmanLUT(const TiffIFD& ifd) {
+  std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> mHuffmanLUT;
 
   ByteStream stream = ifd.getEntry(TiffTag::PANASONIC_V8_HUF_TABLE)->getData();
 
@@ -288,15 +277,23 @@ getInputStrips(const DecompressorV8Params& mParams, Buffer mInputFile) {
 
 RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
   const DecompressorV8Params mParams(raw);
-  PanasonicV8Decompressor::HuffmanLUT mHuffmanLUT = populateHuffmanLUT(raw);
+  const std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> mHuffmanLUT =
+      populateHuffmanLUT(raw);
   populateGammaLUT(mParams, raw);
-  std::vector<Array1DRef<const uint8_t>> mStrips =
+  const std::vector<Array1DRef<const uint8_t>> mStrips =
       getInputStrips(mParams, mFile);
 
-  PanasonicV8Decompressor::DecompressorParams mParams2(mParams);
-  mParams2.mStrips = mStrips;
+  PanasonicV8Decompressor::DecompressorParams mParams2{
+      .stripLineOffsets = getAsArray1DRef(mParams.stripLineOffsets),
+      .stripWidths = getAsArray1DRef(mParams.stripWidths),
+      .stripHeights = getAsArray1DRef(mParams.stripHeights),
+      .horizontalStripCount = mParams.horizontalStripCount,
+      .verticalStripCount = mParams.verticalStripCount,
+      .initialPrediction = mParams.initialPrediction,
+      .gammaClipVal = mParams.gammaClipVal,
+      .mStrips = getAsArray1DRef(mStrips)};
 
-  PanasonicV8Decompressor v8(mRaw, mParams2, mHuffmanLUT);
+  PanasonicV8Decompressor v8(mRaw, mParams2, getAsArray1DRef(mHuffmanLUT));
   mRaw->createData();
   v8.decompress();
   return mRaw;
