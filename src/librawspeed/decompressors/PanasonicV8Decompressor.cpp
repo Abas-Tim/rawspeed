@@ -24,7 +24,6 @@
 #include "decompressors/PanasonicV8Decompressor.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
-#include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
 #include "bitstreams/BitStream.h"
 #include "bitstreams/BitStreamer.h"
@@ -142,16 +141,10 @@ public:
 void PanasonicV8Decompressor::DecompressorParams::validate() const {
   const int totalStrips = horizontalStripCount * verticalStripCount;
 
-  if (totalStrips > stripWidths.size())
-    ThrowRDE("Strip widths list does not have enough entries for the number of "
-             "strips!");
-  if (totalStrips > stripHeights.size())
-    ThrowRDE("Strip heights list does not have enough entries for the number "
-             "of strips!");
-  if (totalStrips > stripLineOffsets.size())
-    ThrowRDE("Strip line offset list does not have enough entries for the "
-             "number of strips!");
   if (totalStrips > mStrips.size())
+    ThrowRDE("Strip byte buffer array does not have enough entries for the "
+             "number of strips!");
+  if (totalStrips > mOutTiles.size())
     ThrowRDE("Strip byte buffer array does not have enough entries for the "
              "number of strips!");
 }
@@ -183,11 +176,11 @@ void PanasonicV8Decompressor::decompress() const {
   for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
     try {
       Array1DRef<const uint8_t> strip = mParams.mStrips(stripIdx);
+      Array2DRef<uint16_t> out = mParams.mOutTiles(stripIdx);
 
       InternalHuffDecoder decoder(mHuffmanLUT, strip);
 
-      decompressStrip(stripIdx, decoder,
-                      mRawOutput->getU16DataAsUncroppedArray2DRef());
+      decompressStrip(out, decoder);
     } catch (const RawspeedException& err) {
       // Propagate the exception out of OpenMP magic.
       mRawOutput->setError(err.what());
@@ -199,20 +192,7 @@ void PanasonicV8Decompressor::decompress() const {
 }
 
 void PanasonicV8Decompressor::decompressStrip(
-    const unsigned stripIdx, InternalHuffDecoder decoder,
-    Array2DRef<uint16_t> outBuffer) const {
-  const uint32_t stripWidth = mParams.stripWidths(stripIdx);
-  const uint32_t stripHeight = mParams.stripHeights(stripIdx);
-  const uint32_t stripOutputX = mParams.stripLineOffsets(stripIdx) & 0xFFFF;
-  const uint32_t stripOutputY = mParams.stripLineOffsets(stripIdx) >> 16;
-
-  const auto out =
-      CroppedArray2DRef<uint16_t>(outBuffer, /*offsetCols=*/stripOutputX,
-                                  /*offsetRows=*/stripOutputY,
-                                  /*croppedWidth=*/stripWidth,
-                                  /*croppedHeight=*/stripHeight)
-          .getAsArray2DRef();
-
+    const Array2DRef<uint16_t> out, InternalHuffDecoder decoder) const {
   std::vector<uint16_t> lineBuffer(2 * out.width());
   Bayer2x2 predicted = mParams.initialPrediction;
 

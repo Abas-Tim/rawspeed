@@ -22,6 +22,7 @@
 #include "decoders/Rw2Decoder.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
+#include "adt/CroppedArray2DRef.h"
 #include "adt/Point.h"
 #include "bitstreams/BitStreams.h"
 #include "common/Common.h"
@@ -273,6 +274,33 @@ getInputStrips(const DecompressorV8Params& mParams, Buffer mInputFile) {
   return mStrips;
 }
 
+std::vector<Array2DRef<uint16_t>>
+getOutputTiles(const DecompressorV8Params& mParams,
+               const Array2DRef<uint16_t> img) {
+  std::vector<Array2DRef<uint16_t>> mOutTiles;
+
+  const int totalStrips =
+      mParams.horizontalStripCount * mParams.verticalStripCount;
+
+  for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
+    const uint32_t stripWidth = mParams.stripWidths[stripIdx];
+    const uint32_t stripHeight = mParams.stripHeights[stripIdx];
+    const uint32_t stripOutputX = mParams.stripLineOffsets[stripIdx] & 0xFFFF;
+    const uint32_t stripOutputY = mParams.stripLineOffsets[stripIdx] >> 16;
+
+    const auto out =
+        CroppedArray2DRef<uint16_t>(img, /*offsetCols=*/stripOutputX,
+                                    /*offsetRows=*/stripOutputY,
+                                    /*croppedWidth=*/stripWidth,
+                                    /*croppedHeight=*/stripHeight)
+            .getAsArray2DRef();
+
+    mOutTiles.emplace_back(out);
+  }
+
+  return mOutTiles;
+}
+
 } // namespace
 
 RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
@@ -283,18 +311,20 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
   const std::vector<Array1DRef<const uint8_t>> mStrips =
       getInputStrips(mParams, mFile);
 
+  mRaw->createData();
+
+  const std::vector<Array2DRef<uint16_t>> mOutTiles =
+      getOutputTiles(mParams, mRaw->getU16DataAsUncroppedArray2DRef());
+
   PanasonicV8Decompressor::DecompressorParams mParams2{
-      .stripLineOffsets = getAsArray1DRef(mParams.stripLineOffsets),
-      .stripWidths = getAsArray1DRef(mParams.stripWidths),
-      .stripHeights = getAsArray1DRef(mParams.stripHeights),
       .horizontalStripCount = mParams.horizontalStripCount,
       .verticalStripCount = mParams.verticalStripCount,
       .initialPrediction = mParams.initialPrediction,
       .gammaClipVal = mParams.gammaClipVal,
-      .mStrips = getAsArray1DRef(mStrips)};
+      .mStrips = getAsArray1DRef(mStrips),
+      .mOutTiles = getAsArray1DRef(mOutTiles)};
 
   PanasonicV8Decompressor v8(mRaw, mParams2, getAsArray1DRef(mHuffmanLUT));
-  mRaw->createData();
   v8.decompress();
   return mRaw;
 }
