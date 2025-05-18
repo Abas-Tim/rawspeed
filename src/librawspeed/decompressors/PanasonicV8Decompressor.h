@@ -24,10 +24,8 @@
 
 #include "common/RawImage.h"
 #include "decompressors/AbstractDecompressor.h"
-#include "tiff/TiffIFD.h"
 #include <array>
 #include <cstdint>
-#include <vector>
 
 namespace rawspeed {
 
@@ -51,38 +49,30 @@ public:
   /// Decompressor parameters populated from tags. They remain constant after
   /// construction.
   struct DecompressorParams {
-    std::vector<uint32_t> stripByteOffsets, stripLineOffsets, stripBitLengths;
-    std::vector<uint16_t> stripWidths, stripHeights;
-    uint16_t horizontalStripCount, verticalStripCount;
+    const Array1DRef<const uint32_t> stripLineOffsets;
+    const Array1DRef<const uint16_t> stripWidths;
+    const Array1DRef<const uint16_t> stripHeights;
+    const uint16_t horizontalStripCount;
+    const uint16_t verticalStripCount;
 
-    Bayer2x2 initialPrediction;
+    const Bayer2x2 initialPrediction;
 
-    /// Huffman decoding shift down value. Appears to be unused.
-    std::vector<uint16_t> huffShiftDown;
+    const uint16_t gammaClipVal;
 
-    uint16_t gammaClipVal;
+    const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
 
     void validate() const;
-
-    DecompressorParams() = delete;
-    explicit DecompressorParams(const TiffIFD& ifd);
   };
 
   // Pre-cached Huffman decoded values for rapid lookup.
   struct HuffmanLUTEntry {
-    uint8_t bitcount = 7, diffCat = 0;
+    uint8_t bitcount = 7;
+    uint8_t diffCat = 0;
   };
-  using HuffmanLUT = std::vector<HuffmanLUTEntry>;
 
 private:
   const DecompressorParams mParams;
-  HuffmanLUT mHuffmanLUT;
-
-  // Lookup table for the raw's gamma curve. Appears to be unused.
-  // All known samples utilize an identity function.
-  std::vector<uint16_t> mGammaLUT;
-
-  std::vector<Array1DRef<const uint8_t>> mStrips;
+  const Array1DRef<const HuffmanLUTEntry> mHuffmanLUT;
 
   /// Huffman decoder helper class. Defined only in the cpp file.
   class InternalHuffDecoder;
@@ -93,10 +83,8 @@ private:
                        Array2DRef<uint16_t> outBuffer) const;
 
 public:
-  PanasonicV8Decompressor(Buffer inputFile, RawImage outputImg,
-                          DecompressorParams mParams_, HuffmanLUT mHuffmanLUT_,
-                          std::vector<uint16_t> mGammaLUT_,
-                          std::vector<Array1DRef<const uint8_t>> mStrips_);
+  PanasonicV8Decompressor(RawImage outputImg, DecompressorParams mParams_,
+                          Array1DRef<const HuffmanLUTEntry> mHuffmanLUT_);
 
   /// Run the decompressor on the provided raw image
   void decompress() const;

@@ -68,6 +68,11 @@ bool Rw2Decoder::isAppropriateDecoder(const TiffRootIFD* rootIFD,
 
 namespace {
 
+template <typename T>
+[[nodiscard]] Array1DRef<const T> getAsArray1DRef(const std::vector<T>& vec) {
+  return {vec.data(), implicit_cast<int>(vec.size())};
+}
+
 /// Retrieve list of values from Panasonic TiffTag
 template <typename T>
 void getPanasonicTiffVector(const TiffIFD& ifd, TiffTag tag,
@@ -81,9 +86,32 @@ void getPanasonicTiffVector(const TiffIFD& ifd, TiffTag tag,
     v = bs.get<T>();
 }
 
-} // namespace
+/// Decompressor parameters populated from tags. They remain constant after
+/// construction.
+struct DecompressorV8Params {
+  std::vector<uint32_t> stripByteOffsets;
+  std::vector<uint32_t> stripLineOffsets;
+  std::vector<uint32_t> stripBitLengths;
+  std::vector<uint16_t> stripWidths;
+  std::vector<uint16_t> stripHeights;
+  uint16_t horizontalStripCount;
+  uint16_t verticalStripCount;
 
-void PanasonicV8Decompressor::DecompressorParams::validate() const {
+  PanasonicV8Decompressor::Bayer2x2 initialPrediction;
+
+  /// Huffman decoding shift down value. Appears to be unused.
+  std::vector<uint16_t> huffShiftDown;
+
+  uint16_t gammaClipVal;
+
+  void validate() const;
+
+  DecompressorV8Params() = delete;
+
+  explicit DecompressorV8Params(const TiffIFD& ifd);
+};
+
+void DecompressorV8Params::validate() const {
   const unsigned totalStrips = horizontalStripCount * verticalStripCount;
 
   // Check that we won't be going OOB on any of these strip lists
@@ -110,8 +138,7 @@ void PanasonicV8Decompressor::DecompressorParams::validate() const {
   }
 }
 
-PanasonicV8Decompressor::DecompressorParams::DecompressorParams(
-    const TiffIFD& ifd) {
+DecompressorV8Params::DecompressorV8Params(const TiffIFD& ifd) {
   // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
   horizontalStripCount =
       ifd.getEntry(TiffTag::PANASONIC_V8_NUMBER_OF_STRIPS_H)->getU16();
@@ -150,10 +177,9 @@ PanasonicV8Decompressor::DecompressorParams::DecompressorParams(
   validate();
 }
 
-namespace {
-
-PanasonicV8Decompressor::HuffmanLUT populateHuffmanLUT(const TiffIFD& ifd) {
-  PanasonicV8Decompressor::HuffmanLUT mHuffmanLUT;
+std::vector<PanasonicV8Decompressor::HuffmanLUTEntry>
+populateHuffmanLUT(const TiffIFD& ifd) {
+  std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> mHuffmanLUT;
 
   ByteStream stream = ifd.getEntry(TiffTag::PANASONIC_V8_HUF_TABLE)->getData();
 
@@ -189,13 +215,9 @@ PanasonicV8Decompressor::HuffmanLUT populateHuffmanLUT(const TiffIFD& ifd) {
   return mHuffmanLUT;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunreachable-code"
 /// Maybe the most complicated part of the entire file format, and seemingly,
 /// completely unused.
-std::vector<uint16_t>
-populateGammaLUT(const PanasonicV8Decompressor::DecompressorParams& mParams,
-                 const TiffIFD& ifd) {
+void populateGammaLUT(const DecompressorV8Params& mParams, const TiffIFD& ifd) {
   std::vector<uint16_t> mGammaLUT;
 
   // Retrieve encoded gamma curve from tags.
@@ -221,93 +243,18 @@ populateGammaLUT(const PanasonicV8Decompressor::DecompressorParams& mParams,
     ThrowRDE("Non-identity gamma curve encountered. Never encountered in any "
              "testing samples!");
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunreachable-code"
     if (encodedGammaPoints.size() != 6 || encodedGammaSlopes.size() != 6) {
       ThrowRDE("Gamma curve point and/or slope list is not the expected length "
                "of 6");
     }
-
-    // Decode point and slope lists. Defines a piece-wise function for the gamma
-    // curve. Each point is an x,y intercept of a line segment with slope
-    // encoded with a power of two exponent and sign bit. The x position of the
-    // points must be ordered such that together they create six non-overlapping
-    // intervals covering [0, UINT16_MAX].
-    struct GammaPoint {
-      uint16_t x, y;
-    };
-    struct GammaSlope {
-      uint8_t sign, exp;
-    };
-    std::array<GammaPoint, 6> gammaPoints;
-    std::array<GammaSlope, 6> gammaSlopes;
-    for (unsigned i = 0; i < 6; ++i) {
-      gammaPoints[i] = {uint16_t(encodedGammaPoints[i] & 0xFFFF),
-                        uint16_t(encodedGammaPoints[i] >> 16)};
-      gammaSlopes[i].sign = encodedGammaSlopes[i] & 0x10 ? 1 : 0;
-      gammaSlopes[i].exp = uint8_t(encodedGammaSlopes[i] & 0x0F);
-    }
-
-    // Validate that the points are non-strictly ordered
-    const bool pointsAreOrdered = std::is_sorted(
-        gammaPoints.cbegin(), gammaPoints.cend(),
-        [](const GammaPoint& a, const GammaPoint& b) { return a.x <= b.x; });
-    if (!pointsAreOrdered) {
-      ThrowRDE("Points in the gamma curve are out of order!");
-    }
-
-    // Evaluates the gamma curve for value x in the piece-wise function segment
-    // 'i'
-    const auto fnGamma = [&](const uint32_t x, const unsigned i) -> uint16_t {
-      assert(i < gammaPoints.size());
-      const GammaPoint& pt = gammaPoints[i];
-      const GammaSlope& slope = gammaSlopes[i];
-
-      uint32_t mx = 0;
-      if (slope.exp == 15 && slope.sign == 1) {
-        // An exponent of 15 and sign of 1 signals a special case where mx
-        // becomes the y-intercept of the next curve segment or UINT16_MAX if
-        // there is no next segment.
-        mx = i <= 5 ? gammaPoints[i + 1].y : UINT16_MAX;
-      } else if (slope.exp == 0) {
-        // Exponent is zero, meaning the slope is 1 (no multiplication).
-        mx = x - pt.x;
-      } else if (slope.sign == 1) {
-        mx = (x - pt.x) << slope.exp; // Positive slope
-      } else {
-        // Negative slope
-        uint32_t h =
-            1 << (slope.exp - 1); // Add slope/2 so that integer arithmetic for
-                                  // `mx` will round correctly.
-        mx = (x - pt.x + h) >> slope.exp;
-      }
-
-      // Add y-intercept and clamp to clipping value.
-      return uint16_t(std::min(uint32_t(mParams.gammaClipVal), mx + pt.y));
-    };
-
-    mGammaLUT.resize(1 + UINT16_MAX);
-
-    unsigned interval = 0;
-    // Evaluate the gamma curve for all uint16_t values.
-    for (uint32_t x = 0; x <= UINT16_MAX; ++x) {
-      // Advance interval as needed, skipping over possible redundant intervals.
-      while (interval + 1 < gammaPoints.size() &&
-             x >= gammaPoints[interval + 1].x)
-        ++interval;
-      assert(gammaPoints[interval].x <= x);
-      assert(interval + 1 == gammaPoints.size() ||
-             gammaPoints[interval + 1].x > x);
-      mGammaLUT[x] = fnGamma(x, interval);
-    }
+#pragma GCC diagnostic pop
   }
-
-  return mGammaLUT;
 }
 
-#pragma GCC diagnostic pop
-
 std::vector<Array1DRef<const uint8_t>>
-getInputStrips(const PanasonicV8Decompressor::DecompressorParams& mParams,
-               Buffer mInputFile) {
+getInputStrips(const DecompressorV8Params& mParams, Buffer mInputFile) {
   std::vector<Array1DRef<const uint8_t>> mStrips;
 
   const int totalStrips =
@@ -329,14 +276,24 @@ getInputStrips(const PanasonicV8Decompressor::DecompressorParams& mParams,
 } // namespace
 
 RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
-  const PanasonicV8Decompressor::DecompressorParams mParams(raw);
-  PanasonicV8Decompressor::HuffmanLUT mHuffmanLUT = populateHuffmanLUT(raw);
-  std::vector<uint16_t> mGammaLUT = populateGammaLUT(mParams, raw);
-  std::vector<Array1DRef<const uint8_t>> mStrips =
+  const DecompressorV8Params mParams(raw);
+  const std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> mHuffmanLUT =
+      populateHuffmanLUT(raw);
+  populateGammaLUT(mParams, raw);
+  const std::vector<Array1DRef<const uint8_t>> mStrips =
       getInputStrips(mParams, mFile);
 
-  PanasonicV8Decompressor v8(mFile, mRaw, mParams, mHuffmanLUT, mGammaLUT,
-                             mStrips);
+  PanasonicV8Decompressor::DecompressorParams mParams2{
+      .stripLineOffsets = getAsArray1DRef(mParams.stripLineOffsets),
+      .stripWidths = getAsArray1DRef(mParams.stripWidths),
+      .stripHeights = getAsArray1DRef(mParams.stripHeights),
+      .horizontalStripCount = mParams.horizontalStripCount,
+      .verticalStripCount = mParams.verticalStripCount,
+      .initialPrediction = mParams.initialPrediction,
+      .gammaClipVal = mParams.gammaClipVal,
+      .mStrips = getAsArray1DRef(mStrips)};
+
+  PanasonicV8Decompressor v8(mRaw, mParams2, getAsArray1DRef(mHuffmanLUT));
   mRaw->createData();
   v8.decompress();
   return mRaw;
