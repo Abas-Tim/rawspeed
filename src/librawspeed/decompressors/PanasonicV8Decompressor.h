@@ -45,6 +45,7 @@ private:
   Buffer mInputFile;
   mutable RawImage mRawOutput;
 
+public:
   /// Four values, one for each component of the sensor's color filter array.
   using Bayer2x2 = std::array<uint16_t, 4>;
 
@@ -63,7 +64,8 @@ private:
     uint16_t gammaClipVal;
   };
 
-  DecompressorParams mParams;
+private:
+  const DecompressorParams mParams;
 
   // Pre-cached Huffman decoded values for rapid lookup.
   struct HuffmanLUTEntry {

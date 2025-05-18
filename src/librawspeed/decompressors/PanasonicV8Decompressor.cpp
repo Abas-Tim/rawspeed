@@ -141,36 +141,11 @@ void getPanasonicTiffVector(const TiffIFD& ifd, TiffTag tag,
     v = bs.get<T>();
 }
 
-/// Utility class for Panasonic V8 entropy decoding
-class PanasonicV8Decompressor::InternalHuffDecoder {
-private:
-  const HuffmanLUT& mLUT; // Reference to PanasonicV8Decompressor::mHuffmanLUT
-  const std::vector<uint16_t>&
-      mShiftDownList; // Reference to PanasonicV8Decompressor
-                      // mParams.huffShiftDown
-  BitStreamerRevMSB mBitPump;
+namespace {
 
-public:
-  InternalHuffDecoder(const PanasonicV8Decompressor::HuffmanLUT& LUT,
-                      const std::vector<uint16_t>& shiftDownList,
-                      Array1DRef<const uint8_t> bitStream)
-      : mLUT(LUT), mShiftDownList(shiftDownList), mBitPump(bitStream) {}
-
-  int32_t decodeNextDiffValue();
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Constructor populates decompressor parameters with values from ifd
-PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
-                                                 RawImage outputImg,
-                                                 const TiffIFD& ifd)
-    : mInputFile(inputFile), mRawOutput(std::move(outputImg)) {
-  if (mRawOutput->getCpp() != 1 ||
-      mRawOutput->getDataType() != RawImageType::UINT16 ||
-      mRawOutput->getBpp() != sizeof(uint16_t)) {
-    ThrowRDE("Unexpected component count / data type");
-  }
+PanasonicV8Decompressor::DecompressorParams
+getDecompressorParams(const TiffIFD& ifd) {
+  PanasonicV8Decompressor::DecompressorParams mParams;
 
   mParams.horizontalStripCount =
       ifd.getEntry(TiffTag::PANASONIC_V8_NUMBER_OF_STRIPS_H)->getU16();
@@ -205,6 +180,43 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
                          mParams.huffShiftDown);
 
   mParams.gammaClipVal = ifd.getEntry(TiffTag::PANASONIC_V8_CLIP_VAL)->getU16();
+
+  return mParams;
+}
+
+} // namespace
+
+/// Utility class for Panasonic V8 entropy decoding
+class PanasonicV8Decompressor::InternalHuffDecoder {
+private:
+  const HuffmanLUT& mLUT; // Reference to PanasonicV8Decompressor::mHuffmanLUT
+  const std::vector<uint16_t>&
+      mShiftDownList; // Reference to PanasonicV8Decompressor
+                      // mParams.huffShiftDown
+  BitStreamerRevMSB mBitPump;
+
+public:
+  InternalHuffDecoder(const PanasonicV8Decompressor::HuffmanLUT& LUT,
+                      const std::vector<uint16_t>& shiftDownList,
+                      Array1DRef<const uint8_t> bitStream)
+      : mLUT(LUT), mShiftDownList(shiftDownList), mBitPump(bitStream) {}
+
+  int32_t decodeNextDiffValue();
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Constructor populates decompressor parameters with values from ifd
+PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
+                                                 RawImage outputImg,
+                                                 const TiffIFD& ifd)
+    : mInputFile(inputFile), mRawOutput(std::move(outputImg)),
+      mParams(getDecompressorParams(ifd)) {
+  if (mRawOutput->getCpp() != 1 ||
+      mRawOutput->getDataType() != RawImageType::UINT16 ||
+      mRawOutput->getBpp() != sizeof(uint16_t)) {
+    ThrowRDE("Unexpected component count / data type");
+  }
 
   validateParams();
   populateHuffmanLUT(ifd);
