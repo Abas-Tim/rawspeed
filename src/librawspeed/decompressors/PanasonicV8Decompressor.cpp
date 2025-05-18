@@ -184,6 +184,11 @@ getDecompressorParams(const TiffIFD& ifd) {
   return mParams;
 }
 
+PanasonicV8Decompressor::HuffmanLUT populateHuffmanLUT(const TiffIFD& ifd);
+std::vector<uint16_t>
+populateGammaLUT(const PanasonicV8Decompressor::DecompressorParams& mParams,
+                 const TiffIFD& ifd);
+
 } // namespace
 
 /// Utility class for Panasonic V8 entropy decoding
@@ -219,8 +224,8 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
   }
 
   validateParams();
-  populateHuffmanLUT(ifd);
-  populateGammaLUT(ifd);
+  mHuffmanLUT = populateHuffmanLUT(ifd);
+  mGammaLUT = populateGammaLUT(mParams, ifd);
 }
 
 void PanasonicV8Decompressor::decompress() const {
@@ -395,7 +400,11 @@ void PanasonicV8Decompressor::validateParams() {
   }
 }
 
-void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
+namespace {
+
+PanasonicV8Decompressor::HuffmanLUT populateHuffmanLUT(const TiffIFD& ifd) {
+  PanasonicV8Decompressor::HuffmanLUT mHuffmanLUT;
+
   ByteStream stream = ifd.getEntry(TiffTag::PANASONIC_V8_HUF_TABLE)->getData();
 
   struct HuffEntry {
@@ -426,13 +435,19 @@ void PanasonicV8Decompressor::populateHuffmanLUT(const TiffIFD& ifd) {
       }
     }
   }
+
+  return mHuffmanLUT;
 }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunreachable-code"
 /// Maybe the most complicated part of the entire file format, and seemingly,
 /// completely unused.
-void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
+std::vector<uint16_t>
+populateGammaLUT(const PanasonicV8Decompressor::DecompressorParams& mParams,
+                 const TiffIFD& ifd) {
+  std::vector<uint16_t> mGammaLUT;
+
   // Retrieve encoded gamma curve from tags.
   std::vector<uint32_t> encodedGammaPoints;
   std::vector<uint32_t> encodedGammaSlopes;
@@ -534,8 +549,12 @@ void PanasonicV8Decompressor::populateGammaLUT(const TiffIFD& ifd) {
       mGammaLUT[x] = fnGamma(x, interval);
     }
   }
+
+  return mGammaLUT;
 }
 
 #pragma GCC diagnostic pop
+
+} // namespace
 
 } // namespace rawspeed

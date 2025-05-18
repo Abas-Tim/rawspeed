@@ -64,14 +64,14 @@ public:
     uint16_t gammaClipVal;
   };
 
-private:
-  const DecompressorParams mParams;
-
   // Pre-cached Huffman decoded values for rapid lookup.
   struct HuffmanLUTEntry {
     uint8_t bitcount = 7, diffCat = 0;
   };
   using HuffmanLUT = std::vector<HuffmanLUTEntry>;
+
+private:
+  const DecompressorParams mParams;
   HuffmanLUT mHuffmanLUT;
 
   // Lookup table for the raw's gamma curve. Appears to be unused.
@@ -88,8 +88,6 @@ private:
 
   // Helpers called from the constructor
   void validateParams();
-  void populateHuffmanLUT(const TiffIFD& ifd);
-  void populateGammaLUT(const TiffIFD& ifd);
 
 public:
   PanasonicV8Decompressor(Buffer inputFile, RawImage outputImg,
