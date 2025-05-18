@@ -61,6 +61,8 @@ public:
 
     uint16_t gammaClipVal;
 
+    std::vector<Array1DRef<const uint8_t>> mStrips;
+
     void validate() const;
   };
 
@@ -75,8 +77,6 @@ private:
   const DecompressorParams mParams;
   HuffmanLUT mHuffmanLUT;
 
-  std::vector<Array1DRef<const uint8_t>> mStrips;
-
   /// Huffman decoder helper class. Defined only in the cpp file.
   class InternalHuffDecoder;
 
@@ -87,8 +87,7 @@ private:
 
 public:
   PanasonicV8Decompressor(Buffer inputFile, RawImage outputImg,
-                          DecompressorParams mParams_, HuffmanLUT mHuffmanLUT_,
-                          std::vector<Array1DRef<const uint8_t>> mStrips_);
+                          DecompressorParams mParams_, HuffmanLUT mHuffmanLUT_);
 
   /// Run the decompressor on the provided raw image
   void decompress() const;

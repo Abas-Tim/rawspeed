@@ -294,8 +294,9 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
       getInputStrips(mParams, mFile);
 
   PanasonicV8Decompressor::DecompressorParams mParams2(mParams);
+  mParams2.mStrips = mStrips;
 
-  PanasonicV8Decompressor v8(mFile, mRaw, mParams2, mHuffmanLUT, mStrips);
+  PanasonicV8Decompressor v8(mFile, mRaw, mParams2, mHuffmanLUT);
   mRaw->createData();
   v8.decompress();
   return mRaw;

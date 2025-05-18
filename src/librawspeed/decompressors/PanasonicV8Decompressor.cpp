@@ -150,15 +150,19 @@ void PanasonicV8Decompressor::DecompressorParams::validate() const {
   if (totalStrips > stripLineOffsets.size())
     ThrowRDE("Strip line offset list does not have enough entries for the "
              "number of strips!");
+  if (totalStrips > mStrips.size())
+    ThrowRDE("Strip byte buffer array does not have enough entries for the "
+             "number of strips!");
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-PanasonicV8Decompressor::PanasonicV8Decompressor(
-    Buffer inputFile, RawImage outputImg, DecompressorParams mParams_,
-    HuffmanLUT mHuffmanLUT_, std::vector<Array1DRef<const uint8_t>> mStrips_)
+PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
+                                                 RawImage outputImg,
+                                                 DecompressorParams mParams_,
+                                                 HuffmanLUT mHuffmanLUT_)
     : mRawOutput(std::move(outputImg)), mParams(std::move(mParams_)),
-      mHuffmanLUT(std::move(mHuffmanLUT_)), mStrips(std::move(mStrips_)) {
+      mHuffmanLUT(std::move(mHuffmanLUT_)) {
   if (mRawOutput->getCpp() != 1 ||
       mRawOutput->getDataType() != RawImageType::UINT16 ||
       mRawOutput->getBpp() != sizeof(uint16_t)) {
@@ -178,7 +182,7 @@ void PanasonicV8Decompressor::decompress() const {
 #endif
   for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
     try {
-      Array1DRef<const uint8_t> strip = mStrips[stripIdx];
+      Array1DRef<const uint8_t> strip = mParams.mStrips[stripIdx];
 
       InternalHuffDecoder decoder(mHuffmanLUT, strip);
 
