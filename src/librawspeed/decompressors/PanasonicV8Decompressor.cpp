@@ -148,28 +148,20 @@ namespace {
 
 std::vector<Array1DRef<const uint8_t>>
 getInputStrips(const PanasonicV8Decompressor::DecompressorParams& mParams,
-               Buffer mInputFile, const RawImage& mRawOutput) {
+               Buffer mInputFile) {
   std::vector<Array1DRef<const uint8_t>> mStrips;
 
   const int totalStrips =
       mParams.horizontalStripCount * mParams.verticalStripCount;
 
   for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
-    try {
-      const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
-      const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
+    const uint32_t stripSize = (mParams.stripBitLengths[stripIdx] + 7) / 8;
+    const uint32_t stripOffset = mParams.stripByteOffsets[stripIdx];
 
-      // Note: Relying on Buffer to catch OOB access attempts
-      DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize),
-                             Endianness::big);
-      mStrips.emplace_back(stripBuffer.getAsArray1DRef());
-    } catch (const RawspeedException& err) {
-      // Propagate the exception out of OpenMP magic.
-      mRawOutput->setError(err.what());
-    } catch (...) {
-      // We should not get any other exception type here.
-      __builtin_unreachable();
-    }
+    // Note: Relying on Buffer to catch OOB access attempts
+    DataBuffer stripBuffer(mInputFile.getSubView(stripOffset, stripSize),
+                           Endianness::big);
+    mStrips.emplace_back(stripBuffer.getAsArray1DRef());
   }
 
   return mStrips;
@@ -186,7 +178,7 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(
     std::vector<uint16_t> mGammaLUT_)
     : mRawOutput(std::move(outputImg)), mParams(std::move(mParams_)),
       mHuffmanLUT(std::move(mHuffmanLUT_)), mGammaLUT(std::move(mGammaLUT_)),
-      mStrips(getInputStrips(mParams, inputFile, mRawOutput)) {
+      mStrips(getInputStrips(mParams, inputFile)) {
   if (mRawOutput->getCpp() != 1 ||
       mRawOutput->getDataType() != RawImageType::UINT16 ||
       mRawOutput->getBpp() != sizeof(uint16_t)) {
