@@ -242,10 +242,9 @@ void PanasonicV8Decompressor::decompressStrip(
                                               /*croppedHeight=*/2)
                                 .getAsArray2DRef();
 
-      outBlock(0, 0) = tmpBlock(0, 0); // Top Red
-      outBlock(0, 1) = tmpBlock(1, 0); // Top Green
-      outBlock(1, 0) = tmpBlock(0, 1); // Bottom Green
-      outBlock(1, 1) = tmpBlock(1, 1); // Bottom Blue
+      for (int j = 0; j != 2; ++j)
+        for (int i = 0; i != 2; ++i)
+          outBlock(j, i) = tmpBlock(i, j);
     }
     // TODO: Investigate if it makes sense performance wise to structure
     // lineBuffer such that it can be memcpy'd into the output Buffer.
