@@ -51,9 +51,13 @@ public:
   /// Decompressor parameters populated from tags. They remain constant after
   /// construction.
   struct DecompressorParams {
-    std::vector<uint32_t> stripByteOffsets, stripLineOffsets, stripBitLengths;
-    std::vector<uint16_t> stripWidths, stripHeights;
-    uint16_t horizontalStripCount, verticalStripCount;
+    std::vector<uint32_t> stripByteOffsets;
+    std::vector<uint32_t> stripLineOffsets;
+    std::vector<uint32_t> stripBitLengths;
+    std::vector<uint16_t> stripWidths;
+    std::vector<uint16_t> stripHeights;
+    uint16_t horizontalStripCount;
+    uint16_t verticalStripCount;
 
     Bayer2x2 initialPrediction;
 
@@ -70,7 +74,8 @@ public:
 
   // Pre-cached Huffman decoded values for rapid lookup.
   struct HuffmanLUTEntry {
-    uint8_t bitcount = 7, diffCat = 0;
+    uint8_t bitcount = 7;
+    uint8_t diffCat = 0;
   };
   using HuffmanLUT = std::vector<HuffmanLUTEntry>;
 
