@@ -24,6 +24,7 @@
 #include "decompressors/PanasonicV8Decompressor.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
+#include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
 #include "bitstreams/BitStream.h"
 #include "bitstreams/BitStreamer.h"
@@ -40,7 +41,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <utility>
-#include <vector>
 
 namespace rawspeed {
 
@@ -141,16 +141,10 @@ public:
 void PanasonicV8Decompressor::DecompressorParams::validate() const {
   const int totalStrips = horizontalStripCount * verticalStripCount;
 
-  if (totalStrips > stripWidths.size())
-    ThrowRDE("Strip widths list does not have enough entries for the number of "
-             "strips!");
-  if (totalStrips > stripHeights.size())
-    ThrowRDE("Strip heights list does not have enough entries for the number "
-             "of strips!");
-  if (totalStrips > stripLineOffsets.size())
-    ThrowRDE("Strip line offset list does not have enough entries for the "
-             "number of strips!");
   if (totalStrips > mStrips.size())
+    ThrowRDE("Strip byte buffer array does not have enough entries for the "
+             "number of strips!");
+  if (totalStrips > mOutTiles.size())
     ThrowRDE("Strip byte buffer array does not have enough entries for the "
              "number of strips!");
 }
@@ -182,11 +176,11 @@ void PanasonicV8Decompressor::decompress() const {
   for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
     try {
       Array1DRef<const uint8_t> strip = mParams.mStrips(stripIdx);
+      Array2DRef<uint16_t> out = mParams.mOutTiles(stripIdx);
 
       InternalHuffDecoder decoder(mHuffmanLUT, strip);
 
-      decompressStrip(stripIdx, decoder,
-                      mRawOutput->getU16DataAsUncroppedArray2DRef());
+      decompressStrip(out, decoder);
     } catch (const RawspeedException& err) {
       // Propagate the exception out of OpenMP magic.
       mRawOutput->setError(err.what());
@@ -198,54 +192,60 @@ void PanasonicV8Decompressor::decompress() const {
 }
 
 void PanasonicV8Decompressor::decompressStrip(
-    const unsigned stripIdx, InternalHuffDecoder decoder,
-    Array2DRef<uint16_t> outBuffer) const {
-  const uint32_t stripWidth = mParams.stripWidths(stripIdx);
-  const uint32_t stripHeight = mParams.stripHeights(stripIdx);
-  const uint32_t stripOutputX = mParams.stripLineOffsets(stripIdx) & 0xFFFF;
-  const uint32_t stripOutputY = mParams.stripLineOffsets(stripIdx) >> 16;
+    const Array2DRef<uint16_t> out, InternalHuffDecoder decoder) const {
+  Bayer2x2 predictedStorage = mParams.initialPrediction;
+  const auto pred = Array2DRef(predictedStorage.data(), 2, 2);
 
-  std::vector<uint16_t> lineBuffer(stripWidth * 2);
-  Bayer2x2 predicted = mParams.initialPrediction;
+  invariant(out.height() % 2 == 0);
+  invariant(out.width() % 2 == 0);
 
-  for (unsigned row = 0; row < stripHeight; row += 2) {
+  for (int j = 0; j != 2; ++j)
+    for (int i = 0; i != 2; ++i)
+      pred(i, j) = pred(j, i);
+
+  for (int rowGroup = 0; rowGroup < out.height() / 2; ++rowGroup) {
+    const auto outRow = CroppedArray2DRef(out,
+                                          /*offsetCols=*/0,
+                                          /*offsetRows=*/2 * rowGroup,
+                                          /*croppedWidth=*/out.width(),
+                                          /*croppedHeight=*/2)
+                            .getAsArray2DRef();
+
     // Each decoded 'row' is actually two rows of pixels in the raw image
     // because the image is encoded in rows of 2x2 CFA tiles. Likewise the
     // effective width here is 2x the strip width.
-    for (unsigned column = 0; column < stripWidth * 2; ++column) {
-      const unsigned ccIdx =
-          column % 4; // CFA color component index: r, g1, g2, b
-      const int32_t diff = decoder.decodeNextDiffValue();
-      const int32_t decodedValue = predicted[ccIdx] + diff;
-      assert(decodedValue > 0);
-      lineBuffer[column] =
-          uint16_t(std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
+    for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
+      const auto outBlock = CroppedArray2DRef(outRow,
+                                              /*offsetCols=*/2 * blockIdx,
+                                              /*offsetRows=*/0,
+                                              /*croppedWidth=*/2,
+                                              /*croppedHeight=*/2)
+                                .getAsArray2DRef();
 
-      if (ccIdx == 3) {
-        // Completed decoding a 2x2 CFA tile. Update the predicted value to
-        // equal the decoded value.
-        std::copy_n(&lineBuffer[column - 3], 4, predicted.data());
+      for (int j = 0; j != 2; ++j) {
+        for (int i = 0; i != 2; ++i) {
+          const int32_t diff = decoder.decodeNextDiffValue();
+          const int32_t decodedValue = pred(i, j) + diff;
+          assert(decodedValue > 0);
+          pred(i, j) = uint16_t(
+              std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
+          outBlock(i, j) = pred(i, j);
+        }
       }
     }
+
+    const auto tmp = CroppedArray2DRef(outRow,
+                                       /*offsetCols=*/0,
+                                       /*offsetRows=*/0,
+                                       /*croppedWidth=*/2,
+                                       /*croppedHeight=*/2)
+                         .getAsArray2DRef();
+
     // At the end of the line, reset predicted value to the first tile of the
     // prior line.
-    std::copy_n(&lineBuffer[0], 4, predicted.data());
-
-    // Copy lineBuffer into output buffer.
-    for (unsigned linePos = 0; linePos < stripWidth * 2; linePos += 4) {
-      const uint32_t dstStartCol = stripOutputX + linePos / 2;
-
-      outBuffer[stripOutputY + row + 0](dstStartCol + 0) =
-          lineBuffer[linePos + 0]; // Top Red
-      outBuffer[stripOutputY + row + 0](dstStartCol + 1) =
-          lineBuffer[linePos + 2]; // Top Green
-      outBuffer[stripOutputY + row + 1](dstStartCol + 0) =
-          lineBuffer[linePos + 1]; // Bottom Green
-      outBuffer[stripOutputY + row + 1](dstStartCol + 1) =
-          lineBuffer[linePos + 3]; // Bottom Blue
-    }
-    // TODO: Investigate if it makes sense performance wise to structure
-    // lineBuffer such that it can be memcpy'd into the output Buffer.
+    for (int j = 0; j != 2; ++j)
+      for (int i = 0; i != 2; ++i)
+        pred(i, j) = tmp(i, j);
   }
 }
 

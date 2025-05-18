@@ -49,9 +49,6 @@ public:
   /// Decompressor parameters populated from tags. They remain constant after
   /// construction.
   struct DecompressorParams {
-    const Array1DRef<const uint32_t> stripLineOffsets;
-    const Array1DRef<const uint16_t> stripWidths;
-    const Array1DRef<const uint16_t> stripHeights;
     const uint16_t horizontalStripCount;
     const uint16_t verticalStripCount;
 
@@ -60,6 +57,7 @@ public:
     const uint16_t gammaClipVal;
 
     const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
+    const Array1DRef<const Array2DRef<uint16_t>> mOutTiles;
 
     void validate() const;
   };
@@ -79,8 +77,8 @@ private:
 
   /// Thread safe function for decompressing a single data-stripstrip within a
   /// Rw2V8 raw image.
-  void decompressStrip(unsigned stripIdx, InternalHuffDecoder decoder,
-                       Array2DRef<uint16_t> outBuffer) const;
+  void decompressStrip(Array2DRef<uint16_t> out,
+                       InternalHuffDecoder decoder) const;
 
 public:
   PanasonicV8Decompressor(RawImage outputImg, DecompressorParams mParams_,
