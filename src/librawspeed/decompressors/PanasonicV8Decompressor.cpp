@@ -226,20 +226,19 @@ void PanasonicV8Decompressor::decompressStrip(
     std::copy_n(&lineBuffer[0], 4, predicted.data());
 
     // Copy lineBuffer into output buffer.
-    for (int linePos = 0; linePos < 2 * out.width(); linePos += 4) {
-      const int dstStartCol = linePos / 2;
-
+    invariant(out.width() % 2 == 0);
+    for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
       const auto tmpBlock = CroppedArray2DRef(tmp,
                                               /*offsetCols=*/0,
-                                              /*offsetRows=*/dstStartCol,
+                                              /*offsetRows=*/2 * blockIdx,
                                               /*croppedWidth=*/2,
                                               /*croppedHeight=*/2)
                                 .getAsArray2DRef();
 
-      out(row + 0, dstStartCol + 0) = tmpBlock(0, 0); // Top Red
-      out(row + 0, dstStartCol + 1) = tmpBlock(1, 0); // Top Green
-      out(row + 1, dstStartCol + 0) = tmpBlock(0, 1); // Bottom Green
-      out(row + 1, dstStartCol + 1) = tmpBlock(1, 1); // Bottom Blue
+      out(row + 0, 2 * blockIdx + 0) = tmpBlock(0, 0); // Top Red
+      out(row + 0, 2 * blockIdx + 1) = tmpBlock(1, 0); // Top Green
+      out(row + 1, 2 * blockIdx + 0) = tmpBlock(0, 1); // Bottom Green
+      out(row + 1, 2 * blockIdx + 1) = tmpBlock(1, 1); // Bottom Blue
     }
     // TODO: Investigate if it makes sense performance wise to structure
     // lineBuffer such that it can be memcpy'd into the output Buffer.
