@@ -146,11 +146,9 @@ public:
 
 PanasonicV8Decompressor::PanasonicV8Decompressor(
     Buffer inputFile, RawImage outputImg, DecompressorParams mParams_,
-    HuffmanLUT mHuffmanLUT_, std::vector<uint16_t> mGammaLUT_,
-    std::vector<Array1DRef<const uint8_t>> mStrips_)
+    HuffmanLUT mHuffmanLUT_, std::vector<Array1DRef<const uint8_t>> mStrips_)
     : mRawOutput(std::move(outputImg)), mParams(std::move(mParams_)),
-      mHuffmanLUT(std::move(mHuffmanLUT_)), mGammaLUT(std::move(mGammaLUT_)),
-      mStrips(std::move(mStrips_)) {
+      mHuffmanLUT(std::move(mHuffmanLUT_)), mStrips(std::move(mStrips_)) {
   if (mRawOutput->getCpp() != 1 ||
       mRawOutput->getDataType() != RawImageType::UINT16 ||
       mRawOutput->getBpp() != sizeof(uint16_t)) {
@@ -219,31 +217,18 @@ void PanasonicV8Decompressor::decompressStrip(
     // prior line.
     std::copy_n(&lineBuffer[0], 4, predicted.data());
 
-    assert(mGammaLUT.empty());
-
     // Copy lineBuffer into output buffer.
     for (unsigned linePos = 0; linePos < stripWidth * 2; linePos += 4) {
       const uint32_t dstStartCol = stripOutputX + linePos / 2;
 
-      if (mGammaLUT.empty()) [[likely]] {
-        outBuffer[stripOutputY + row + 0](dstStartCol + 0) =
-            lineBuffer[linePos + 0]; // Top Red
-        outBuffer[stripOutputY + row + 0](dstStartCol + 1) =
-            lineBuffer[linePos + 2]; // Top Green
-        outBuffer[stripOutputY + row + 1](dstStartCol + 0) =
-            lineBuffer[linePos + 1]; // Bottom Green
-        outBuffer[stripOutputY + row + 1](dstStartCol + 1) =
-            lineBuffer[linePos + 3]; // Bottom Blue
-      } else [[unlikely]] {
-        outBuffer[stripOutputY + row + 0](dstStartCol + 0) =
-            mGammaLUT[lineBuffer[linePos + 0]]; // Top Red
-        outBuffer[stripOutputY + row + 0](dstStartCol + 1) =
-            mGammaLUT[lineBuffer[linePos + 2]]; // Top Green
-        outBuffer[stripOutputY + row + 1](dstStartCol + 0) =
-            mGammaLUT[lineBuffer[linePos + 1]]; // Bottom Green
-        outBuffer[stripOutputY + row + 1](dstStartCol + 1) =
-            mGammaLUT[lineBuffer[linePos + 3]]; // Bottom Blue
-      }
+      outBuffer[stripOutputY + row + 0](dstStartCol + 0) =
+          lineBuffer[linePos + 0]; // Top Red
+      outBuffer[stripOutputY + row + 0](dstStartCol + 1) =
+          lineBuffer[linePos + 2]; // Top Green
+      outBuffer[stripOutputY + row + 1](dstStartCol + 0) =
+          lineBuffer[linePos + 1]; // Bottom Green
+      outBuffer[stripOutputY + row + 1](dstStartCol + 1) =
+          lineBuffer[linePos + 3]; // Bottom Blue
     }
     // TODO: Investigate if it makes sense performance wise to structure
     // lineBuffer such that it can be memcpy'd into the output Buffer.
