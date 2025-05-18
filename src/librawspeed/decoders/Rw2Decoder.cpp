@@ -25,6 +25,7 @@
 #include "adt/CroppedArray2DRef.h"
 #include "adt/Point.h"
 #include "bitstreams/BitStreams.h"
+#include "common/BayerPhase.h"
 #include "common/Common.h"
 #include "common/RawImage.h"
 #include "decoders/RawDecoderException.h"
@@ -304,6 +305,10 @@ getOutputTiles(const DecompressorV8Params& mParams,
 } // namespace
 
 RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
+  parseCFA();
+  if (getAsBayerPhase(mRaw->cfa) != BayerPhase::RGGB)
+    ThrowRDE("Unexpected CFA, only RGGB is supported");
+
   const DecompressorV8Params mParams(raw);
   const std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> mHuffmanLUT =
       populateHuffmanLUT(raw);
