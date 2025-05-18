@@ -341,8 +341,8 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
     if (shiftDown == 0) {
       [[likely]]
           // Negative value in interval (-2^{n}, -2^{n-1}]
-          return val +
-          (-1 << diffCat) + 1;
+          return static_cast<int32_t>(val) +
+          static_cast<int32_t>(~0U << diffCat) + 1;
     } else [[unlikely]] {
       // Unreachable in all known samples but should be correct
       // Same as negative value above, but accounting for down shift
