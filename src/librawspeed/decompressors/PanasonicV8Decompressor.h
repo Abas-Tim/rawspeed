@@ -75,7 +75,7 @@ public:
 
 private:
   const DecompressorParams mParams;
-  HuffmanLUT mHuffmanLUT;
+  const HuffmanLUT mHuffmanLUT;
 
   /// Huffman decoder helper class. Defined only in the cpp file.
   class InternalHuffDecoder;
