@@ -33,7 +33,6 @@
 #include "common/RawImage.h"
 #include "common/RawspeedException.h"
 #include "decoders/RawDecoderException.h"
-#include "io/Buffer.h"
 #include "io/IOException.h"
 #include <algorithm>
 #include <array>
@@ -157,8 +156,7 @@ void PanasonicV8Decompressor::DecompressorParams::validate() const {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-PanasonicV8Decompressor::PanasonicV8Decompressor(Buffer inputFile,
-                                                 RawImage outputImg,
+PanasonicV8Decompressor::PanasonicV8Decompressor(RawImage outputImg,
                                                  DecompressorParams mParams_,
                                                  HuffmanLUT mHuffmanLUT_)
     : mRawOutput(std::move(outputImg)), mParams(std::move(mParams_)),

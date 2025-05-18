@@ -86,8 +86,8 @@ private:
                        Array2DRef<uint16_t> outBuffer) const;
 
 public:
-  PanasonicV8Decompressor(Buffer inputFile, RawImage outputImg,
-                          DecompressorParams mParams_, HuffmanLUT mHuffmanLUT_);
+  PanasonicV8Decompressor(RawImage outputImg, DecompressorParams mParams_,
+                          HuffmanLUT mHuffmanLUT_);
 
   /// Run the decompressor on the provided raw image
   void decompress() const;
