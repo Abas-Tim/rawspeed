@@ -199,14 +199,21 @@ void PanasonicV8Decompressor::decompressStrip(
   invariant(out.height() % 2 == 0);
   invariant(out.width() % 2 == 0);
 
-  for (int row = 0; row < out.height(); row += 2) {
+  for (int rowGroup = 0; rowGroup < out.height() / 2; ++rowGroup) {
+    const auto outRow = CroppedArray2DRef(out,
+                                          /*offsetCols=*/0,
+                                          /*offsetRows=*/2 * rowGroup,
+                                          /*croppedWidth=*/out.width(),
+                                          /*croppedHeight=*/2)
+                            .getAsArray2DRef();
+
     // Each decoded 'row' is actually two rows of pixels in the raw image
     // because the image is encoded in rows of 2x2 CFA tiles. Likewise the
     // effective width here is 2x the strip width.
     for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
-      const auto outBlock = CroppedArray2DRef(out,
+      const auto outBlock = CroppedArray2DRef(outRow,
                                               /*offsetCols=*/2 * blockIdx,
-                                              /*offsetRows=*/row,
+                                              /*offsetRows=*/0,
                                               /*croppedWidth=*/2,
                                               /*croppedHeight=*/2)
                                 .getAsArray2DRef();
@@ -221,8 +228,10 @@ void PanasonicV8Decompressor::decompressStrip(
         }
       }
     }
-    const auto tmp = CroppedArray2DRef(out, /*offsetCols=*/0,
-                                       /*offsetRows=*/row,
+
+    const auto tmp = CroppedArray2DRef(outRow,
+                                       /*offsetCols=*/0,
+                                       /*offsetRows=*/0,
                                        /*croppedWidth=*/2,
                                        /*croppedHeight=*/2)
                          .getAsArray2DRef();
