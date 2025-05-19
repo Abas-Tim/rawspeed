@@ -32,6 +32,7 @@
 #include "io/Buffer.h"
 #include "io/ByteStream.h"
 #include "io/Endianness.h"
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -49,7 +50,7 @@ ByteStream getTrailingStrips(ByteStream bs, ByteStream sizesBs,
   uint32_t numStrips = sizesBs.getRemainSize() / sizeof(uint32_t);
 
   if (out)
-    out->reserve(numStrips);
+    out->reserve(std::max(1U, numStrips));
   for (uint32_t strip = 0; strip != numStrips; ++strip) {
     const uint32_t stripSize = sizesBs.getU32();
     Buffer buf = bs.getBuffer(stripSize);
@@ -97,7 +98,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
     mRaw->createData();
 
     std::vector<Array2DRef<uint16_t>> outTiles;
-    outTiles.reserve(numOutTiles);
+    outTiles.reserve(std::max(1U, numOutTiles));
     for (uint32_t stripIdx = 0; stripIdx < numOutTiles; ++stripIdx) {
       const auto stripWidth = outTileSizes.get<int32_t>();
       const auto stripHeight = outTileSizes.get<int32_t>();
@@ -117,7 +118,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
     invariant(outTileSizes.getRemainSize() == 0);
 
     std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> huffmanLUT;
-    huffmanLUT.reserve(numHuffmanLUTEntries);
+    huffmanLUT.reserve(std::max(1U, numHuffmanLUTEntries));
     for (uint32_t entryIdx = 0; entryIdx < numHuffmanLUTEntries; ++entryIdx) {
       const auto bitcount = huffmanLUTEntriesInput.get<uint8_t>();
       const auto diffCat = huffmanLUTEntriesInput.get<uint8_t>();
