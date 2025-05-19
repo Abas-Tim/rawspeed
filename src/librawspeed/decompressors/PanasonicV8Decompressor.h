@@ -27,6 +27,7 @@
 #include "adt/Array2DRef.h"
 #include "adt/CroppedArray2DRef.h"
 #include "common/RawImage.h"
+#include "decoders/RawDecoderException.h"
 #include "decompressors/AbstractDecompressor.h"
 #include <array>
 #include <cstdint>
@@ -94,7 +95,12 @@ public:
         Array1DRef<const uint16_t> stripHeights)
         : mStrips(mStrips_), initialPrediction(initialPrediction_),
           mOutRects(getOutRects(imgDim, stripLineOffsets, stripWidths,
-                                stripHeights)) {}
+                                stripHeights)) {
+      for (const auto& strip : mStrips_) {
+        if (strip.size() == 0)
+          ThrowRDE("Got empty input strip");
+      }
+    }
 
     [[nodiscard]] DecompressorParams getDecompressorParams() const {
       return {mStrips, getAsArray1DRef(mOutRects), initialPrediction};
