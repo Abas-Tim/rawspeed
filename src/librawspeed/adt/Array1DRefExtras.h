@@ -21,6 +21,7 @@
 #pragma once
 
 #include "adt/Array1DRef.h"
+#include "adt/Casts.h"
 #include <vector>
 
 namespace rawspeed {

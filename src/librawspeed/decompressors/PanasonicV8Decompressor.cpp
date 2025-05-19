@@ -23,8 +23,11 @@
 #include "rawspeedconfig.h"
 #include "decompressors/PanasonicV8Decompressor.h"
 #include "adt/Array1DRef.h"
+#include "adt/Array1DRefExtras.h"
 #include "adt/Array2DRef.h"
+#include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
+#include "adt/Point.h"
 #include "adt/TiledArray2DRef.h"
 #include "bitstreams/BitStream.h"
 #include "bitstreams/BitStreamer.h"
@@ -42,6 +45,7 @@
 #include <cstdint>
 #include <limits>
 #include <utility>
+#include <vector>
 
 namespace rawspeed {
 
@@ -139,10 +143,90 @@ public:
   int32_t decodeNextDiffValue();
 };
 
-void PanasonicV8Decompressor::DecompressorParams::validate() const {
-  if (mOutTiles.size() != mStrips.size())
-    ThrowRDE("Strip byte buffer array does not have enough entries for the "
-             "number of strips!");
+namespace {
+
+enum class TileSequenceStatus : uint8_t { ContinuesRow, BeginsNewRow, Invalid };
+
+inline TileSequenceStatus
+evaluateConsecutiveTiles(const iRectangle2D rect, const iRectangle2D nextRect) {
+  using enum TileSequenceStatus;
+  // Are these two are horizontally-adjacent rectangles of same height?
+  if (rect.getTopRight() == nextRect.getTopLeft() &&
+      rect.getBottomRight() == nextRect.getBottomLeft())
+    return ContinuesRow;
+  // Otherwise, the next rectangle should be the first row of next Row.
+  if (nextRect.getTopLeft() == iPoint2D(0, rect.getBottom()))
+    return BeginsNewRow;
+  return Invalid;
+}
+
+void isValidImageGrid(iRectangle2D imgDim,
+                      Array1DRef<const iRectangle2D> rects) {
+  auto outPos = imgDim.pos;
+
+  iRectangle2D rect = rects(0);
+  if (rect.pos != outPos)
+    ThrowRDE("FIrst tile is out-of-order");
+  if (!rect.isThisInside(imgDim))
+    ThrowRDE("Tile isn't fully within the output image");
+  if (!rect.hasPositiveArea())
+    ThrowRDE("Got empty tile?");
+  outPos.x += rect.getWidth();
+  for (int tileIdx = 1; tileIdx != rects.size(); ++tileIdx) {
+    iRectangle2D nextRect = rects(tileIdx);
+    invariant(nextRect.isThisInside(imgDim));
+    invariant(nextRect.hasPositiveArea());
+    switch (evaluateConsecutiveTiles(rect, nextRect)) {
+    case TileSequenceStatus::ContinuesRow:
+      outPos.x += nextRect.getWidth();
+      rect = nextRect;
+      continue;
+    case TileSequenceStatus::BeginsNewRow:
+      assert(outPos.x == imgDim.getRight());
+      outPos.x = 0;
+      outPos.y += nextRect.getHeight();
+      rect = nextRect;
+      continue;
+    case TileSequenceStatus::Invalid:
+      __builtin_unreachable();
+      ThrowRDE("Invalid tiling config");
+    }
+  }
+  if (rect.getBottomRight() != imgDim.getBottomRight())
+    ThrowRDE("Tiles do not cover whole output image");
+}
+
+} // namespace
+
+std::vector<iRectangle2D>
+PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
+    iRectangle2D imgDim, Array1DRef<const uint32_t> stripLineOffsets,
+    Array1DRef<const uint16_t> stripWidths,
+    Array1DRef<const uint16_t> stripHeights) {
+  if (!imgDim.hasPositiveArea())
+    ThrowRDE("Empty image requested");
+  const int totalStrips = stripLineOffsets.size();
+  if (stripWidths.size() != totalStrips || stripHeights.size() != totalStrips)
+    ThrowRDE("Inputs have mismatched length");
+  if (totalStrips <= 0)
+    ThrowRDE("No strips provided");
+
+  std::vector<iRectangle2D> mOutRects;
+
+  for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
+    const uint32_t stripWidth = stripWidths(stripIdx);
+    const uint32_t stripHeight = stripHeights(stripIdx);
+    const uint32_t stripOutputX = stripLineOffsets(stripIdx) & 0xFFFF;
+    const uint32_t stripOutputY = stripLineOffsets(stripIdx) >> 16;
+
+    const auto out = iRectangle2D(iPoint2D(stripOutputX, stripOutputY),
+                                  iPoint2D(stripWidth, stripHeight));
+
+    mOutRects.emplace_back(out);
+  }
+
+  isValidImageGrid(imgDim, getAsArray1DRef(mOutRects));
+  return mOutRects;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,7 +241,8 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(
       mRawOutput->getBpp() != sizeof(uint16_t)) {
     ThrowRDE("Unexpected component count / data type");
   }
-  mParams.validate();
+  if (!mRawOutput->dim.hasPositiveArea())
+    ThrowRDE("Unexpected image dimensions");
 }
 
 void PanasonicV8Decompressor::decompress() const {
@@ -171,7 +256,16 @@ void PanasonicV8Decompressor::decompress() const {
   for (int stripIdx = 0; stripIdx < numStrips; ++stripIdx) {
     try {
       Array1DRef<const uint8_t> strip = mParams.mStrips(stripIdx);
-      Array2DRef<uint16_t> out = mParams.mOutTiles(stripIdx);
+
+      const auto outRect = mParams.mOutRect(stripIdx);
+
+      const auto out = CroppedArray2DRef<uint16_t>(
+                           mRawOutput->getU16DataAsUncroppedArray2DRef(),
+                           /*offsetCols=*/outRect.pos.x,
+                           /*offsetRows=*/outRect.pos.y,
+                           /*croppedWidth=*/outRect.dim.x,
+                           /*croppedHeight=*/outRect.dim.y)
+                           .getAsArray2DRef();
 
       InternalHuffDecoder decoder(mHuffmanLUT, strip);
 

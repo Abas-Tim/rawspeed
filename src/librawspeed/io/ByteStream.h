@@ -170,6 +170,16 @@ public:
     return out;
   }
 
+  template <typename T> std::vector<T> getVector(int nElt) {
+    std::vector<T> out;
+    auto bs = getStream(nElt, sizeof(T));
+    out.reserve(nElt);
+    std::generate_n(std::back_inserter(out), nElt,
+                    [&bs]() { return bs.get<T>(); });
+    invariant(bs.getRemainSize() == 0);
+    return out;
+  }
+
   [[nodiscard]] uint8_t peekByte(size_type i = 0) const {
     return peek<uint8_t>(i);
   }
