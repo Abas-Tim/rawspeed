@@ -165,12 +165,17 @@ void isValidImageGrid(iRectangle2D imgDim,
   auto outPos = imgDim.pos;
 
   iRectangle2D rect = rects(0);
-  assert(rect.pos == outPos);
-  invariant(rect.isThisInside(imgDim));
+  if (rect.pos != outPos)
+    ThrowRDE("FIrst tile is out-of-order");
+  if (!rect.isThisInside(imgDim))
+    ThrowRDE("Tile isn't fully within the output image");
+  if (!rect.hasPositiveArea())
+    ThrowRDE("Got empty tile?");
   outPos.x += rect.getWidth();
   for (int tileIdx = 1; tileIdx != rects.size(); ++tileIdx) {
     iRectangle2D nextRect = rects(tileIdx);
     invariant(nextRect.isThisInside(imgDim));
+    invariant(nextRect.hasPositiveArea());
     switch (evaluateConsecutiveTiles(rect, nextRect)) {
     case TileSequenceStatus::ContinuesRow:
       outPos.x += nextRect.getWidth();
@@ -187,7 +192,8 @@ void isValidImageGrid(iRectangle2D imgDim,
       ThrowRDE("Invalid tiling config");
     }
   }
-  assert(rect.getBottomRight() == imgDim.getBottomRight());
+  if (rect.getBottomRight() != imgDim.getBottomRight())
+    ThrowRDE("Tiles do not cover whole output image");
 }
 
 } // namespace

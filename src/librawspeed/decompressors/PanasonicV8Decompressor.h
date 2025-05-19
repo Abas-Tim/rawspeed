@@ -71,9 +71,7 @@ public:
                        Array1DRef<const iRectangle2D> mOutRect_,
                        Bayer2x2 initialPrediction_)
         : mStrips(mStrips_), mOutRect(mOutRect_),
-          initialPrediction(initialPrediction_) {
-      invariant(mStrips.size() == mOutRect_.size());
-    }
+          initialPrediction(initialPrediction_) {}
   };
 
   struct DecompressorParamsBuilder {
@@ -96,6 +94,8 @@ public:
         : mStrips(mStrips_), initialPrediction(initialPrediction_),
           mOutRects(getOutRects(imgDim, stripLineOffsets, stripWidths,
                                 stripHeights)) {
+      if (mStrips.size() != implicit_cast<int>(mOutRects.size()))
+        ThrowRDE("Got different number of input strips vs output tiles");
       for (const auto& strip : mStrips_) {
         if (strip.size() == 0)
           ThrowRDE("Got empty input strip");
