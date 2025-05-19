@@ -200,6 +200,8 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
   const int totalStrips = stripLineOffsets.size();
   invariant(stripWidths.size() == totalStrips &&
             stripHeights.size() == totalStrips);
+  if (totalStrips <= 0)
+    ThrowRDE("No strips provided");
 
   std::vector<iRectangle2D> mOutRects;
 
