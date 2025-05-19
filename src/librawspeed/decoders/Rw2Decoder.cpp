@@ -572,19 +572,23 @@ void Rw2Decoder::decodeMetaDataInternal(const CameraMetaData* meta) {
   if (raw->hasEntry(static_cast<TiffTag>(0x0024)) &&
       raw->hasEntry(static_cast<TiffTag>(0x0025)) &&
       raw->hasEntry(static_cast<TiffTag>(0x0026))) {
-    mRaw->metadata.wbCoeffs[0] = static_cast<float>(
+    std::array<float, 4> wbCoeffs = {};
+    wbCoeffs[0] = static_cast<float>(
         raw->getEntry(static_cast<TiffTag>(0x0024))->getU16());
-    mRaw->metadata.wbCoeffs[1] = static_cast<float>(
+    wbCoeffs[1] = static_cast<float>(
         raw->getEntry(static_cast<TiffTag>(0x0025))->getU16());
-    mRaw->metadata.wbCoeffs[2] = static_cast<float>(
+    wbCoeffs[2] = static_cast<float>(
         raw->getEntry(static_cast<TiffTag>(0x0026))->getU16());
+    mRaw->metadata.wbCoeffs = wbCoeffs;
   } else if (raw->hasEntry(static_cast<TiffTag>(0x0011)) &&
              raw->hasEntry(static_cast<TiffTag>(0x0012))) {
-    mRaw->metadata.wbCoeffs[0] = static_cast<float>(
+    std::array<float, 4> wbCoeffs = {};
+    wbCoeffs[0] = static_cast<float>(
         raw->getEntry(static_cast<TiffTag>(0x0011))->getU16());
-    mRaw->metadata.wbCoeffs[1] = 256.0F;
-    mRaw->metadata.wbCoeffs[2] = static_cast<float>(
+    wbCoeffs[1] = 256.0F;
+    wbCoeffs[2] = static_cast<float>(
         raw->getEntry(static_cast<TiffTag>(0x0012))->getU16());
+    mRaw->metadata.wbCoeffs = wbCoeffs;
   }
 }
 
