@@ -198,8 +198,8 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
     Array1DRef<const uint16_t> stripWidths,
     Array1DRef<const uint16_t> stripHeights) {
   const int totalStrips = stripLineOffsets.size();
-  invariant(stripWidths.size() == totalStrips &&
-            stripHeights.size() == totalStrips);
+  if (stripWidths.size() != totalStrips || stripHeights.size() != totalStrips)
+    ThrowRDE("Inputs have mismatched length");
   if (totalStrips <= 0)
     ThrowRDE("No strips provided");
 
