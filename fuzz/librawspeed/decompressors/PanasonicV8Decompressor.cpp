@@ -113,12 +113,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
     auto stripHeights = stripHeightsInput.getVector<uint16_t>(numStripHeights);
     stripHeights.reserve(1); // Array1DRef does not like nullptr's.
 
-    mRaw->createData();
+    const auto imgDim = iRectangle2D({0, 0}, mRaw->dim);
 
     PanasonicV8Decompressor::DecompressorParamsBuilder builder(
-        mRaw->getU16DataAsUncroppedArray2DRef(), initialPrediction,
-        getAsArray1DRef(strips), getAsArray1DRef(stripLineOffsets),
-        getAsArray1DRef(stripWidths), getAsArray1DRef(stripHeights));
+        imgDim, initialPrediction, getAsArray1DRef(strips),
+        getAsArray1DRef(stripLineOffsets), getAsArray1DRef(stripWidths),
+        getAsArray1DRef(stripHeights));
 
     std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> huffmanLUT;
     huffmanLUT.reserve(std::max(1U, numHuffmanLUTEntries));
@@ -133,6 +133,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
 
     PanasonicV8Decompressor v8(mRaw, builder.getDecompressorParams(),
                                getAsArray1DRef(huffmanLUT));
+    mRaw->createData();
     v8.decompress();
     MSan::CheckMemIsInitialized(mRaw->getByteDataAsUncroppedArray2DRef());
   } catch (const RawspeedException&) { // NOLINT(bugprone-empty-catch)

@@ -291,16 +291,17 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
   const std::vector<Array1DRef<const uint8_t>> mStrips =
       getInputStrips(mParams, mFile);
 
-  mRaw->createData();
+  const auto imgDim = iRectangle2D({0, 0}, mRaw->dim);
 
   PanasonicV8Decompressor::DecompressorParamsBuilder b(
-      mRaw->getU16DataAsUncroppedArray2DRef(), mParams.initialPrediction,
-      getAsArray1DRef(mStrips), getAsArray1DRef(mParams.stripLineOffsets),
+      imgDim, mParams.initialPrediction, getAsArray1DRef(mStrips),
+      getAsArray1DRef(mParams.stripLineOffsets),
       getAsArray1DRef(mParams.stripWidths),
       getAsArray1DRef(mParams.stripHeights));
 
   PanasonicV8Decompressor v8(mRaw, b.getDecompressorParams(),
                              getAsArray1DRef(mHuffmanLUT));
+  mRaw->createData();
   v8.decompress();
   return mRaw;
 }

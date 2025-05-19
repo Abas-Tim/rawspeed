@@ -57,7 +57,7 @@ public:
 
   struct DecompressorParams {
     const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
-    const Array1DRef<const CroppedArray2DRef<uint16_t>> mOutTiles;
+    const Array1DRef<const iRectangle2D> mOutRect;
 
     const Bayer2x2 initialPrediction;
 
@@ -67,11 +67,11 @@ public:
     friend struct DecompressorParamsBuilder;
 
     DecompressorParams(Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
-                       Array1DRef<const CroppedArray2DRef<uint16_t>> mOutTiles_,
+                       Array1DRef<const iRectangle2D> mOutRect_,
                        Bayer2x2 initialPrediction_)
-        : mStrips(mStrips_), mOutTiles(mOutTiles_),
+        : mStrips(mStrips_), mOutRect(mOutRect_),
           initialPrediction(initialPrediction_) {
-      invariant(mStrips.size() == mOutTiles.size());
+      invariant(mStrips.size() == mOutRect_.size());
     }
   };
 
@@ -79,25 +79,25 @@ public:
     const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
     const Bayer2x2 initialPrediction;
 
-    const std::vector<CroppedArray2DRef<uint16_t>> mOutTiles;
+    const std::vector<iRectangle2D> mOutRects;
 
-    std::vector<CroppedArray2DRef<uint16_t>> static getOutTiles(
-        Array2DRef<uint16_t> img, Array1DRef<const uint32_t> stripLineOffsets,
+    std::vector<iRectangle2D> static getOutRects(
+        iRectangle2D imgDim, Array1DRef<const uint32_t> stripLineOffsets,
         Array1DRef<const uint16_t> stripWidths,
         Array1DRef<const uint16_t> stripHeights);
 
     DecompressorParamsBuilder(
-        Array2DRef<uint16_t> img, Bayer2x2 initialPrediction_,
+        iRectangle2D imgDim, Bayer2x2 initialPrediction_,
         Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
         Array1DRef<const uint32_t> stripLineOffsets,
         Array1DRef<const uint16_t> stripWidths,
         Array1DRef<const uint16_t> stripHeights)
         : mStrips(mStrips_), initialPrediction(initialPrediction_),
-          mOutTiles(
-              getOutTiles(img, stripLineOffsets, stripWidths, stripHeights)) {}
+          mOutRects(getOutRects(imgDim, stripLineOffsets, stripWidths,
+                                stripHeights)) {}
 
     [[nodiscard]] DecompressorParams getDecompressorParams() const {
-      return {mStrips, getAsArray1DRef(mOutTiles), initialPrediction};
+      return {mStrips, getAsArray1DRef(mOutRects), initialPrediction};
     }
   };
 

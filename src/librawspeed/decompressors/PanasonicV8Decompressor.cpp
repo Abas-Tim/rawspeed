@@ -145,12 +145,6 @@ public:
 
 namespace {
 
-template <typename T>
-iRectangle2D getImageCropAsRectangle(CroppedArray2DRef<T> img) {
-  return {{img.offsetCols, img.offsetRows},
-          {img.croppedWidth, img.croppedHeight}};
-}
-
 enum class TileSequenceStatus : uint8_t { ContinuesRow, BeginsNewRow, Invalid };
 
 inline TileSequenceStatus
@@ -166,18 +160,16 @@ evaluateConsecutiveTiles(const iRectangle2D rect, const iRectangle2D nextRect) {
   return Invalid;
 }
 
-void isValidImageGrid(Array2DRef<uint16_t> img,
-                      Array1DRef<const CroppedArray2DRef<uint16_t>> tiles) {
-  const auto imgDim =
-      iRectangle2D(/*pos=*/{0, 0}, iPoint2D(img.width(), img.height()));
+void isValidImageGrid(iRectangle2D imgDim,
+                      Array1DRef<const iRectangle2D> rects) {
   auto outPos = imgDim.pos;
 
-  iRectangle2D rect = getImageCropAsRectangle(tiles(0));
+  iRectangle2D rect = rects(0);
   assert(rect.pos == outPos);
   invariant(rect.isThisInside(imgDim));
   outPos.x += rect.getWidth();
-  for (int tileIdx = 1; tileIdx != tiles.size(); ++tileIdx) {
-    iRectangle2D nextRect = getImageCropAsRectangle(tiles(tileIdx));
+  for (int tileIdx = 1; tileIdx != rects.size(); ++tileIdx) {
+    iRectangle2D nextRect = rects(tileIdx);
     invariant(nextRect.isThisInside(imgDim));
     switch (evaluateConsecutiveTiles(rect, nextRect)) {
     case TileSequenceStatus::ContinuesRow:
@@ -200,16 +192,16 @@ void isValidImageGrid(Array2DRef<uint16_t> img,
 
 } // namespace
 
-std::vector<CroppedArray2DRef<uint16_t>>
-PanasonicV8Decompressor::DecompressorParamsBuilder::getOutTiles(
-    Array2DRef<uint16_t> img, Array1DRef<const uint32_t> stripLineOffsets,
+std::vector<iRectangle2D>
+PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
+    iRectangle2D imgDim, Array1DRef<const uint32_t> stripLineOffsets,
     Array1DRef<const uint16_t> stripWidths,
     Array1DRef<const uint16_t> stripHeights) {
   const int totalStrips = stripLineOffsets.size();
   invariant(stripWidths.size() == totalStrips &&
             stripHeights.size() == totalStrips);
 
-  std::vector<CroppedArray2DRef<uint16_t>> mOutTiles;
+  std::vector<iRectangle2D> mOutRects;
 
   for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
     const uint32_t stripWidth = stripWidths(stripIdx);
@@ -217,17 +209,14 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutTiles(
     const uint32_t stripOutputX = stripLineOffsets(stripIdx) & 0xFFFF;
     const uint32_t stripOutputY = stripLineOffsets(stripIdx) >> 16;
 
-    const auto out =
-        CroppedArray2DRef<uint16_t>(img, /*offsetCols=*/stripOutputX,
-                                    /*offsetRows=*/stripOutputY,
-                                    /*croppedWidth=*/stripWidth,
-                                    /*croppedHeight=*/stripHeight);
+    const auto out = iRectangle2D(iPoint2D(stripOutputX, stripOutputY),
+                                  iPoint2D(stripWidth, stripHeight));
 
-    mOutTiles.emplace_back(out);
+    mOutRects.emplace_back(out);
   }
 
-  isValidImageGrid(img, getAsArray1DRef(mOutTiles));
-  return mOutTiles;
+  isValidImageGrid(imgDim, getAsArray1DRef(mOutRects));
+  return mOutRects;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -255,7 +244,16 @@ void PanasonicV8Decompressor::decompress() const {
   for (int stripIdx = 0; stripIdx < numStrips; ++stripIdx) {
     try {
       Array1DRef<const uint8_t> strip = mParams.mStrips(stripIdx);
-      Array2DRef<uint16_t> out = mParams.mOutTiles(stripIdx).getAsArray2DRef();
+
+      const auto outRect = mParams.mOutRect(stripIdx);
+
+      const auto out = CroppedArray2DRef<uint16_t>(
+                           mRawOutput->getU16DataAsUncroppedArray2DRef(),
+                           /*offsetCols=*/outRect.pos.x,
+                           /*offsetRows=*/outRect.pos.y,
+                           /*croppedWidth=*/outRect.dim.x,
+                           /*croppedHeight=*/outRect.dim.y)
+                           .getAsArray2DRef();
 
       InternalHuffDecoder decoder(mHuffmanLUT, strip);
 
