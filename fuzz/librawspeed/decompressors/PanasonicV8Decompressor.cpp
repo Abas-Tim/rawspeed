@@ -22,7 +22,6 @@
 #include "MemorySanitizer.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array1DRefExtras.h"
-#include "adt/Array2DRef.h"
 #include "adt/Casts.h"
 #include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
@@ -75,11 +74,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
     RawImage mRaw(CreateRawImage(bs));
 
     uint32_t numStrips = bs.getU32();
-    uint32_t numOutTiles = bs.getU32();
+    uint32_t numStripLineOffsets = bs.getU32();
+    uint32_t numStripWidths = bs.getU32();
+    uint32_t numStripHeights = bs.getU32();
     uint32_t numHuffmanLUTEntries = bs.getU32();
 
     auto stripSizes = bs.getStream(numStrips, sizeof(uint32_t));
-    auto outTileSizes = bs.getStream(numOutTiles, 4 * sizeof(int32_t));
+    auto stripLineOffsetsInput =
+        bs.getStream(numStripLineOffsets, sizeof(uint32_t));
+    auto stripWidthsInput = bs.getStream(numStripWidths, sizeof(uint16_t));
+    auto stripHeightsInput = bs.getStream(numStripHeights, sizeof(uint16_t));
     auto huffmanLUTEntriesInput =
         bs.getStream(numHuffmanLUTEntries, 2 * sizeof(uint8_t));
     const auto initialPrediction = bs.getArray<uint16_t, 4>();
@@ -101,44 +105,20 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
       ThrowRDE("Unexpected component count / data type");
     }
 
+    auto stripLineOffsets =
+        stripLineOffsetsInput.getVector<uint32_t>(numStripLineOffsets);
+    stripLineOffsets.reserve(1); // Array1DRef does not like nullptr's.
+    auto stripWidths = stripWidthsInput.getVector<uint16_t>(numStripWidths);
+    stripWidths.reserve(1); // Array1DRef does not like nullptr's.
+    auto stripHeights = stripHeightsInput.getVector<uint16_t>(numStripHeights);
+    stripHeights.reserve(1); // Array1DRef does not like nullptr's.
+
     mRaw->createData();
 
-    const auto img = mRaw->getU16DataAsUncroppedArray2DRef();
-
-    const auto superRect = iRectangle2D{
-        /*pos=*/iPoint2D{0, 0}, /*dim=*/iPoint2D{img.width(), img.height()}};
-
-    std::vector<CroppedArray2DRef<uint16_t>> outTiles;
-    outTiles.reserve(std::max(1U, numOutTiles));
-    for (uint32_t stripIdx = 0; stripIdx < numOutTiles; ++stripIdx) {
-      auto stripXBegin = outTileSizes.get<int32_t>();
-      auto stripYBegin = outTileSizes.get<int32_t>();
-      auto stripXEnd = outTileSizes.get<int32_t>();
-      auto stripYEnd = outTileSizes.get<int32_t>();
-
-      const auto topLeft = iPoint2D{stripXBegin, stripYBegin};
-      const auto bottomRight = iPoint2D{stripXEnd, stripYEnd};
-      if (!superRect.isPointInside(topLeft) ||
-          !superRect.isPointInsideInclusive(bottomRight))
-        ThrowRDE("Inner tile not inside outer tile");
-
-      auto rect = iRectangle2D();
-      rect.setTopLeft(topLeft);
-      rect.setBottomRightAbsolute(bottomRight);
-
-      if (!rect.hasPositiveArea())
-        ThrowRDE("Empty tile");
-      invariant(rect.isThisInside(superRect));
-
-      const auto out =
-          CroppedArray2DRef<uint16_t>(mRaw->getU16DataAsUncroppedArray2DRef(),
-                                      /*offsetCols=*/stripXBegin,
-                                      /*offsetRows=*/stripYBegin,
-                                      /*croppedWidth=*/stripXEnd,
-                                      /*croppedHeight=*/stripYEnd);
-      outTiles.emplace_back(out);
-    }
-    invariant(outTileSizes.getRemainSize() == 0);
+    PanasonicV8Decompressor::DecompressorParamsBuilder builder(
+        mRaw->getU16DataAsUncroppedArray2DRef(), initialPrediction,
+        getAsArray1DRef(strips), getAsArray1DRef(stripLineOffsets),
+        getAsArray1DRef(stripWidths), getAsArray1DRef(stripHeights));
 
     std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> huffmanLUT;
     huffmanLUT.reserve(std::max(1U, numHuffmanLUTEntries));
@@ -151,13 +131,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
     }
     invariant(huffmanLUTEntriesInput.getRemainSize() == 0);
 
-    PanasonicV8Decompressor::DecompressorParams params{
-        .mStrips = getAsArray1DRef(strips),
-        .mOutTiles = getAsArray1DRef(outTiles),
-        .initialPrediction = initialPrediction,
-    };
-
-    PanasonicV8Decompressor v8(mRaw, params, getAsArray1DRef(huffmanLUT));
+    PanasonicV8Decompressor v8(mRaw, builder.getDecompressorParams(),
+                               getAsArray1DRef(huffmanLUT));
     v8.decompress();
     MSan::CheckMemIsInitialized(mRaw->getByteDataAsUncroppedArray2DRef());
   } catch (const RawspeedException&) { // NOLINT(bugprone-empty-catch)

@@ -23,12 +23,14 @@
 #pragma once
 
 #include "adt/Array1DRef.h"
+#include "adt/Array1DRefExtras.h"
 #include "adt/Array2DRef.h"
 #include "adt/CroppedArray2DRef.h"
 #include "common/RawImage.h"
 #include "decompressors/AbstractDecompressor.h"
 #include <array>
 #include <cstdint>
+#include <vector>
 
 namespace rawspeed {
 
@@ -51,13 +53,52 @@ public:
 
   /// Decompressor parameters populated from tags. They remain constant after
   /// construction.
+  struct DecompressorParamsBuilder;
+
   struct DecompressorParams {
     const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
     const Array1DRef<const CroppedArray2DRef<uint16_t>> mOutTiles;
 
     const Bayer2x2 initialPrediction;
 
-    void validate(Array2DRef<uint16_t> img) const;
+    DecompressorParams() = delete;
+
+  private:
+    friend struct DecompressorParamsBuilder;
+
+    DecompressorParams(Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
+                       Array1DRef<const CroppedArray2DRef<uint16_t>> mOutTiles_,
+                       Bayer2x2 initialPrediction_)
+        : mStrips(mStrips_), mOutTiles(mOutTiles_),
+          initialPrediction(initialPrediction_) {
+      invariant(mStrips.size() == mOutTiles.size());
+    }
+  };
+
+  struct DecompressorParamsBuilder {
+    const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
+    const Bayer2x2 initialPrediction;
+
+    const std::vector<CroppedArray2DRef<uint16_t>> mOutTiles;
+
+    std::vector<CroppedArray2DRef<uint16_t>> static getOutTiles(
+        Array2DRef<uint16_t> img, Array1DRef<const uint32_t> stripLineOffsets,
+        Array1DRef<const uint16_t> stripWidths,
+        Array1DRef<const uint16_t> stripHeights);
+
+    DecompressorParamsBuilder(
+        Array2DRef<uint16_t> img, Bayer2x2 initialPrediction_,
+        Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
+        Array1DRef<const uint32_t> stripLineOffsets,
+        Array1DRef<const uint16_t> stripWidths,
+        Array1DRef<const uint16_t> stripHeights)
+        : mStrips(mStrips_), initialPrediction(initialPrediction_),
+          mOutTiles(
+              getOutTiles(img, stripLineOffsets, stripWidths, stripHeights)) {}
+
+    [[nodiscard]] DecompressorParams getDecompressorParams() const {
+      return {mStrips, getAsArray1DRef(mOutTiles), initialPrediction};
+    }
   };
 
   // Pre-cached Huffman decoded values for rapid lookup.

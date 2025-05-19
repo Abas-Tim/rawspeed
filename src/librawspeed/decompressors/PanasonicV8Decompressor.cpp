@@ -23,6 +23,7 @@
 #include "rawspeedconfig.h"
 #include "decompressors/PanasonicV8Decompressor.h"
 #include "adt/Array1DRef.h"
+#include "adt/Array1DRefExtras.h"
 #include "adt/Array2DRef.h"
 #include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
@@ -44,6 +45,7 @@
 #include <cstdint>
 #include <limits>
 #include <utility>
+#include <vector>
 
 namespace rawspeed {
 
@@ -198,13 +200,34 @@ void isValidImageGrid(Array2DRef<uint16_t> img,
 
 } // namespace
 
-void PanasonicV8Decompressor::DecompressorParams::validate(
-    Array2DRef<uint16_t> img) const {
-  if (mOutTiles.size() != mStrips.size())
-    ThrowRDE("Strip byte buffer array does not have enough entries for the "
-             "number of strips!");
+std::vector<CroppedArray2DRef<uint16_t>>
+PanasonicV8Decompressor::DecompressorParamsBuilder::getOutTiles(
+    Array2DRef<uint16_t> img, Array1DRef<const uint32_t> stripLineOffsets,
+    Array1DRef<const uint16_t> stripWidths,
+    Array1DRef<const uint16_t> stripHeights) {
+  const int totalStrips = stripLineOffsets.size();
+  invariant(stripWidths.size() == totalStrips &&
+            stripHeights.size() == totalStrips);
 
-  isValidImageGrid(img, mOutTiles);
+  std::vector<CroppedArray2DRef<uint16_t>> mOutTiles;
+
+  for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
+    const uint32_t stripWidth = stripWidths(stripIdx);
+    const uint32_t stripHeight = stripHeights(stripIdx);
+    const uint32_t stripOutputX = stripLineOffsets(stripIdx) & 0xFFFF;
+    const uint32_t stripOutputY = stripLineOffsets(stripIdx) >> 16;
+
+    const auto out =
+        CroppedArray2DRef<uint16_t>(img, /*offsetCols=*/stripOutputX,
+                                    /*offsetRows=*/stripOutputY,
+                                    /*croppedWidth=*/stripWidth,
+                                    /*croppedHeight=*/stripHeight);
+
+    mOutTiles.emplace_back(out);
+  }
+
+  isValidImageGrid(img, getAsArray1DRef(mOutTiles));
+  return mOutTiles;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -219,7 +242,6 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(
       mRawOutput->getBpp() != sizeof(uint16_t)) {
     ThrowRDE("Unexpected component count / data type");
   }
-  mParams.validate(mRawOutput->getU16DataAsUncroppedArray2DRef());
 }
 
 void PanasonicV8Decompressor::decompress() const {
