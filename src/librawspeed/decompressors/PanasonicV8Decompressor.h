@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "adt/Array1DRef.h"
+#include "adt/Array2DRef.h"
 #include "common/RawImage.h"
 #include "decompressors/AbstractDecompressor.h"
 #include <array>

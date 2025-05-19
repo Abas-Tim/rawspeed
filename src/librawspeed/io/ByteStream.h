@@ -27,6 +27,7 @@
 #include "io/Buffer.h"
 #include "io/IOException.h"
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <iterator>

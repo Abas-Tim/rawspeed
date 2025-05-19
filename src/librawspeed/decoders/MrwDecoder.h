@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include "adt/Optional.h"
 #include "common/RawImage.h"
 #include "decoders/RawDecoder.h"
 #include "io/Buffer.h"

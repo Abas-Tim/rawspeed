@@ -21,6 +21,7 @@
 #pragma once
 
 #include "rawspeedconfig.h"
+#include "adt/Array2DRef.h"
 #include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
 #include <cstddef>

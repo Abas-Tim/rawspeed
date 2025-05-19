@@ -24,6 +24,7 @@
 
 #include "io/Buffer.h"
 #include <cstddef>
+#include <string>
 
 namespace rawspeed {
 
