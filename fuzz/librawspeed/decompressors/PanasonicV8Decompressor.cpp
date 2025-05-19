@@ -28,6 +28,7 @@
 #include "adt/Invariant.h"
 #include "common/RawImage.h"
 #include "common/RawspeedException.h"
+#include "decoders/RawDecoderException.h"
 #include "fuzz/Common.h"
 #include "io/Buffer.h"
 #include "io/ByteStream.h"
@@ -95,22 +96,46 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
     }
     bs = {}; // bs is no longer needed.
 
+    if (mRaw->getDataType() != RawImageType::UINT16 ||
+        mRaw->getBpp() != sizeof(uint16_t)) {
+      ThrowRDE("Unexpected component count / data type");
+    }
+
     mRaw->createData();
+
+    const auto img = mRaw->getU16DataAsUncroppedArray2DRef();
+
+    const auto superRect = iRectangle2D{
+        /*pos=*/iPoint2D{0, 0}, /*dim=*/iPoint2D{img.width(), img.height()}};
 
     std::vector<Array2DRef<uint16_t>> outTiles;
     outTiles.reserve(std::max(1U, numOutTiles));
     for (uint32_t stripIdx = 0; stripIdx < numOutTiles; ++stripIdx) {
-      const auto stripWidth = outTileSizes.get<int32_t>();
-      const auto stripHeight = outTileSizes.get<int32_t>();
-      const auto stripOutputX = outTileSizes.get<int32_t>();
-      const auto stripOutputY = outTileSizes.get<int32_t>();
+      auto stripXBegin = outTileSizes.get<int32_t>();
+      auto stripYBegin = outTileSizes.get<int32_t>();
+      auto stripXEnd = outTileSizes.get<int32_t>();
+      auto stripYEnd = outTileSizes.get<int32_t>();
+
+      const auto topLeft = iPoint2D{stripXBegin, stripYBegin};
+      const auto bottomRight = iPoint2D{stripXEnd, stripYEnd};
+      if (!superRect.isPointInside(topLeft) ||
+          !superRect.isPointInsideInclusive(bottomRight))
+        ThrowRDE("Inner tile not inside outer tile");
+
+      auto rect = iRectangle2D();
+      rect.setTopLeft(topLeft);
+      rect.setBottomRightAbsolute(bottomRight);
+
+      if (!rect.hasPositiveArea())
+        ThrowRDE("Empty tile");
+      invariant(rect.isThisInside(superRect));
 
       const auto out =
           CroppedArray2DRef<uint16_t>(mRaw->getU16DataAsUncroppedArray2DRef(),
-                                      /*offsetCols=*/stripOutputX,
-                                      /*offsetRows=*/stripOutputY,
-                                      /*croppedWidth=*/stripWidth,
-                                      /*croppedHeight=*/stripHeight)
+                                      /*offsetCols=*/stripXBegin,
+                                      /*offsetRows=*/stripYBegin,
+                                      /*croppedWidth=*/stripXEnd,
+                                      /*croppedHeight=*/stripYEnd)
               .getAsArray2DRef();
 
       outTiles.emplace_back(out);
