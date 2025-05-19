@@ -278,10 +278,10 @@ getInputStrips(const DecompressorV8Params& mParams, Buffer mInputFile) {
   return mStrips;
 }
 
-std::vector<Array2DRef<uint16_t>>
+std::vector<CroppedArray2DRef<uint16_t>>
 getOutputTiles(const DecompressorV8Params& mParams,
                const Array2DRef<uint16_t> img) {
-  std::vector<Array2DRef<uint16_t>> mOutTiles;
+  std::vector<CroppedArray2DRef<uint16_t>> mOutTiles;
 
   const int totalStrips =
       mParams.horizontalStripCount * mParams.verticalStripCount;
@@ -296,8 +296,7 @@ getOutputTiles(const DecompressorV8Params& mParams,
         CroppedArray2DRef<uint16_t>(img, /*offsetCols=*/stripOutputX,
                                     /*offsetRows=*/stripOutputY,
                                     /*croppedWidth=*/stripWidth,
-                                    /*croppedHeight=*/stripHeight)
-            .getAsArray2DRef();
+                                    /*croppedHeight=*/stripHeight);
 
     mOutTiles.emplace_back(out);
   }
@@ -321,7 +320,7 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
 
   mRaw->createData();
 
-  const std::vector<Array2DRef<uint16_t>> mOutTiles =
+  const auto mOutTiles =
       getOutputTiles(mParams, mRaw->getU16DataAsUncroppedArray2DRef());
 
   PanasonicV8Decompressor::DecompressorParams mParams2{

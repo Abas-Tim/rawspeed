@@ -24,6 +24,7 @@
 
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
+#include "adt/CroppedArray2DRef.h"
 #include "common/RawImage.h"
 #include "decompressors/AbstractDecompressor.h"
 #include <array>
@@ -52,7 +53,7 @@ public:
   /// construction.
   struct DecompressorParams {
     const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
-    const Array1DRef<const Array2DRef<uint16_t>> mOutTiles;
+    const Array1DRef<const CroppedArray2DRef<uint16_t>> mOutTiles;
 
     const Bayer2x2 initialPrediction;
 

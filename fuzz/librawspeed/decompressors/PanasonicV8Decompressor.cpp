@@ -108,7 +108,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
     const auto superRect = iRectangle2D{
         /*pos=*/iPoint2D{0, 0}, /*dim=*/iPoint2D{img.width(), img.height()}};
 
-    std::vector<Array2DRef<uint16_t>> outTiles;
+    std::vector<CroppedArray2DRef<uint16_t>> outTiles;
     outTiles.reserve(std::max(1U, numOutTiles));
     for (uint32_t stripIdx = 0; stripIdx < numOutTiles; ++stripIdx) {
       auto stripXBegin = outTileSizes.get<int32_t>();
@@ -135,9 +135,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
                                       /*offsetCols=*/stripXBegin,
                                       /*offsetRows=*/stripYBegin,
                                       /*croppedWidth=*/stripXEnd,
-                                      /*croppedHeight=*/stripYEnd)
-              .getAsArray2DRef();
-
+                                      /*croppedHeight=*/stripYEnd);
       outTiles.emplace_back(out);
     }
     invariant(outTileSizes.getRemainSize() == 0);

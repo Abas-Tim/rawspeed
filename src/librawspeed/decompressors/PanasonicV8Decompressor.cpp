@@ -24,6 +24,7 @@
 #include "decompressors/PanasonicV8Decompressor.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
+#include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
 #include "adt/TiledArray2DRef.h"
 #include "bitstreams/BitStream.h"
@@ -171,7 +172,7 @@ void PanasonicV8Decompressor::decompress() const {
   for (int stripIdx = 0; stripIdx < numStrips; ++stripIdx) {
     try {
       Array1DRef<const uint8_t> strip = mParams.mStrips(stripIdx);
-      Array2DRef<uint16_t> out = mParams.mOutTiles(stripIdx);
+      Array2DRef<uint16_t> out = mParams.mOutTiles(stripIdx).getAsArray2DRef();
 
       InternalHuffDecoder decoder(mHuffmanLUT, strip);
 
