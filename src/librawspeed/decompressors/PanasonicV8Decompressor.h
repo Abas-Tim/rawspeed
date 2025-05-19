@@ -57,7 +57,7 @@ public:
 
     const Bayer2x2 initialPrediction;
 
-    void validate() const;
+    void validate(Array2DRef<uint16_t> img) const;
   };
 
   // Pre-cached Huffman decoded values for rapid lookup.

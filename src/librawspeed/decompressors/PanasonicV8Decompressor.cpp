@@ -26,6 +26,7 @@
 #include "adt/Array2DRef.h"
 #include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
+#include "adt/Point.h"
 #include "adt/TiledArray2DRef.h"
 #include "bitstreams/BitStream.h"
 #include "bitstreams/BitStreamer.h"
@@ -140,10 +141,70 @@ public:
   int32_t decodeNextDiffValue();
 };
 
-void PanasonicV8Decompressor::DecompressorParams::validate() const {
+namespace {
+
+template <typename T>
+iRectangle2D getImageCropAsRectangle(CroppedArray2DRef<T> img) {
+  return {{img.offsetCols, img.offsetRows},
+          {img.croppedWidth, img.croppedHeight}};
+}
+
+enum class TileSequenceStatus : uint8_t { ContinuesRow, BeginsNewRow, Invalid };
+
+inline TileSequenceStatus
+evaluateConsecutiveTiles(const iRectangle2D rect, const iRectangle2D nextRect) {
+  using enum TileSequenceStatus;
+  // Are these two are horizontally-adjacent rectangles of same height?
+  if (rect.getTopRight() == nextRect.getTopLeft() &&
+      rect.getBottomRight() == nextRect.getBottomLeft())
+    return ContinuesRow;
+  // Otherwise, the next rectangle should be the first row of next Row.
+  if (nextRect.getTopLeft() == iPoint2D(0, rect.getBottom()))
+    return BeginsNewRow;
+  return Invalid;
+}
+
+void isValidImageGrid(Array2DRef<uint16_t> img,
+                      Array1DRef<const CroppedArray2DRef<uint16_t>> tiles) {
+  const auto imgDim =
+      iRectangle2D(/*pos=*/{0, 0}, iPoint2D(img.width(), img.height()));
+  auto outPos = imgDim.pos;
+
+  iRectangle2D rect = getImageCropAsRectangle(tiles(0));
+  assert(rect.pos == outPos);
+  invariant(rect.isThisInside(imgDim));
+  outPos.x += rect.getWidth();
+  for (int tileIdx = 1; tileIdx != tiles.size(); ++tileIdx) {
+    iRectangle2D nextRect = getImageCropAsRectangle(tiles(tileIdx));
+    invariant(nextRect.isThisInside(imgDim));
+    switch (evaluateConsecutiveTiles(rect, nextRect)) {
+    case TileSequenceStatus::ContinuesRow:
+      outPos.x += nextRect.getWidth();
+      rect = nextRect;
+      continue;
+    case TileSequenceStatus::BeginsNewRow:
+      assert(outPos.x == imgDim.getRight());
+      outPos.x = 0;
+      outPos.y += nextRect.getHeight();
+      rect = nextRect;
+      continue;
+    case TileSequenceStatus::Invalid:
+      __builtin_unreachable();
+      ThrowRDE("Invalid tiling config");
+    }
+  }
+  assert(rect.getBottomRight() == imgDim.getBottomRight());
+}
+
+} // namespace
+
+void PanasonicV8Decompressor::DecompressorParams::validate(
+    Array2DRef<uint16_t> img) const {
   if (mOutTiles.size() != mStrips.size())
     ThrowRDE("Strip byte buffer array does not have enough entries for the "
              "number of strips!");
+
+  isValidImageGrid(img, mOutTiles);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,7 +219,7 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(
       mRawOutput->getBpp() != sizeof(uint16_t)) {
     ThrowRDE("Unexpected component count / data type");
   }
-  mParams.validate();
+  mParams.validate(mRawOutput->getU16DataAsUncroppedArray2DRef());
 }
 
 void PanasonicV8Decompressor::decompress() const {
