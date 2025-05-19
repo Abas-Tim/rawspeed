@@ -197,6 +197,8 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
     iRectangle2D imgDim, Array1DRef<const uint32_t> stripLineOffsets,
     Array1DRef<const uint16_t> stripWidths,
     Array1DRef<const uint16_t> stripHeights) {
+  if (!imgDim.hasPositiveArea())
+    ThrowRDE("Empty image requested");
   const int totalStrips = stripLineOffsets.size();
   if (stripWidths.size() != totalStrips || stripHeights.size() != totalStrips)
     ThrowRDE("Inputs have mismatched length");
@@ -233,6 +235,8 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(
       mRawOutput->getBpp() != sizeof(uint16_t)) {
     ThrowRDE("Unexpected component count / data type");
   }
+  if (!mRawOutput->dim.hasPositiveArea())
+    ThrowRDE("Unexpected image dimensions");
 }
 
 void PanasonicV8Decompressor::decompress() const {
