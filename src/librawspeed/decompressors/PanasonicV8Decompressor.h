@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "adt/Array1DRef.h"
+#include "adt/Array2DRef.h"
 #include "common/RawImage.h"
 #include "decompressors/AbstractDecompressor.h"
 #include <array>
@@ -49,15 +51,10 @@ public:
   /// Decompressor parameters populated from tags. They remain constant after
   /// construction.
   struct DecompressorParams {
-    const uint16_t horizontalStripCount;
-    const uint16_t verticalStripCount;
-
-    const Bayer2x2 initialPrediction;
-
-    const uint16_t gammaClipVal;
-
     const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
     const Array1DRef<const Array2DRef<uint16_t>> mOutTiles;
+
+    const Bayer2x2 initialPrediction;
 
     void validate() const;
   };

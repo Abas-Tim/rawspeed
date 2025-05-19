@@ -24,8 +24,8 @@
 #include "decompressors/PanasonicV8Decompressor.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
-#include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
+#include "adt/TiledArray2DRef.h"
 #include "bitstreams/BitStream.h"
 #include "bitstreams/BitStreamer.h"
 #include "bitstreams/BitStreamerMSB.h" // IWYU pragma: keep
@@ -40,6 +40,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <utility>
 
 namespace rawspeed {
@@ -139,12 +140,7 @@ public:
 };
 
 void PanasonicV8Decompressor::DecompressorParams::validate() const {
-  const int totalStrips = horizontalStripCount * verticalStripCount;
-
-  if (totalStrips > mStrips.size())
-    ThrowRDE("Strip byte buffer array does not have enough entries for the "
-             "number of strips!");
-  if (totalStrips > mOutTiles.size())
+  if (mOutTiles.size() != mStrips.size())
     ThrowRDE("Strip byte buffer array does not have enough entries for the "
              "number of strips!");
 }
@@ -165,15 +161,14 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(
 }
 
 void PanasonicV8Decompressor::decompress() const {
-  const int totalStrips =
-      mParams.horizontalStripCount * mParams.verticalStripCount;
+  const int numStrips = mParams.mStrips.size();
 #ifdef HAVE_OPENMP
   unsigned threadCount =
-      std::min(totalStrips, rawspeed_get_number_of_processor_cores());
+      std::min(numStrips, rawspeed_get_number_of_processor_cores());
 #pragma omp parallel for num_threads(threadCount)                              \
-    schedule(static) default(none) shared(totalStrips)
+    schedule(static) default(none) firstprivate(numStrips)
 #endif
-  for (int stripIdx = 0; stripIdx < totalStrips; ++stripIdx) {
+  for (int stripIdx = 0; stripIdx < numStrips; ++stripIdx) {
     try {
       Array1DRef<const uint8_t> strip = mParams.mStrips(stripIdx);
       Array2DRef<uint16_t> out = mParams.mOutTiles(stripIdx);
@@ -203,46 +198,40 @@ void PanasonicV8Decompressor::decompressStrip(
     for (int i = 0; i != 2; ++i)
       pred(i, j) = pred(j, i);
 
-  for (int rowGroup = 0; rowGroup < out.height() / 2; ++rowGroup) {
-    const auto outRow = CroppedArray2DRef(out,
-                                          /*offsetCols=*/0,
-                                          /*offsetRows=*/2 * rowGroup,
-                                          /*croppedWidth=*/out.width(),
-                                          /*croppedHeight=*/2)
-                            .getAsArray2DRef();
+  const auto rowGroups = TiledArray2DRef(out,
+                                         /*tileWidth=*/out.width(),
+                                         /*tileHeight_=*/2);
+
+  invariant(rowGroups.numCols() == 1);
+  for (int rowGroup = 0; rowGroup != rowGroups.numRows(); ++rowGroup) {
+    const auto outRow = rowGroups(rowGroup, 0).getAsArray2DRef();
+
+    const auto outBlocks = TiledArray2DRef(outRow,
+                                           /*tileWidth=*/2,
+                                           /*tileHeight=*/2);
 
     // Each decoded 'row' is actually two rows of pixels in the raw image
     // because the image is encoded in rows of 2x2 CFA tiles. Likewise the
     // effective width here is 2x the strip width.
-    for (int blockIdx = 0; blockIdx < out.width() / 2; ++blockIdx) {
-      const auto outBlock = CroppedArray2DRef(outRow,
-                                              /*offsetCols=*/2 * blockIdx,
-                                              /*offsetRows=*/0,
-                                              /*croppedWidth=*/2,
-                                              /*croppedHeight=*/2)
-                                .getAsArray2DRef();
+    invariant(outBlocks.numRows() == 1);
+    for (int blockIdx = 0; blockIdx < outBlocks.numCols(); ++blockIdx) {
+      const auto outBlock = outBlocks(0, blockIdx).getAsArray2DRef();
 
       for (int j = 0; j != 2; ++j) {
         for (int i = 0; i != 2; ++i) {
           const int32_t diff = decoder.decodeNextDiffValue();
           const int32_t decodedValue = pred(i, j) + diff;
-          assert(decodedValue > 0);
-          pred(i, j) = uint16_t(
-              std::clamp(decodedValue, 0, int32_t(mParams.gammaClipVal)));
+          invariant(decodedValue > 0);
+          pred(i, j) = uint16_t(std::clamp(
+              decodedValue, 0, int32_t(std::numeric_limits<uint16_t>::max())));
           outBlock(i, j) = pred(i, j);
         }
       }
     }
 
-    const auto tmp = CroppedArray2DRef(outRow,
-                                       /*offsetCols=*/0,
-                                       /*offsetRows=*/0,
-                                       /*croppedWidth=*/2,
-                                       /*croppedHeight=*/2)
-                         .getAsArray2DRef();
-
     // At the end of the line, reset predicted value to the first tile of the
     // prior line.
+    const auto tmp = outBlocks(0, 0).getAsArray2DRef();
     for (int j = 0; j != 2; ++j)
       for (int i = 0; i != 2; ++i)
         pred(i, j) = tmp(i, j);

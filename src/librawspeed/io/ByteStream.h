@@ -27,6 +27,7 @@
 #include "io/Buffer.h"
 #include "io/IOException.h"
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <iterator>
@@ -159,6 +160,14 @@ public:
     auto ret = peek<T>();
     pos += sizeof(T);
     return ret;
+  }
+
+  template <typename T, int N> std::array<T, N> getArray() {
+    std::array<T, N> out;
+    auto bs = getStream(N, sizeof(T));
+    std::generate(out.begin(), out.end(), [&bs]() { return bs.get<T>(); });
+    invariant(bs.getRemainSize() == 0);
+    return out;
   }
 
   [[nodiscard]] uint8_t peekByte(size_type i = 0) const {

@@ -21,10 +21,12 @@
 
 #include "decoders/Rw2Decoder.h"
 #include "adt/Array1DRef.h"
+#include "adt/Array1DRefExtras.h"
 #include "adt/Array2DRef.h"
 #include "adt/CroppedArray2DRef.h"
 #include "adt/Point.h"
 #include "bitstreams/BitStreams.h"
+#include "common/BayerPhase.h"
 #include "common/Common.h"
 #include "common/RawImage.h"
 #include "decoders/RawDecoderException.h"
@@ -47,6 +49,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -68,11 +71,6 @@ bool Rw2Decoder::isAppropriateDecoder(const TiffRootIFD* rootIFD,
 }
 
 namespace {
-
-template <typename T>
-[[nodiscard]] Array1DRef<const T> getAsArray1DRef(const std::vector<T>& vec) {
-  return {vec.data(), implicit_cast<int>(vec.size())};
-}
 
 /// Retrieve list of values from Panasonic TiffTag
 template <typename T>
@@ -136,6 +134,12 @@ void DecompressorV8Params::validate() const {
                   [](uint16_t x) { return x != 0; })) {
     ThrowRDE("Non-zero shift down value encountered! Shift down decoding has "
              "never been tested!");
+  }
+
+  if (gammaClipVal != std::numeric_limits<uint16_t>::max()) {
+    ThrowRDE("Got non-no-op gammaClipVal (%u). Not known to happen "
+             "in-the-wild. Please file a bug!",
+             gammaClipVal);
   }
 }
 
@@ -304,6 +308,10 @@ getOutputTiles(const DecompressorV8Params& mParams,
 } // namespace
 
 RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
+  parseCFA();
+  if (getAsBayerPhase(mRaw->cfa) != BayerPhase::RGGB)
+    ThrowRDE("Unexpected CFA, only RGGB is supported");
+
   const DecompressorV8Params mParams(raw);
   const std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> mHuffmanLUT =
       populateHuffmanLUT(raw);
@@ -317,12 +325,10 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
       getOutputTiles(mParams, mRaw->getU16DataAsUncroppedArray2DRef());
 
   PanasonicV8Decompressor::DecompressorParams mParams2{
-      .horizontalStripCount = mParams.horizontalStripCount,
-      .verticalStripCount = mParams.verticalStripCount,
-      .initialPrediction = mParams.initialPrediction,
-      .gammaClipVal = mParams.gammaClipVal,
       .mStrips = getAsArray1DRef(mStrips),
-      .mOutTiles = getAsArray1DRef(mOutTiles)};
+      .mOutTiles = getAsArray1DRef(mOutTiles),
+      .initialPrediction = mParams.initialPrediction,
+  };
 
   PanasonicV8Decompressor v8(mRaw, mParams2, getAsArray1DRef(mHuffmanLUT));
   v8.decompress();
