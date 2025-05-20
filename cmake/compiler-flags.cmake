@@ -53,7 +53,7 @@ SET(CMAKE_MODULE_LINKER_FLAGS
 if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
   if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(LIST )
-    list(APPEND LIST -fno-force-emit-vtables)
+    list(APPEND LIST -fforce-emit-vtables)
     list(APPEND LIST -fno-whole-program-vtables)
     list(APPEND LIST -fno-strict-vtable-pointers)
     add_compile_options("$<$<COMPILE_LANGUAGE:C,CXX>:${LIST}>")
