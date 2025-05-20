@@ -25,7 +25,12 @@ RAWSPEED_BUILD="$WORK/rawspeed"
 
 ln -f -s /usr/local/bin/lld /usr/bin/ld
 
+CFLAGS="$CFLAGS -flto=thin"
+CXXFLAGS="$CXXFLAGS -flto=thin"
+
 CXXFLAGS="$CXXFLAGS -fforce-emit-vtables"
+# CXXFLAGS="$CXXFLAGS -fwhole-program-vtables" # DOES NOT WORK WITH SANCOV!
+CXXFLAGS="$CXXFLAGS -fstrict-vtable-pointers"
 
 THINLTO_CACHE="$WORK/thinlto-cache"
 LDFLAGS="${LDFLAGS:-} -Wl,--thinlto-cache-dir=\"$THINLTO_CACHE\""
