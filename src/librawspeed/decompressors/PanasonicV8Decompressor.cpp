@@ -40,7 +40,6 @@
 #include "io/IOException.h"
 #include <algorithm>
 #include <array>
-#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -163,14 +162,13 @@ evaluateConsecutiveTiles(const iRectangle2D rect, const iRectangle2D nextRect) {
 void isValidImageGrid(iRectangle2D imgDim,
                       Array1DRef<const iRectangle2D> rects) {
   auto outPos = imgDim.pos;
+  invariant(outPos.x == 0 && outPos.y == 0);
 
   iRectangle2D rect = rects(0);
   if (rect.pos != outPos)
-    ThrowRDE("FIrst tile is out-of-order");
-  if (!rect.isThisInside(imgDim))
-    ThrowRDE("Tile isn't fully within the output image");
-  if (!rect.hasPositiveArea())
-    ThrowRDE("Got empty tile?");
+    ThrowRDE("First tile is out-of-order");
+  invariant(rect.isThisInside(imgDim));
+  invariant(rect.hasPositiveArea());
   outPos.x += rect.getWidth();
   for (int tileIdx = 1; tileIdx != rects.size(); ++tileIdx) {
     iRectangle2D nextRect = rects(tileIdx);
@@ -182,13 +180,13 @@ void isValidImageGrid(iRectangle2D imgDim,
       rect = nextRect;
       continue;
     case TileSequenceStatus::BeginsNewRow:
-      assert(outPos.x == imgDim.getRight());
+      if (outPos.x != imgDim.getRight())
+        ThrowRDE("Previous row has not been fully filled yet");
       outPos.x = 0;
       outPos.y += nextRect.getHeight();
       rect = nextRect;
       continue;
     case TileSequenceStatus::Invalid:
-      __builtin_unreachable();
       ThrowRDE("Invalid tiling config");
     }
   }
@@ -219,10 +217,15 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
     const uint32_t stripOutputX = stripLineOffsets(stripIdx) & 0xFFFF;
     const uint32_t stripOutputY = stripLineOffsets(stripIdx) >> 16;
 
-    const auto out = iRectangle2D(iPoint2D(stripOutputX, stripOutputY),
-                                  iPoint2D(stripWidth, stripHeight));
+    const auto rect = iRectangle2D(iPoint2D(stripOutputX, stripOutputY),
+                                   iPoint2D(stripWidth, stripHeight));
 
-    mOutRects.emplace_back(out);
+    if (!rect.isThisInside(imgDim))
+      ThrowRDE("Tile isn't fully within the output image");
+    if (!rect.hasPositiveArea())
+      ThrowRDE("The tile is empty");
+
+    mOutRects.emplace_back(rect);
   }
 
   isValidImageGrid(imgDim, getAsArray1DRef(mOutRects));
