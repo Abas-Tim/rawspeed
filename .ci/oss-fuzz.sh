@@ -20,6 +20,9 @@ set -ex
 apt-get install -y ninja-build
 export CMAKE_GENERATOR=Ninja
 
+RAWSPEED_SOURCE="$SRC/librawspeed/"
+RAWSPEED_BUILD="$WORK/rawspeed"
+
 ln -f -s /usr/local/bin/lld /usr/bin/ld
 
 cd "$SRC"
@@ -28,10 +31,10 @@ LIBCXX_LLVM_VER="19.1.7"
 
 wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LIBCXX_LLVM_VER/llvm-project-$LIBCXX_LLVM_VER.src.tar.xz
 tar -xf llvm-project-$LIBCXX_LLVM_VER.src.tar.xz llvm-project-$LIBCXX_LLVM_VER.src/{runtimes,cmake,llvm/cmake,libcxx,libcxxabi}/
-LLVM_SOURCE="$SRC/llvm-project-$LIBCXX_LLVM_VER.src"
+LIBCXX_LLVM_SOURCE="$SRC/llvm-project-$LIBCXX_LLVM_VER.src"
 
 LIBCXX_BUILD="$WORK/llvm-project-$LIBCXX_LLVM_VER.libcxx.build"
-cmake -S "$LLVM_SOURCE/runtimes/" -B "$LIBCXX_BUILD" \
+cmake -S "$LIBCXX_LLVM_SOURCE/runtimes/" -B "$LIBCXX_BUILD" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
       -DLLVM_INCLUDE_TESTS=OFF \
@@ -50,10 +53,12 @@ LIBOMP_LLVM_VER="20.1.5"
 
 wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LIBOMP_LLVM_VER/llvm-project-$LIBOMP_LLVM_VER.src.tar.xz
 tar -xf llvm-project-$LIBOMP_LLVM_VER.src.tar.xz llvm-project-$LIBOMP_LLVM_VER.src/{runtimes,cmake,llvm/cmake,openmp}/
-LLVM_SOURCE="$SRC/llvm-project-$LIBOMP_LLVM_VER.src"
+OPENMP_LLVM_SOURCE="$SRC/llvm-project-$LIBOMP_LLVM_VER.src"
+
+patch $OPENMP_LLVM_SOURCE/openmp/runtime/src/kmp.h $RAWSPEED_SOURCE/.ci/openmp.patch
 
 OPENMP_BUILD="$WORK/llvm-project-$LIBOMP_LLVM_VER.omp.build"
-cmake -S "$LLVM_SOURCE/openmp/" -B "$OPENMP_BUILD" \
+cmake -S "$OPENMP_LLVM_SOURCE/openmp/" -B "$OPENMP_BUILD" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
       -DLIBOMP_ENABLE_SHARED=OFF \
@@ -67,9 +72,6 @@ if [[ $SANITIZER = *undefined* ]]; then
   CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
   CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
 fi
-
-RAWSPEED_SOURCE="$SRC/librawspeed/"
-RAWSPEED_BUILD="$WORK/rawspeed"
 
 cmake -S "$RAWSPEED_SOURCE" -B "$RAWSPEED_BUILD" \
   -DBINARY_PACKAGE_BUILD=ON -DWITH_OPENMP=ON \
