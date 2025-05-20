@@ -37,6 +37,64 @@ LDFLAGS="${LDFLAGS:-} -Wl,--thinlto-cache-dir=\"$THINLTO_CACHE\""
 
 cd "$SRC"
 
+OSSFUZZ_LLVM_VER=$(clang -dumpversion)
+OSSFUZZ_LLVM_VER_MAJOR=(${OSSFUZZ_LLVM_VER//./ })
+OSSFUZZ_LLVM_VER_MAJOR=${OSSFUZZ_LLVM_VER_MAJOR[0]}
+
+wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$OSSFUZZ_LLVM_VER/llvm-project-$OSSFUZZ_LLVM_VER.src.tar.xz
+tar -xf llvm-project-$OSSFUZZ_LLVM_VER.src.tar.xz llvm-project-$OSSFUZZ_LLVM_VER.src/{runtimes,cmake,llvm/cmake,libcxx,libcxxabi,compiler-rt}/
+COMPILERRT_LLVM_SOURCE="$SRC/llvm-project-$OSSFUZZ_LLVM_VER.src"
+
+COMPILERRT_BUILD="$WORK/llvm-project-$OSSFUZZ_LLVM_VER.compiler-rt.build"
+cmake -S "$COMPILERRT_LLVM_SOURCE/runtimes/" -B "$COMPILERRT_BUILD" \
+      -DCMAKE_C_FLAGS="$CFLAGS -fno-sanitize=all" \
+      -DCMAKE_CXX_FLAGS="$CXXFLAGS -fno-sanitize=all" \
+      -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+      -DCMAKE_C_VISIBILITY_PRESET=hidden \
+      -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
+      -DCMAKE_VISIBILITY_INLINES_HIDDEN=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DLLVM_INCLUDE_TESTS=OFF \
+      -DLIBCXX_INCLUDE_TESTS=OFF \
+      -DLIBCXXABI_INCLUDE_TESTS=OFF \
+      -DCOMPILER_RT_INCLUDE_TESTS=OFF \
+      -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;compiler-rt" \
+      -DLIBCXX_ENABLE_SHARED=OFF \
+      -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+      -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
+      -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
+      -DCOMPILER_RT_USE_LLVM_UNWINDER=OFF \
+      -DCOMPILER_RT_CXX_LIBRARY=libcxx \
+      -DCOMPILER_RT_STATIC_CXX_LIBRARY=ON \
+      -DSANITIZER_USE_STATIC_CXX_ABI=ON \
+      -DSANITIZER_CXX_ABI_LIBNAME=libc++ \
+      -DSANITIZER_CXX_ABI_INTREE=ON \
+      -DCOMPILER_RT_SANITIZERS_TO_BUILD="asan;msan" \
+      -DCOMPILER_RT_BUILD_PROFILE=OFF \
+      -DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+      -DCOMPILER_RT_BUILD_XRAY=OFF \
+      -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+      -DCOMPILER_RT_BUILD_MEMPROF=OFF \
+      -DCOMPILER_RT_BUILD_ORC=OFF
+cmake --build "$COMPILERRT_BUILD" -- -j$(nproc) compiler-rt
+
+TMPPDIR=$(mktemp -d)
+mv /usr/local/lib/clang/$OSSFUZZ_LLVM_VER_MAJOR/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer* $TMPPDIR/
+
+rm -rf /usr/*/lib/clang/*/include/sanitizer
+rm -rf /usr/*/lib/clang/*/lib/*
+
+ln -s $COMPILERRT_BUILD/compiler-rt/lib/linux /usr/local/lib/clang/$OSSFUZZ_LLVM_VER_MAJOR/lib/linux
+ln -s $COMPILERRT_BUILD/compiler-rt/lib/linux /usr/local/lib/clang/$OSSFUZZ_LLVM_VER_MAJOR/lib/x86_64-unknown-linux-gnu
+
+mv $TMPPDIR/* $COMPILERRT_BUILD/compiler-rt/lib/linux
+
+rm -rf $COMPILERRT_BUILD/compiler-rt/lib/linux/*.so
+
+CXXFLAGS="$CXXFLAGS -isystem $COMPILERRT_BUILD/compiler-rt/include"
+
 LIBCXX_LLVM_VER="19.1.7"
 
 wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LIBCXX_LLVM_VER/llvm-project-$LIBCXX_LLVM_VER.src.tar.xz
