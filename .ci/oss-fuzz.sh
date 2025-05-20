@@ -27,11 +27,11 @@ cd "$SRC"
 LLVM_VER="18.1.8"
 
 wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VER/llvm-project-$LLVM_VER.src.tar.xz
-tar -xf llvm-project-$LLVM_VER.src.tar.xz llvm-project-$LLVM_VER.src/{runtimes,cmake,llvm/cmake,libcxx,libcxxabi}/
+tar -xf llvm-project-$LLVM_VER.src.tar.xz llvm-project-$LLVM_VER.src/{runtimes,cmake,llvm/cmake,libcxx,libcxxabi,openmp}/
 LLVM_SOURCE="$SRC/llvm-project-$LLVM_VER.src"
-LLVM_BUILD="$WORK/llvm-project-$LLVM_VER"
 
-cmake -S "$LLVM_SOURCE/runtimes/" -B "$LLVM_BUILD" \
+LIBCXX_BUILD="$WORK/llvm-project-$LLVM_VER.libcxx.build"
+cmake -S "$LLVM_SOURCE/runtimes/" -B "$LIBCXX_BUILD" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
       -DLLVM_INCLUDE_TESTS=OFF \
@@ -42,9 +42,20 @@ cmake -S "$LLVM_SOURCE/runtimes/" -B "$LLVM_BUILD" \
       -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
       -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
       -DLIBCXXABI_ADDITIONAL_COMPILE_FLAGS="-fno-sanitize=vptr"
-cmake --build "$LLVM_BUILD" -- -j$(nproc) cxx cxxabi
+cmake --build "$LIBCXX_BUILD" -- -j$(nproc) cxx cxxabi
 
-CXXFLAGS="$CXXFLAGS -nostdinc++ -nostdlib++ -isystem $LLVM_BUILD/include -isystem $LLVM_BUILD/include/c++/v1 -L$LLVM_BUILD/lib -lc++ -lc++abi"
+CXXFLAGS="$CXXFLAGS -nostdinc++ -nostdlib++ -isystem $LIBCXX_BUILD/include -isystem $LIBCXX_BUILD/include/c++/v1 -L$LIBCXX_BUILD/lib -lc++ -lc++abi"
+
+OPENMP_BUILD="$WORK/llvm-project-$LLVM_VER.omp.build"
+cmake -S "$LLVM_SOURCE/openmp/" -B "$OPENMP_BUILD" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DLIBOMP_ENABLE_SHARED=OFF \
+      -DOPENMP_ENABLE_LIBOMPTARGET=OFF \
+      -DLIBOMP_CXXFLAGS="-fno-sanitize=undefined,integer"
+cmake --build "$OPENMP_BUILD" -- -j$(nproc) omp
+
+CXXFLAGS="$CXXFLAGS -isystem $OPENMP_BUILD/runtime/src -L$OPENMP_BUILD/runtime/src"
 
 if [[ $SANITIZER = *undefined* ]]; then
   CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
@@ -61,7 +72,6 @@ RAWSPEED_BUILD="$WORK/rawspeed"
 
 cmake -S "$RAWSPEED_SOURCE" -B "$RAWSPEED_BUILD" \
   -DBINARY_PACKAGE_BUILD=ON -DWITH_OPENMP=$WITH_OPENMP \
-  -DUSE_BUNDLED_LLVMOPENMP=ON -DALLOW_DOWNLOADING_LLVMOPENMP=ON \
   -DWITH_PUGIXML=OFF -DUSE_XMLLINT=OFF -DWITH_JPEG=OFF -DWITH_ZLIB=OFF \
   -DBUILD_TESTING=OFF -DBUILD_TOOLS=OFF -DBUILD_BENCHMARKING=OFF \
   -DCMAKE_BUILD_TYPE=FUZZ -DBUILD_FUZZERS=ON \
