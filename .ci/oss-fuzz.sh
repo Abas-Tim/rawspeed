@@ -28,9 +28,10 @@ LLVM_VER="18.1.8"
 
 wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VER/llvm-project-$LLVM_VER.src.tar.xz
 tar -xf llvm-project-$LLVM_VER.src.tar.xz llvm-project-$LLVM_VER.src/{runtimes,cmake,llvm/cmake,libcxx,libcxxabi}/
-LIBCXX_BUILD="$SRC/llvm-project-$LLVM_VER.build"
-mkdir "$LIBCXX_BUILD"
-cmake -S llvm-project-$LLVM_VER.src/runtimes/ -B "$LIBCXX_BUILD" \
+LLVM_SOURCE="$SRC/llvm-project-$LLVM_VER.src"
+LLVM_BUILD="$WORK/llvm-project-$LLVM_VER"
+
+cmake -S "$LLVM_SOURCE/runtimes/" -B "$LLVM_BUILD" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
       -DLLVM_INCLUDE_TESTS=OFF \
@@ -41,9 +42,9 @@ cmake -S llvm-project-$LLVM_VER.src/runtimes/ -B "$LIBCXX_BUILD" \
       -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
       -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
       -DLIBCXXABI_ADDITIONAL_COMPILE_FLAGS="-fno-sanitize=vptr"
-cmake --build "$LIBCXX_BUILD" -- -j$(nproc) cxx cxxabi
+cmake --build "$LLVM_BUILD" -- -j$(nproc) cxx cxxabi
 
-CXXFLAGS="$CXXFLAGS -nostdinc++ -nostdlib++ -isystem $LIBCXX_BUILD/include -isystem $LIBCXX_BUILD/include/c++/v1 -L$LIBCXX_BUILD/lib -lc++ -lc++abi"
+CXXFLAGS="$CXXFLAGS -nostdinc++ -nostdlib++ -isystem $LLVM_BUILD/include -isystem $LLVM_BUILD/include/c++/v1 -L$LLVM_BUILD/lib -lc++ -lc++abi"
 
 if [[ $SANITIZER = *undefined* ]]; then
   CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
@@ -55,21 +56,20 @@ if [[ $SANITIZER = *memory* ]]; then
   WITH_OPENMP=OFF
 fi
 
-cd "$WORK"
-mkdir build
-cd build
+RAWSPEED_SOURCE="$SRC/librawspeed/"
+RAWSPEED_BUILD="$WORK/rawspeed"
 
-cmake \
+cmake -S "$RAWSPEED_SOURCE" -B "$RAWSPEED_BUILD" \
   -DBINARY_PACKAGE_BUILD=ON -DWITH_OPENMP=$WITH_OPENMP \
   -DUSE_BUNDLED_LLVMOPENMP=ON -DALLOW_DOWNLOADING_LLVMOPENMP=ON \
   -DWITH_PUGIXML=OFF -DUSE_XMLLINT=OFF -DWITH_JPEG=OFF -DWITH_ZLIB=OFF \
   -DBUILD_TESTING=OFF -DBUILD_TOOLS=OFF -DBUILD_BENCHMARKING=OFF \
   -DCMAKE_BUILD_TYPE=FUZZ -DBUILD_FUZZERS=ON \
   -DLIB_FUZZING_ENGINE:STRING="$LIB_FUZZING_ENGINE" \
-  -DCMAKE_INSTALL_PREFIX:PATH="$OUT" -DCMAKE_INSTALL_BINDIR:PATH="$OUT" \
-  "$SRC/librawspeed/"
+  -DCMAKE_INSTALL_PREFIX:PATH="$OUT" -DCMAKE_INSTALL_BINDIR:PATH="$OUT"
 
-cmake --build . -- -j$(nproc) all && cmake --build . -- -j$(nproc) install
+cmake --build "$RAWSPEED_BUILD" -- -j$(nproc) all && cmake --build "$RAWSPEED_BUILD" -- -j$(nproc) install
 
-du -hcs .
-du -hcs "$OUT"
+du -hcs "$SRC"/* \
+        "$WORK"/* \
+        "$OUT"
