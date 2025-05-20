@@ -24,7 +24,7 @@ ln -f -s /usr/local/bin/lld /usr/bin/ld
 
 cd "$SRC"
 
-LLVM_VER="18.1.8"
+LLVM_VER="19.1.7"
 
 wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VER/llvm-project-$LLVM_VER.src.tar.xz
 tar -xf llvm-project-$LLVM_VER.src.tar.xz llvm-project-$LLVM_VER.src/{runtimes,cmake,llvm/cmake,libcxx,libcxxabi,openmp}/
