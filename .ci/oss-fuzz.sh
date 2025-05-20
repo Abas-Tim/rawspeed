@@ -24,13 +24,13 @@ ln -f -s /usr/local/bin/lld /usr/bin/ld
 
 cd "$SRC"
 
-LLVM_VER="19.1.7"
+LIBCXX_LLVM_VER="19.1.7"
 
-wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VER/llvm-project-$LLVM_VER.src.tar.xz
-tar -xf llvm-project-$LLVM_VER.src.tar.xz llvm-project-$LLVM_VER.src/{runtimes,cmake,llvm/cmake,libcxx,libcxxabi,openmp}/
-LLVM_SOURCE="$SRC/llvm-project-$LLVM_VER.src"
+wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LIBCXX_LLVM_VER/llvm-project-$LIBCXX_LLVM_VER.src.tar.xz
+tar -xf llvm-project-$LIBCXX_LLVM_VER.src.tar.xz llvm-project-$LIBCXX_LLVM_VER.src/{runtimes,cmake,llvm/cmake,libcxx,libcxxabi}/
+LLVM_SOURCE="$SRC/llvm-project-$LIBCXX_LLVM_VER.src"
 
-LIBCXX_BUILD="$WORK/llvm-project-$LLVM_VER.libcxx.build"
+LIBCXX_BUILD="$WORK/llvm-project-$LIBCXX_LLVM_VER.libcxx.build"
 cmake -S "$LLVM_SOURCE/runtimes/" -B "$LIBCXX_BUILD" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
@@ -46,7 +46,13 @@ cmake --build "$LIBCXX_BUILD" -- -j$(nproc) cxx cxxabi
 
 CXXFLAGS="$CXXFLAGS -nostdinc++ -nostdlib++ -isystem $LIBCXX_BUILD/include -isystem $LIBCXX_BUILD/include/c++/v1 -L$LIBCXX_BUILD/lib -lc++ -lc++abi"
 
-OPENMP_BUILD="$WORK/llvm-project-$LLVM_VER.omp.build"
+LIBOMP_LLVM_VER="20.1.5"
+
+wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LIBOMP_LLVM_VER/llvm-project-$LIBOMP_LLVM_VER.src.tar.xz
+tar -xf llvm-project-$LIBOMP_LLVM_VER.src.tar.xz llvm-project-$LIBOMP_LLVM_VER.src/{runtimes,cmake,llvm/cmake,openmp}/
+LLVM_SOURCE="$SRC/llvm-project-$LIBOMP_LLVM_VER.src"
+
+OPENMP_BUILD="$WORK/llvm-project-$LIBOMP_LLVM_VER.omp.build"
 cmake -S "$LLVM_SOURCE/openmp/" -B "$OPENMP_BUILD" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
