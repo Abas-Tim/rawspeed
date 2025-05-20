@@ -25,6 +25,13 @@ RAWSPEED_BUILD="$WORK/rawspeed"
 
 ln -f -s /usr/local/bin/lld /usr/bin/ld
 
+CFLAGS="$CFLAGS -flto=thin"
+CXXFLAGS="$CXXFLAGS -flto=thin"
+
+CXXFLAGS="$CXXFLAGS -fforce-emit-vtables"
+# CXXFLAGS="$CXXFLAGS -fwhole-program-vtables" # DOES NOT WORK WITH SANCOV!
+CXXFLAGS="$CXXFLAGS -fstrict-vtable-pointers"
+
 THINLTO_CACHE="$WORK/thinlto-cache"
 LDFLAGS="${LDFLAGS:-} -Wl,--thinlto-cache-dir=\"$THINLTO_CACHE\""
 
@@ -38,6 +45,10 @@ LIBCXX_LLVM_SOURCE="$SRC/llvm-project-$LIBCXX_LLVM_VER.src"
 
 LIBCXX_BUILD="$WORK/llvm-project-$LIBCXX_LLVM_VER.libcxx.build"
 cmake -S "$LIBCXX_LLVM_SOURCE/runtimes/" -B "$LIBCXX_BUILD" \
+      -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+      -DCMAKE_C_VISIBILITY_PRESET=hidden \
+      -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
+      -DCMAKE_VISIBILITY_INLINES_HIDDEN=ON \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
       -DLLVM_INCLUDE_TESTS=OFF \
@@ -62,6 +73,10 @@ patch $OPENMP_LLVM_SOURCE/openmp/runtime/src/kmp.h $RAWSPEED_SOURCE/.ci/openmp.p
 
 OPENMP_BUILD="$WORK/llvm-project-$LIBOMP_LLVM_VER.omp.build"
 cmake -S "$OPENMP_LLVM_SOURCE/openmp/" -B "$OPENMP_BUILD" \
+      -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+      -DCMAKE_C_VISIBILITY_PRESET=hidden \
+      -DCMAKE_CXX_VISIBILITY_PRESET=hidden \
+      -DCMAKE_VISIBILITY_INLINES_HIDDEN=ON \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
       -DLIBOMP_ENABLE_SHARED=OFF \
