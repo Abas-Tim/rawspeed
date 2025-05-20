@@ -24,13 +24,14 @@ ln -f -s /usr/local/bin/lld /usr/bin/ld
 
 cd "$SRC"
 
-LLVM_VER="18.1.8"
+LIBCXX_LLVM_VER="19.1.7"
 
-wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_VER/llvm-project-$LLVM_VER.src.tar.xz
-tar -xf llvm-project-$LLVM_VER.src.tar.xz llvm-project-$LLVM_VER.src/{runtimes,cmake,llvm/cmake,libcxx,libcxxabi}/
-LIBCXX_BUILD="$SRC/llvm-project-$LLVM_VER.build"
-mkdir "$LIBCXX_BUILD"
-cmake -S llvm-project-$LLVM_VER.src/runtimes/ -B "$LIBCXX_BUILD" \
+wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LIBCXX_LLVM_VER/llvm-project-$LIBCXX_LLVM_VER.src.tar.xz
+tar -xf llvm-project-$LIBCXX_LLVM_VER.src.tar.xz llvm-project-$LIBCXX_LLVM_VER.src/{runtimes,cmake,llvm/cmake,libcxx,libcxxabi}/
+LLVM_SOURCE="$SRC/llvm-project-$LIBCXX_LLVM_VER.src"
+
+LIBCXX_BUILD="$WORK/llvm-project-$LIBCXX_LLVM_VER.libcxx.build"
+cmake -S "$LLVM_SOURCE/runtimes/" -B "$LIBCXX_BUILD" \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
       -DLLVM_INCLUDE_TESTS=OFF \
@@ -45,6 +46,23 @@ cmake --build "$LIBCXX_BUILD" -- -j$(nproc) cxx cxxabi
 
 CXXFLAGS="$CXXFLAGS -nostdinc++ -nostdlib++ -isystem $LIBCXX_BUILD/include -isystem $LIBCXX_BUILD/include/c++/v1 -L$LIBCXX_BUILD/lib -lc++ -lc++abi"
 
+LIBOMP_LLVM_VER="20.1.5"
+
+wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-$LIBOMP_LLVM_VER/llvm-project-$LIBOMP_LLVM_VER.src.tar.xz
+tar -xf llvm-project-$LIBOMP_LLVM_VER.src.tar.xz llvm-project-$LIBOMP_LLVM_VER.src/{runtimes,cmake,llvm/cmake,openmp}/
+LLVM_SOURCE="$SRC/llvm-project-$LIBOMP_LLVM_VER.src"
+
+OPENMP_BUILD="$WORK/llvm-project-$LIBOMP_LLVM_VER.omp.build"
+cmake -S "$LLVM_SOURCE/openmp/" -B "$OPENMP_BUILD" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DLIBOMP_ENABLE_SHARED=OFF \
+      -DOPENMP_ENABLE_LIBOMPTARGET=OFF \
+      -DLIBOMP_CXXFLAGS="-fno-sanitize=undefined,integer"
+cmake --build "$OPENMP_BUILD" -- -j$(nproc) omp
+
+CXXFLAGS="$CXXFLAGS -isystem $OPENMP_BUILD/runtime/src -L$OPENMP_BUILD/runtime/src"
+
 if [[ $SANITIZER = *undefined* ]]; then
   CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
   CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
@@ -55,21 +73,19 @@ if [[ $SANITIZER = *memory* ]]; then
   WITH_OPENMP=OFF
 fi
 
-cd "$WORK"
-mkdir build
-cd build
+RAWSPEED_SOURCE="$SRC/librawspeed/"
+RAWSPEED_BUILD="$WORK/rawspeed"
 
-cmake \
+cmake -S "$RAWSPEED_SOURCE" -B "$RAWSPEED_BUILD" \
   -DBINARY_PACKAGE_BUILD=ON -DWITH_OPENMP=$WITH_OPENMP \
-  -DUSE_BUNDLED_LLVMOPENMP=ON -DALLOW_DOWNLOADING_LLVMOPENMP=ON \
   -DWITH_PUGIXML=OFF -DUSE_XMLLINT=OFF -DWITH_JPEG=OFF -DWITH_ZLIB=OFF \
   -DBUILD_TESTING=OFF -DBUILD_TOOLS=OFF -DBUILD_BENCHMARKING=OFF \
   -DCMAKE_BUILD_TYPE=FUZZ -DBUILD_FUZZERS=ON \
   -DLIB_FUZZING_ENGINE:STRING="$LIB_FUZZING_ENGINE" \
-  -DCMAKE_INSTALL_PREFIX:PATH="$OUT" -DCMAKE_INSTALL_BINDIR:PATH="$OUT" \
-  "$SRC/librawspeed/"
+  -DCMAKE_INSTALL_PREFIX:PATH="$OUT" -DCMAKE_INSTALL_BINDIR:PATH="$OUT"
 
-cmake --build . -- -j$(nproc) all && cmake --build . -- -j$(nproc) install
+cmake --build "$RAWSPEED_BUILD" -- -j$(nproc) all && cmake --build "$RAWSPEED_BUILD" -- -j$(nproc) install
 
-du -hcs .
-du -hcs "$OUT"
+du -hcs "$SRC"/* \
+        "$WORK"/* \
+        "$OUT"
