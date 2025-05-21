@@ -119,6 +119,10 @@ cmake -S "$LIBCXX_LLVM_SOURCE/runtimes/" -B "$LIBCXX_BUILD" \
       -DLIBCXXABI_ADDITIONAL_COMPILE_FLAGS="-fno-sanitize=vptr"
 cmake --build "$LIBCXX_BUILD" -- -j$(nproc) cxx cxxabi
 
+rm -rf /usr/*/include/c++
+rm -rf /usr/*/lib/libc++*
+rm -rf /usr/*/lib/*/libc++*
+
 CXXFLAGS="$CXXFLAGS -nostdinc++ -nostdlib++ -isystem $LIBCXX_BUILD/include -isystem $LIBCXX_BUILD/include/c++/v1 -L$LIBCXX_BUILD/lib -lc++ -lc++abi"
 
 LIBOMP_LLVM_VER="20.1.5"
