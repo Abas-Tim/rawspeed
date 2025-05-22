@@ -33,6 +33,8 @@
 #include "bitstreams/BitStreamer.h"
 #include "bitstreams/BitStreamerMSB.h" // IWYU pragma: keep
 #include "bitstreams/BitStreams.h"
+#include "codes/AbstractPrefixCode.h"
+#include "codes/AbstractPrefixCodeDecoder.h"
 #include "common/Common.h"
 #include "common/RawImage.h"
 #include "common/RawspeedException.h"
@@ -340,30 +342,18 @@ int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
   // Retrieve the difference category, which indicates magnitude of the
   // difference between the predicted and actual value.
   const auto next16 = uint16_t(mBitPump.peekBits(16));
-  const auto& [bits, diffCat] = mLUT(next16);
-  if (diffCat == 0 && bits == 7)
+  const auto& [codeLen, codeValue] = mLUT(next16);
+  if (codeValue == 0 && codeLen == 7)
     ThrowRDE("Huffman decoding encountered an invalid value!");
-  mBitPump.skipBits(bits); // Skip the bits that encoded the difference category
+  mBitPump.skipBits(
+      codeLen); // Skip the bits that encoded the difference category
+  int diffLen = codeValue;
 
-  if (diffCat > 0) {
-    // Decode difference value. The scheme here encodes signed integers in a
-    // manner similar to offset binary encoding. Here, the encoding is biased by
-    // the difference category such that abs(diff) is in the range
-    // [2^{diffCat-1}, 2^{diffCat}).
-    const uint32_t rawDiffBits = mBitPump.getBits(diffCat);
-    const uint32_t sign = rawDiffBits >> (diffCat - 1);
-    const uint32_t val = rawDiffBits << 0;
+  if (diffLen == 0)
+    return 0;
 
-    // In comments below, n = diffCat
-    if (sign == 1)
-      // Positive value in range [2^{n-1}, 2^{n})
-      return val;
-    // Negative value in interval (-2^{n}, -2^{n-1}]
-    return static_cast<int32_t>(val) + static_cast<int32_t>(~0U << diffCat) + 1;
-  }
-  // diffBitCount of zero indicates no difference (next pixel is same as
-  // predicted)
-  return 0;
+  const uint32_t diff = mBitPump.getBits(diffLen);
+  return AbstractPrefixCodeDecoder<BaselineCodeTag>::extend(diff, diffLen);
 }
 
 } // namespace rawspeed
