@@ -42,9 +42,11 @@
 #include "io/IOException.h"
 #include <algorithm>
 #include <array>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <numeric>
 #include <utility>
 #include <vector>
 
@@ -196,6 +198,24 @@ void isValidImageGrid(iRectangle2D imgDim,
     ThrowRDE("Tiles do not cover whole output image");
 }
 
+int minBitsPerPixelNeeded(
+    Array1DRef<const PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT) {
+  invariant(mDecoderLUT.size() > 0);
+  const auto r = std::accumulate(
+      mDecoderLUT.begin(), mDecoderLUT.end(), std::numeric_limits<int>::max(),
+      [](int init, const PanasonicV8Decompressor::DecoderLUTEntry& e) {
+        if (e.isSentinel())
+          return init;
+        invariant(e.bitcount > 0);
+        const auto total = e.bitcount + e.diffCat;
+        invariant(total > 0);
+        return std::min(init, total);
+      });
+  invariant(r > 0);
+  invariant(r <= (16 + 17));
+  return r;
+}
+
 } // namespace
 
 std::vector<iRectangle2D>
@@ -248,6 +268,14 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(
   }
   if (!mRawOutput->dim.hasPositiveArea())
     ThrowRDE("Unexpected image dimensions");
+  const auto minBpp = minBitsPerPixelNeeded(mDecoderLUT);
+  for (int stripIdx = 0; stripIdx < mParams.mStrips.size(); ++stripIdx) {
+    const auto strip = mParams.mStrips(stripIdx);
+    const auto maxPixelsInStrip = (uint64_t{CHAR_BIT} * strip.size()) / minBpp;
+    const auto outRect = mParams.mOutRect(stripIdx);
+    if (outRect.dim.area() > maxPixelsInStrip)
+      ThrowRDE("Input strip is unsufficient to produce requested tile");
+  }
 }
 
 void PanasonicV8Decompressor::decompress() const {

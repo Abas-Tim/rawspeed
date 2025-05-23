@@ -111,6 +111,11 @@ public:
   struct DecoderLUTEntry {
     uint8_t bitcount = 7;
     uint8_t diffCat = 0;
+
+    [[nodiscard]] bool isSentinel() const {
+      constexpr auto sentinel = DecoderLUTEntry();
+      return bitcount == sentinel.bitcount && diffCat == sentinel.diffCat;
+    }
   };
 
 private:
