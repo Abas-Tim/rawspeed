@@ -23,6 +23,8 @@
 #include "adt/Array1DRef.h"
 #include "adt/Array1DRefExtras.h"
 #include "adt/Array2DRef.h"
+#include "adt/Bit.h"
+#include "adt/Casts.h"
 #include "adt/Point.h"
 #include "bitstreams/BitStreams.h"
 #include "common/BayerPhase.h"
@@ -187,18 +189,38 @@ populateHuffmanLUT(const TiffIFD& ifd) {
 
   ByteStream stream = ifd.getEntry(TiffTag::PANASONIC_V8_HUF_TABLE)->getData();
 
-  struct HuffEntry {
-    uint16_t bitcount, symbol, mask;
-  };
-  std::vector<HuffEntry> huffTable(stream.getU16());
+  const auto numSymbols = stream.getU16();
+  if (numSymbols < 1 || numSymbols > 17)
+    ThrowRDE("Unexpected number of symbols: %u", numSymbols);
 
-  for (HuffEntry& entry : huffTable) {
-    entry.bitcount = stream.getU16(); // Number of bits in symbol
-    entry.symbol = uint16_t(stream.getU16() << (16U - entry.bitcount));
+  struct HuffEntry {
+    uint8_t bitcount;
+    uint16_t symbol, mask;
+    uint8_t codeValue;
+  };
+  std::vector<HuffEntry> huffTable;
+  huffTable.reserve(numSymbols);
+
+  for (unsigned symbolIndex = 0; symbolIndex != numSymbols; ++symbolIndex) {
+    const auto len = stream.getU16(); // Number of bits in symbol
+    if (len < 1 || len > 16)
+      ThrowRDE("Unexpected symbol length");
+    const auto code = stream.getU16();
+    if (!isIntN<uint32_t>(code, len))
+      ThrowRDE("Bad symbol code");
+    HuffEntry entry;
+    entry.bitcount = implicit_cast<uint8_t>(len);
+    entry.symbol = uint16_t(code << (16U - entry.bitcount));
+    entry.codeValue = implicit_cast<uint8_t>(symbolIndex);
     entry.mask = uint16_t(
         0xffffU << (16U -
                     entry.bitcount)); // mask of the bits overlapping symbol
+    if (entry.bitcount == PanasonicV8Decompressor::HuffmanLUTEntry().bitcount &&
+        entry.codeValue == PanasonicV8Decompressor::HuffmanLUTEntry().diffCat)
+      ThrowRDE("Sentinel symbol encountered");
+    huffTable.emplace_back(entry);
   }
+  assert(table.size() == numSymbols);
 
   // Cache of Huffman table results for all possible 16-bit values.
   mHuffmanLUT.resize(1 + UINT16_MAX);
@@ -207,11 +229,11 @@ populateHuffmanLUT(const TiffIFD& ifd) {
   // prefix codes recorded in the table.
   for (unsigned li = 0; li < mHuffmanLUT.size(); ++li) {
     PanasonicV8Decompressor::HuffmanLUTEntry& lutVal = mHuffmanLUT[li];
-    for (unsigned ti = 0; ti < huffTable.size(); ++ti) {
-      if ((uint16_t(li) & huffTable[ti].mask) == huffTable[ti].symbol) {
-        lutVal.bitcount = uint8_t(huffTable[ti].bitcount);
-        lutVal.diffCat = uint8_t(ti);
-        break;
+    for (const auto& ti : huffTable) {
+      if ((uint16_t(li) & ti.mask) == ti.symbol) {
+        lutVal.bitcount = ti.bitcount;
+        lutVal.diffCat = ti.codeValue;
+        break; // NOTE: not a prefix code!
       }
     }
   }
