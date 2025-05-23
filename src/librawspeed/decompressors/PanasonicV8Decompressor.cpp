@@ -130,15 +130,15 @@ public:
 };
 
 /// Utility class for Panasonic V8 entropy decoding
-class PanasonicV8Decompressor::InternalHuffDecoder {
+class PanasonicV8Decompressor::InternalDecoder {
 private:
-  const Array1DRef<const HuffmanLUTEntry>
-      mLUT; // Reference to PanasonicV8Decompressor::mHuffmanLUT
+  // Reference to PanasonicV8Decompressor::mDecoderLUT
+  const Array1DRef<const DecoderLUTEntry> mLUT;
   BitStreamerRevMSB mBitPump;
 
 public:
-  InternalHuffDecoder(const Array1DRef<const HuffmanLUTEntry>& LUT,
-                      Array1DRef<const uint8_t> bitStream)
+  InternalDecoder(const Array1DRef<const DecoderLUTEntry>& LUT,
+                  Array1DRef<const uint8_t> bitStream)
       : mLUT(LUT), mBitPump(bitStream) {}
 
   int32_t decodeNextDiffValue();
@@ -238,9 +238,9 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
 
 PanasonicV8Decompressor::PanasonicV8Decompressor(
     RawImage outputImg, DecompressorParams mParams_,
-    Array1DRef<const HuffmanLUTEntry> mHuffmanLUT_)
+    Array1DRef<const DecoderLUTEntry> mHDecoderLUT_)
     : mRawOutput(std::move(outputImg)), mParams(std::move(mParams_)),
-      mHuffmanLUT(mHuffmanLUT_) {
+      mDecoderLUT(mHDecoderLUT_) {
   if (mRawOutput->getCpp() != 1 ||
       mRawOutput->getDataType() != RawImageType::UINT16 ||
       mRawOutput->getBpp() != sizeof(uint16_t)) {
@@ -272,7 +272,7 @@ void PanasonicV8Decompressor::decompress() const {
                            /*croppedHeight=*/outRect.dim.y)
                            .getAsArray2DRef();
 
-      InternalHuffDecoder decoder(mHuffmanLUT, strip);
+      InternalDecoder decoder(mDecoderLUT, strip);
 
       decompressStrip(out, decoder);
     } catch (const RawspeedException& err) {
@@ -285,8 +285,8 @@ void PanasonicV8Decompressor::decompress() const {
   }
 }
 
-void PanasonicV8Decompressor::decompressStrip(
-    const Array2DRef<uint16_t> out, InternalHuffDecoder decoder) const {
+void PanasonicV8Decompressor::decompressStrip(const Array2DRef<uint16_t> out,
+                                              InternalDecoder decoder) const {
   Bayer2x2 predictedStorage = mParams.initialPrediction;
   const auto pred = Array2DRef(predictedStorage.data(), 2, 2);
 
@@ -337,14 +337,13 @@ void PanasonicV8Decompressor::decompressStrip(
   }
 }
 
-int32_t inline PanasonicV8Decompressor::InternalHuffDecoder::
-    decodeNextDiffValue() {
+int32_t inline PanasonicV8Decompressor::InternalDecoder::decodeNextDiffValue() {
   // Retrieve the difference category, which indicates magnitude of the
   // difference between the predicted and actual value.
   const auto next16 = uint16_t(mBitPump.peekBits(16));
   const auto& [codeLen, codeValue] = mLUT(next16);
   if (codeValue == 0 && codeLen == 7)
-    ThrowRDE("Huffman decoding encountered an invalid value!");
+    ThrowRDE("Decoding encountered an invalid value!");
   mBitPump.skipBits(
       codeLen); // Skip the bits that encoded the difference category
   int diffLen = codeValue;

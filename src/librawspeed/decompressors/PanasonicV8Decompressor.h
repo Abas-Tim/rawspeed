@@ -41,7 +41,7 @@ namespace rawspeed {
 /// Each raw file is broken up into a number of separate strips, each of which
 /// was separately encoded, and which can be decoded independently. For each
 /// strip, an initial predicted value is provided. The strip's data buffer is
-/// then decoded using the Huffman table provided in metadata. Each value
+/// then decoded using the decoding table provided in metadata. Each value
 /// decoded from the strip is a difference between the predicted value and
 /// actual value, allowing the actual value to be reconstructed.
 class PanasonicV8Decompressor final : public AbstractDecompressor {
@@ -107,27 +107,26 @@ public:
     }
   };
 
-  // Pre-cached Huffman decoded values for rapid lookup.
-  struct HuffmanLUTEntry {
+  // Pre-cached decoded values for rapid lookup.
+  struct DecoderLUTEntry {
     uint8_t bitcount = 7;
     uint8_t diffCat = 0;
   };
 
 private:
   const DecompressorParams mParams;
-  const Array1DRef<const HuffmanLUTEntry> mHuffmanLUT;
+  const Array1DRef<const DecoderLUTEntry> mDecoderLUT;
 
-  /// Huffman decoder helper class. Defined only in the cpp file.
-  class InternalHuffDecoder;
+  /// Decoder helper class. Defined only in the cpp file.
+  class InternalDecoder;
 
   /// Thread safe function for decompressing a single data-stripstrip within a
   /// Rw2V8 raw image.
-  void decompressStrip(Array2DRef<uint16_t> out,
-                       InternalHuffDecoder decoder) const;
+  void decompressStrip(Array2DRef<uint16_t> out, InternalDecoder decoder) const;
 
 public:
   PanasonicV8Decompressor(RawImage outputImg, DecompressorParams mParams_,
-                          Array1DRef<const HuffmanLUTEntry> mHuffmanLUT_);
+                          Array1DRef<const DecoderLUTEntry> mDecoderLUT_);
 
   /// Run the decompressor on the provided raw image
   void decompress() const;

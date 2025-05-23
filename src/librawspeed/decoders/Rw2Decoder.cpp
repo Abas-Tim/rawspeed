@@ -99,8 +99,8 @@ struct DecompressorV8Params {
 
   PanasonicV8Decompressor::Bayer2x2 initialPrediction;
 
-  /// Huffman decoding shift down value. Appears to be unused.
-  std::vector<uint16_t> huffShiftDown;
+  /// Decoding shift down value. Appears to be unused.
+  std::vector<uint16_t> shiftDown;
 
   uint16_t gammaClipVal;
 
@@ -131,7 +131,7 @@ void DecompressorV8Params::validate() const {
     ThrowRDE("Strip bit length list does not have enough entries for the "
              "number of strips!");
 
-  if (std::any_of(huffShiftDown.begin(), huffShiftDown.end(),
+  if (std::any_of(shiftDown.begin(), shiftDown.end(),
                   [](uint16_t x) { return x != 0; })) {
     ThrowRDE("Non-zero shift down value encountered! Shift down decoding has "
              "never been tested!");
@@ -174,8 +174,7 @@ DecompressorV8Params::DecompressorV8Params(const TiffIFD& ifd) {
   initialPrediction[3] =
       ifd.getEntry(TiffTag::PANASONIC_V8_INIT_PRED_BLUE)->getU16();
 
-  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_HUF_SHIFT_DOWN,
-                         huffShiftDown);
+  getPanasonicTiffVector(ifd, TiffTag::PANASONIC_V8_HUF_SHIFT_DOWN, shiftDown);
 
   gammaClipVal = ifd.getEntry(TiffTag::PANASONIC_V8_CLIP_VAL)->getU16();
   // NOLINTEND(cppcoreguidelines-prefer-member-initializer)
@@ -183,9 +182,9 @@ DecompressorV8Params::DecompressorV8Params(const TiffIFD& ifd) {
   validate();
 }
 
-std::vector<PanasonicV8Decompressor::HuffmanLUTEntry>
-populateHuffmanLUT(const TiffIFD& ifd) {
-  std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> mHuffmanLUT;
+std::vector<PanasonicV8Decompressor::DecoderLUTEntry>
+populateDecoderLUT(const TiffIFD& ifd) {
+  std::vector<PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT;
 
   ByteStream stream = ifd.getEntry(TiffTag::PANASONIC_V8_HUF_TABLE)->getData();
 
@@ -193,13 +192,13 @@ populateHuffmanLUT(const TiffIFD& ifd) {
   if (numSymbols < 1 || numSymbols > 17)
     ThrowRDE("Unexpected number of symbols: %u", numSymbols);
 
-  struct HuffEntry {
+  struct Entry {
     uint8_t bitcount;
     uint16_t symbol, mask;
     uint8_t codeValue;
   };
-  std::vector<HuffEntry> huffTable;
-  huffTable.reserve(numSymbols);
+  std::vector<Entry> table;
+  table.reserve(numSymbols);
 
   for (unsigned symbolIndex = 0; symbolIndex != numSymbols; ++symbolIndex) {
     const auto len = stream.getU16(); // Number of bits in symbol
@@ -208,28 +207,28 @@ populateHuffmanLUT(const TiffIFD& ifd) {
     const auto code = stream.getU16();
     if (!isIntN<uint32_t>(code, len))
       ThrowRDE("Bad symbol code");
-    HuffEntry entry;
+    Entry entry;
     entry.bitcount = implicit_cast<uint8_t>(len);
     entry.symbol = uint16_t(code << (16U - entry.bitcount));
     entry.codeValue = implicit_cast<uint8_t>(symbolIndex);
     entry.mask = uint16_t(
         0xffffU << (16U -
                     entry.bitcount)); // mask of the bits overlapping symbol
-    if (entry.bitcount == PanasonicV8Decompressor::HuffmanLUTEntry().bitcount &&
-        entry.codeValue == PanasonicV8Decompressor::HuffmanLUTEntry().diffCat)
+    if (entry.bitcount == PanasonicV8Decompressor::DecoderLUTEntry().bitcount &&
+        entry.codeValue == PanasonicV8Decompressor::DecoderLUTEntry().diffCat)
       ThrowRDE("Sentinel symbol encountered");
-    huffTable.emplace_back(entry);
+    table.emplace_back(entry);
   }
   assert(table.size() == numSymbols);
 
-  // Cache of Huffman table results for all possible 16-bit values.
-  mHuffmanLUT.resize(1 + UINT16_MAX);
+  // Cache of decoding results for all possible 16-bit values.
+  mDecoderLUT.resize(1 + UINT16_MAX);
 
   // Populates LUT by checking for a bitwise match between each value and the
-  // prefix codes recorded in the table.
-  for (unsigned li = 0; li < mHuffmanLUT.size(); ++li) {
-    PanasonicV8Decompressor::HuffmanLUTEntry& lutVal = mHuffmanLUT[li];
-    for (const auto& ti : huffTable) {
+  // codes recorded in the table.
+  for (unsigned li = 0; li < mDecoderLUT.size(); ++li) {
+    PanasonicV8Decompressor::DecoderLUTEntry& lutVal = mDecoderLUT[li];
+    for (const auto& ti : table) {
       if ((uint16_t(li) & ti.mask) == ti.symbol) {
         lutVal.bitcount = ti.bitcount;
         lutVal.diffCat = ti.codeValue;
@@ -238,7 +237,7 @@ populateHuffmanLUT(const TiffIFD& ifd) {
     }
   }
 
-  return mHuffmanLUT;
+  return mDecoderLUT;
 }
 
 /// Maybe the most complicated part of the entire file format, and seemingly,
@@ -307,8 +306,8 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
     ThrowRDE("Unexpected CFA, only RGGB is supported");
 
   const DecompressorV8Params mParams(raw);
-  const std::vector<PanasonicV8Decompressor::HuffmanLUTEntry> mHuffmanLUT =
-      populateHuffmanLUT(raw);
+  const std::vector<PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT =
+      populateDecoderLUT(raw);
   populateGammaLUT(mParams, raw);
   const std::vector<Array1DRef<const uint8_t>> mStrips =
       getInputStrips(mParams, mFile);
@@ -322,7 +321,7 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
       getAsArray1DRef(mParams.stripHeights));
 
   PanasonicV8Decompressor v8(mRaw, b.getDecompressorParams(),
-                             getAsArray1DRef(mHuffmanLUT));
+                             getAsArray1DRef(mDecoderLUT));
   mRaw->createData();
   v8.decompress();
   return mRaw;
