@@ -428,6 +428,7 @@ int32_t inline PanasonicV8Decompressor::InternalDecoder::decodeNextDiffValue() {
   // Retrieve the difference category, which indicates magnitude of the
   // difference between the predicted and actual value.
   const auto next16 = uint16_t(mBitPump.peekBits(16));
+  invariant(mLUT.size() == 1 + UINT16_MAX);
   const auto& [codeLen, codeValue] = mLUT(next16);
   if (codeValue == 0 && codeLen == 7)
     ThrowRDE("Decoding encountered an invalid value!");
