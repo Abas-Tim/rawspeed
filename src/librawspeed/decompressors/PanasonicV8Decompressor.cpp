@@ -89,8 +89,12 @@ struct BitStreamerReversedSequentialReplenisher
       std::copy_n(currInput.begin(), BitStreamerTraits<Tag>::MaxProcessBytes,
                   tmp.begin());
 
-      for (std::byte& b : tmp)
-        b = std::byte{bitreverse(uint8_t(b))};
+      std::array<uint8_t, 4> ints;
+      for (int i = 0; i != 4; ++i)
+        ints[i] = uint8_t(tmp(i));
+      ints = bitreverse_each(ints);
+      for (int i = 0; i != 4; ++i)
+        tmp(i) = std::byte{ints[i]};
 
       return tmpStorage;
     }
