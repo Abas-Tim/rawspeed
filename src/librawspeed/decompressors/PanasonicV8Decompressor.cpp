@@ -29,6 +29,7 @@
 #include "adt/Casts.h"
 #include "adt/CroppedArray2DRef.h"
 #include "adt/Invariant.h"
+#include "adt/Optional.h"
 #include "adt/Point.h"
 #include "adt/TiledArray2DRef.h"
 #include "bitstreams/BitStream.h"
@@ -202,22 +203,37 @@ void isValidImageGrid(iRectangle2D imgDim,
     ThrowRDE("Tiles do not cover whole output image");
 }
 
-int minBitsPerPixelNeeded(
-    Array1DRef<const PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT) {
+template <typename T>
+int bitsPerPixelNeeded(
+    Array1DRef<const PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT,
+    T cb) {
   invariant(mDecoderLUT.size() > 0);
   const auto r = std::accumulate(
-      mDecoderLUT.begin(), mDecoderLUT.end(), std::numeric_limits<int>::max(),
-      [](int init, const PanasonicV8Decompressor::DecoderLUTEntry& e) {
+      mDecoderLUT.begin(), mDecoderLUT.end(), Optional<int>(),
+      [cb](auto init, const PanasonicV8Decompressor::DecoderLUTEntry& e) {
         if (e.isSentinel())
           return init;
         invariant(e.bitcount > 0);
         const auto total = e.bitcount + e.diffCat;
         invariant(total > 0);
-        return std::min(init, total);
+        init = init.has_value() ? cb(*init, total) : total;
+        return init;
       });
-  invariant(r > 0);
-  invariant(r <= (16 + 17));
-  return r;
+  const auto bit = *r;
+  invariant(bit > 0);
+  return bit;
+}
+
+int minBitsPerPixelNeeded(
+    Array1DRef<const PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT) {
+  return bitsPerPixelNeeded(mDecoderLUT,
+                            [](auto a, auto b) { return std::min(a, b); });
+}
+
+int maxBitsPerPixelNeeded(
+    Array1DRef<const PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT) {
+  return bitsPerPixelNeeded(mDecoderLUT,
+                            [](auto a, auto b) { return std::max(a, b); });
 }
 
 } // namespace
@@ -327,6 +343,10 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(RawImage outputImg,
   }
   if (!mRawOutput->dim.hasPositiveArea())
     ThrowRDE("Unexpected image dimensions");
+  const auto maxBpp = maxBitsPerPixelNeeded(mParams.mDecoderLUT);
+  if (maxBpp > 32) {
+    ThrowRDE("Single pixel decode may consume more than 32 bits");
+  }
   const auto minBpp = minBitsPerPixelNeeded(mParams.mDecoderLUT);
   for (int stripIdx = 0; stripIdx < mParams.mStrips.size(); ++stripIdx) {
     const auto strip = mParams.mStrips(stripIdx);
@@ -427,19 +447,20 @@ void PanasonicV8Decompressor::decompressStrip(const Array2DRef<uint16_t> out,
 int32_t inline PanasonicV8Decompressor::InternalDecoder::decodeNextDiffValue() {
   // Retrieve the difference category, which indicates magnitude of the
   // difference between the predicted and actual value.
-  const auto next16 = uint16_t(mBitPump.peekBits(16));
+  mBitPump.fill(32);
+  const auto next16 = uint16_t(mBitPump.peekBitsNoFill(16));
   invariant(mLUT.size() == 1 + UINT16_MAX);
   const auto& [codeLen, codeValue] = mLUT(next16);
   if (codeValue == 0 && codeLen == 7)
     ThrowRDE("Decoding encountered an invalid value!");
-  mBitPump.skipBits(
-      codeLen); // Skip the bits that encoded the difference category
+  // Skip the bits that encoded the difference category
+  mBitPump.skipBitsNoFill(codeLen);
   int diffLen = codeValue;
 
   if (diffLen == 0)
     return 0;
 
-  const uint32_t diff = mBitPump.getBits(diffLen);
+  const uint32_t diff = mBitPump.getBitsNoFill(diffLen);
   return AbstractPrefixCodeDecoder<BaselineCodeTag>::extend(diff, diffLen);
 }
 
