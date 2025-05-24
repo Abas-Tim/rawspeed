@@ -134,4 +134,16 @@ constexpr typename std::make_signed_t<T>
   return static_cast<SignedT>(value << SpareSignBits) >> SpareSignBits;
 }
 
+template <class T>
+  requires std::same_as<T, uint8_t>
+T bitreverse(const T v) {
+#if __has_builtin(__builtin_bitreverse8)
+  return __builtin_bitreverse8(v);
+#endif
+  // Reverse the order of bits within each byte using a bit-twiddle trick.
+  // Three operation bit reversal from:
+  // https://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64BitsDiv
+  return uint8_t((uint8_t(v) * 0x0202020202ULL & 0x010884422010ULL) % 1023);
+}
+
 } // namespace rawspeed

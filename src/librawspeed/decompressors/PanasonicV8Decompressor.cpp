@@ -89,13 +89,8 @@ struct BitStreamerReversedSequentialReplenisher
       std::copy_n(currInput.begin(), BitStreamerTraits<Tag>::MaxProcessBytes,
                   tmp.begin());
 
-      // Reverse the order of bits within each byte using a bit-twiddle trick.
-      // Three operation bit reversal from:
-      // https://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64BitsDiv
-      for (std::byte& b : tmp) {
-        b = std::byte{
-            uint8_t((uint8_t(b) * 0x0202020202ULL & 0x010884422010ULL) % 1023)};
-      }
+      for (std::byte& b : tmp)
+        b = std::byte{bitreverse(uint8_t(b))};
 
       return tmpStorage;
     }
