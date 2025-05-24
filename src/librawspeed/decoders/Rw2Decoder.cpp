@@ -23,8 +23,6 @@
 #include "adt/Array1DRef.h"
 #include "adt/Array1DRefExtras.h"
 #include "adt/Array2DRef.h"
-#include "adt/Bit.h"
-#include "adt/Casts.h"
 #include "adt/Point.h"
 #include "bitstreams/BitStreams.h"
 #include "common/BayerPhase.h"
@@ -182,64 +180,6 @@ DecompressorV8Params::DecompressorV8Params(const TiffIFD& ifd) {
   validate();
 }
 
-std::vector<PanasonicV8Decompressor::DecoderLUTEntry>
-populateDecoderLUT(const TiffIFD& ifd) {
-  std::vector<PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT;
-
-  ByteStream stream = ifd.getEntry(TiffTag::PANASONIC_V8_HUF_TABLE)->getData();
-
-  const auto numSymbols = stream.getU16();
-  if (numSymbols < 1 || numSymbols > 17)
-    ThrowRDE("Unexpected number of symbols: %u", numSymbols);
-
-  struct Entry {
-    uint8_t bitcount;
-    uint16_t symbol, mask;
-    uint8_t codeValue;
-  };
-  std::vector<Entry> table;
-  table.reserve(numSymbols);
-
-  for (unsigned symbolIndex = 0; symbolIndex != numSymbols; ++symbolIndex) {
-    const auto len = stream.getU16(); // Number of bits in symbol
-    if (len < 1 || len > 16)
-      ThrowRDE("Unexpected symbol length");
-    const auto code = stream.getU16();
-    if (!isIntN<uint32_t>(code, len))
-      ThrowRDE("Bad symbol code");
-    Entry entry;
-    entry.bitcount = implicit_cast<uint8_t>(len);
-    entry.symbol = uint16_t(code << (16U - entry.bitcount));
-    entry.codeValue = implicit_cast<uint8_t>(symbolIndex);
-    entry.mask = uint16_t(
-        0xffffU << (16U -
-                    entry.bitcount)); // mask of the bits overlapping symbol
-    if (entry.bitcount == PanasonicV8Decompressor::DecoderLUTEntry().bitcount &&
-        entry.codeValue == PanasonicV8Decompressor::DecoderLUTEntry().diffCat)
-      ThrowRDE("Sentinel symbol encountered");
-    table.emplace_back(entry);
-  }
-  assert(table.size() == numSymbols);
-
-  // Cache of decoding results for all possible 16-bit values.
-  mDecoderLUT.resize(1 + UINT16_MAX);
-
-  // Populates LUT by checking for a bitwise match between each value and the
-  // codes recorded in the table.
-  for (unsigned li = 0; li < mDecoderLUT.size(); ++li) {
-    PanasonicV8Decompressor::DecoderLUTEntry& lutVal = mDecoderLUT[li];
-    for (const auto& ti : table) {
-      if ((uint16_t(li) & ti.mask) == ti.symbol) {
-        lutVal.bitcount = ti.bitcount;
-        lutVal.diffCat = ti.codeValue;
-        break; // NOTE: not a prefix code!
-      }
-    }
-  }
-
-  return mDecoderLUT;
-}
-
 /// Maybe the most complicated part of the entire file format, and seemingly,
 /// completely unused.
 void populateGammaLUT(const DecompressorV8Params& mParams, const TiffIFD& ifd) {
@@ -306,8 +246,6 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
     ThrowRDE("Unexpected CFA, only RGGB is supported");
 
   const DecompressorV8Params mParams(raw);
-  const std::vector<PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT =
-      populateDecoderLUT(raw);
   populateGammaLUT(mParams, raw);
   const std::vector<Array1DRef<const uint8_t>> mStrips =
       getInputStrips(mParams, mFile);
@@ -318,10 +256,10 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
       imgDim, mParams.initialPrediction, getAsArray1DRef(mStrips),
       getAsArray1DRef(mParams.stripLineOffsets),
       getAsArray1DRef(mParams.stripWidths),
-      getAsArray1DRef(mParams.stripHeights));
+      getAsArray1DRef(mParams.stripHeights),
+      raw.getEntry(TiffTag::PANASONIC_V8_HUF_TABLE)->getData());
 
-  PanasonicV8Decompressor v8(mRaw, b.getDecompressorParams(),
-                             getAsArray1DRef(mDecoderLUT));
+  PanasonicV8Decompressor v8(mRaw, b.getDecompressorParams());
   mRaw->createData();
   v8.decompress();
   return mRaw;

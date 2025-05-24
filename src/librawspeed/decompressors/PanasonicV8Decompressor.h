@@ -29,6 +29,7 @@
 #include "common/RawImage.h"
 #include "decoders/RawDecoderException.h"
 #include "decompressors/AbstractDecompressor.h"
+#include "io/ByteStream.h"
 #include <array>
 #include <cstdint>
 #include <vector>
@@ -52,61 +53,6 @@ public:
   /// Four values, one for each component of the sensor's color filter array.
   using Bayer2x2 = std::array<uint16_t, 4>;
 
-  /// Decompressor parameters populated from tags. They remain constant after
-  /// construction.
-  struct DecompressorParamsBuilder;
-
-  struct DecompressorParams {
-    const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
-    const Array1DRef<const iRectangle2D> mOutRect;
-
-    const Bayer2x2 initialPrediction;
-
-    DecompressorParams() = delete;
-
-  private:
-    friend struct DecompressorParamsBuilder;
-
-    DecompressorParams(Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
-                       Array1DRef<const iRectangle2D> mOutRect_,
-                       Bayer2x2 initialPrediction_)
-        : mStrips(mStrips_), mOutRect(mOutRect_),
-          initialPrediction(initialPrediction_) {}
-  };
-
-  struct DecompressorParamsBuilder {
-    const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
-    const Bayer2x2 initialPrediction;
-
-    const std::vector<iRectangle2D> mOutRects;
-
-    std::vector<iRectangle2D> static getOutRects(
-        iRectangle2D imgDim, Array1DRef<const uint32_t> stripLineOffsets,
-        Array1DRef<const uint16_t> stripWidths,
-        Array1DRef<const uint16_t> stripHeights);
-
-    DecompressorParamsBuilder(
-        iRectangle2D imgDim, Bayer2x2 initialPrediction_,
-        Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
-        Array1DRef<const uint32_t> stripLineOffsets,
-        Array1DRef<const uint16_t> stripWidths,
-        Array1DRef<const uint16_t> stripHeights)
-        : mStrips(mStrips_), initialPrediction(initialPrediction_),
-          mOutRects(getOutRects(imgDim, stripLineOffsets, stripWidths,
-                                stripHeights)) {
-      if (mStrips.size() != implicit_cast<int>(mOutRects.size()))
-        ThrowRDE("Got different number of input strips vs output tiles");
-      for (const auto& strip : mStrips_) {
-        if (strip.size() == 0)
-          ThrowRDE("Got empty input strip");
-      }
-    }
-
-    [[nodiscard]] DecompressorParams getDecompressorParams() const {
-      return {mStrips, getAsArray1DRef(mOutRects), initialPrediction};
-    }
-  };
-
   // Pre-cached decoded values for rapid lookup.
   struct DecoderLUTEntry {
     uint8_t bitcount = 7;
@@ -118,9 +64,71 @@ public:
     }
   };
 
+  /// Decompressor parameters populated from tags. They remain constant after
+  /// construction.
+  struct DecompressorParamsBuilder;
+
+  struct DecompressorParams {
+    const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
+    const Array1DRef<const iRectangle2D> mOutRect;
+    const Array1DRef<const DecoderLUTEntry> mDecoderLUT;
+    const Bayer2x2 initialPrediction;
+
+    DecompressorParams() = delete;
+
+  private:
+    friend struct DecompressorParamsBuilder;
+
+    DecompressorParams(Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
+                       Array1DRef<const iRectangle2D> mOutRect_,
+                       Array1DRef<const DecoderLUTEntry> mDecoderLUT_,
+                       Bayer2x2 initialPrediction_)
+        : mStrips(mStrips_), mOutRect(mOutRect_), mDecoderLUT(mDecoderLUT_),
+          initialPrediction(initialPrediction_) {}
+  };
+
+  struct DecompressorParamsBuilder {
+    const std::vector<PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT;
+    const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
+    const Bayer2x2 initialPrediction;
+
+    const std::vector<iRectangle2D> mOutRects;
+
+    std::vector<PanasonicV8Decompressor::DecoderLUTEntry> static getDecoderLUT(
+        ByteStream bs);
+
+    std::vector<iRectangle2D> static getOutRects(
+        iRectangle2D imgDim, Array1DRef<const uint32_t> stripLineOffsets,
+        Array1DRef<const uint16_t> stripWidths,
+        Array1DRef<const uint16_t> stripHeights);
+
+    // NOLINTNEXTLINE(readability-function-size)
+    DecompressorParamsBuilder(
+        iRectangle2D imgDim, Bayer2x2 initialPrediction_,
+        Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
+        Array1DRef<const uint32_t> stripLineOffsets,
+        Array1DRef<const uint16_t> stripWidths,
+        Array1DRef<const uint16_t> stripHeights, ByteStream defineCodes)
+        : mDecoderLUT(getDecoderLUT(defineCodes)), mStrips(mStrips_),
+          initialPrediction(initialPrediction_),
+          mOutRects(getOutRects(imgDim, stripLineOffsets, stripWidths,
+                                stripHeights)) {
+      if (mStrips.size() != implicit_cast<int>(mOutRects.size()))
+        ThrowRDE("Got different number of input strips vs output tiles");
+      for (const auto& strip : mStrips_) {
+        if (strip.size() == 0)
+          ThrowRDE("Got empty input strip");
+      }
+    }
+
+    [[nodiscard]] DecompressorParams getDecompressorParams() const {
+      return {mStrips, getAsArray1DRef(mOutRects), getAsArray1DRef(mDecoderLUT),
+              initialPrediction};
+    }
+  };
+
 private:
   const DecompressorParams mParams;
-  const Array1DRef<const DecoderLUTEntry> mDecoderLUT;
 
   /// Decoder helper class. Defined only in the cpp file.
   class InternalDecoder;
@@ -130,8 +138,7 @@ private:
   void decompressStrip(Array2DRef<uint16_t> out, InternalDecoder decoder) const;
 
 public:
-  PanasonicV8Decompressor(RawImage outputImg, DecompressorParams mParams_,
-                          Array1DRef<const DecoderLUTEntry> mDecoderLUT_);
+  PanasonicV8Decompressor(RawImage outputImg, DecompressorParams mParams_);
 
   /// Run the decompressor on the provided raw image
   void decompress() const;
