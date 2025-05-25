@@ -167,10 +167,9 @@ evaluateConsecutiveTiles(const iRectangle2D rect, const iRectangle2D nextRect) {
   return Invalid;
 }
 
-void isValidImageGrid(iRectangle2D imgDim,
-                      Array1DRef<const iRectangle2D> rects) {
-  auto outPos = imgDim.pos;
-  invariant(outPos.x == 0 && outPos.y == 0);
+void isValidImageGrid(iPoint2D imgSize, Array1DRef<const iRectangle2D> rects) {
+  auto outPos = iPoint2D(0, 0);
+  const auto imgDim = iRectangle2D(outPos, imgSize);
 
   iRectangle2D rect = rects(0);
   if (rect.pos != outPos)
@@ -296,10 +295,10 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getDecoderLUT(
 
 std::vector<iRectangle2D>
 PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
-    iRectangle2D imgDim, Array1DRef<const uint32_t> stripLineOffsets,
+    iPoint2D imgSize, Array1DRef<const uint32_t> stripLineOffsets,
     Array1DRef<const uint16_t> stripWidths,
     Array1DRef<const uint16_t> stripHeights) {
-  if (!imgDim.hasPositiveArea())
+  if (!imgSize.hasPositiveArea())
     ThrowRDE("Empty image requested");
   const int totalStrips = stripLineOffsets.size();
   if (stripWidths.size() != totalStrips || stripHeights.size() != totalStrips)
@@ -317,6 +316,7 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
 
     const auto rect = iRectangle2D(iPoint2D(stripOutputX, stripOutputY),
                                    iPoint2D(stripWidth, stripHeight));
+    const auto imgDim = iRectangle2D({0, 0}, imgSize);
 
     if (!rect.isThisInside(imgDim))
       ThrowRDE("Tile isn't fully within the output image");
@@ -326,7 +326,7 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
     mOutRects.emplace_back(rect);
   }
 
-  isValidImageGrid(imgDim, getAsArray1DRef(mOutRects));
+  isValidImageGrid(imgSize, getAsArray1DRef(mOutRects));
   return mOutRects;
 }
 

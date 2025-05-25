@@ -112,10 +112,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
     auto stripHeights = stripHeightsInput.getVector<uint16_t>(numStripHeights);
     stripHeights.reserve(1); // Array1DRef does not like nullptr's.
 
-    const auto imgDim = iRectangle2D({0, 0}, mRaw->dim);
-
     PanasonicV8Decompressor::DecompressorParamsBuilder builder(
-        imgDim, initialPrediction, getAsArray1DRef(strips),
+        mRaw->dim, initialPrediction, getAsArray1DRef(strips),
         getAsArray1DRef(stripLineOffsets), getAsArray1DRef(stripWidths),
         getAsArray1DRef(stripHeights), defineCodes);
 

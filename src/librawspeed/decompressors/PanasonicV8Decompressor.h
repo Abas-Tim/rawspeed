@@ -98,20 +98,20 @@ public:
         ByteStream bs);
 
     std::vector<iRectangle2D> static getOutRects(
-        iRectangle2D imgDim, Array1DRef<const uint32_t> stripLineOffsets,
+        iPoint2D imgSize, Array1DRef<const uint32_t> stripLineOffsets,
         Array1DRef<const uint16_t> stripWidths,
         Array1DRef<const uint16_t> stripHeights);
 
     // NOLINTNEXTLINE(readability-function-size)
     DecompressorParamsBuilder(
-        iRectangle2D imgDim, Bayer2x2 initialPrediction_,
+        iPoint2D imgSize, Bayer2x2 initialPrediction_,
         Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
         Array1DRef<const uint32_t> stripLineOffsets,
         Array1DRef<const uint16_t> stripWidths,
         Array1DRef<const uint16_t> stripHeights, ByteStream defineCodes)
         : mDecoderLUT(getDecoderLUT(defineCodes)), mStrips(mStrips_),
           initialPrediction(initialPrediction_),
-          mOutRects(getOutRects(imgDim, stripLineOffsets, stripWidths,
+          mOutRects(getOutRects(imgSize, stripLineOffsets, stripWidths,
                                 stripHeights)) {
       if (mStrips.size() != implicit_cast<int>(mOutRects.size()))
         ThrowRDE("Got different number of input strips vs output tiles");
