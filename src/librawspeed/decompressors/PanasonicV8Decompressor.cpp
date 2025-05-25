@@ -347,7 +347,7 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(RawImage outputImg,
       mRawOutput->getBpp() != sizeof(uint16_t)) {
     ThrowRDE("Unexpected component count / data type");
   }
-  if (!mRawOutput->dim.hasPositiveArea())
+  if (mRawOutput->dim != mParams.imgSize)
     ThrowRDE("Unexpected image dimensions");
   const auto maxBpp = maxBitsPerPixelNeeded(mParams.mDecoderLUT);
   if (maxBpp > 32) {

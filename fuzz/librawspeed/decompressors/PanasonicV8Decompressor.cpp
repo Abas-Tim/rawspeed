@@ -86,6 +86,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
     auto stripHeightsInput = bs.getStream(numStripHeights, sizeof(uint16_t));
     auto defineCodes = bs.getStream(numDefineCodesSize);
     const auto initialPrediction = bs.getArray<uint16_t, 4>();
+    const auto imgDim = bs.getArray<int, 2>();
 
     // The rest of the bs are the input strips.
 
@@ -113,7 +114,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
     stripHeights.reserve(1); // Array1DRef does not like nullptr's.
 
     PanasonicV8Decompressor::DecompressorParamsBuilder builder(
-        mRaw->dim, initialPrediction, getAsArray1DRef(strips),
+        {imgDim[0], imgDim[1]}, initialPrediction, getAsArray1DRef(strips),
         getAsArray1DRef(stripLineOffsets), getAsArray1DRef(stripWidths),
         getAsArray1DRef(stripHeights), defineCodes);
 

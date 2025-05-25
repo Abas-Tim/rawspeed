@@ -69,6 +69,7 @@ public:
   struct DecompressorParamsBuilder;
 
   struct DecompressorParams {
+    iPoint2D imgSize;
     const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
     const Array1DRef<const iRectangle2D> mOutRect;
     const Array1DRef<const DecoderLUTEntry> mDecoderLUT;
@@ -79,15 +80,17 @@ public:
   private:
     friend struct DecompressorParamsBuilder;
 
-    DecompressorParams(Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
+    DecompressorParams(iPoint2D imgSize_,
+                       Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
                        Array1DRef<const iRectangle2D> mOutRect_,
                        Array1DRef<const DecoderLUTEntry> mDecoderLUT_,
                        Bayer2x2 initialPrediction_)
-        : mStrips(mStrips_), mOutRect(mOutRect_), mDecoderLUT(mDecoderLUT_),
-          initialPrediction(initialPrediction_) {}
+        : imgSize(imgSize_), mStrips(mStrips_), mOutRect(mOutRect_),
+          mDecoderLUT(mDecoderLUT_), initialPrediction(initialPrediction_) {}
   };
 
   struct DecompressorParamsBuilder {
+    iPoint2D imgSize;
     const std::vector<PanasonicV8Decompressor::DecoderLUTEntry> mDecoderLUT;
     const Array1DRef<const Array1DRef<const uint8_t>> mStrips;
     const Bayer2x2 initialPrediction;
@@ -104,13 +107,13 @@ public:
 
     // NOLINTNEXTLINE(readability-function-size)
     DecompressorParamsBuilder(
-        iPoint2D imgSize, Bayer2x2 initialPrediction_,
+        iPoint2D imgSize_, Bayer2x2 initialPrediction_,
         Array1DRef<const Array1DRef<const uint8_t>> mStrips_,
         Array1DRef<const uint32_t> stripLineOffsets,
         Array1DRef<const uint16_t> stripWidths,
         Array1DRef<const uint16_t> stripHeights, ByteStream defineCodes)
-        : mDecoderLUT(getDecoderLUT(defineCodes)), mStrips(mStrips_),
-          initialPrediction(initialPrediction_),
+        : imgSize(imgSize_), mDecoderLUT(getDecoderLUT(defineCodes)),
+          mStrips(mStrips_), initialPrediction(initialPrediction_),
           mOutRects(getOutRects(imgSize, stripLineOffsets, stripWidths,
                                 stripHeights)) {
       if (mStrips.size() != implicit_cast<int>(mOutRects.size()))
@@ -122,8 +125,8 @@ public:
     }
 
     [[nodiscard]] DecompressorParams getDecompressorParams() const {
-      return {mStrips, getAsArray1DRef(mOutRects), getAsArray1DRef(mDecoderLUT),
-              initialPrediction};
+      return {imgSize, mStrips, getAsArray1DRef(mOutRects),
+              getAsArray1DRef(mDecoderLUT), initialPrediction};
     }
   };
 
