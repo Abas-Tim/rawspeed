@@ -250,10 +250,8 @@ RawImage Rw2Decoder::decodeRawV8(const TiffIFD& raw) const {
   const std::vector<Array1DRef<const uint8_t>> mStrips =
       getInputStrips(mParams, mFile);
 
-  const auto imgDim = iRectangle2D({0, 0}, mRaw->dim);
-
   PanasonicV8Decompressor::DecompressorParamsBuilder b(
-      imgDim, mParams.initialPrediction, getAsArray1DRef(mStrips),
+      mRaw->dim, mParams.initialPrediction, getAsArray1DRef(mStrips),
       getAsArray1DRef(mParams.stripLineOffsets),
       getAsArray1DRef(mParams.stripWidths),
       getAsArray1DRef(mParams.stripHeights),

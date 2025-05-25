@@ -167,10 +167,9 @@ evaluateConsecutiveTiles(const iRectangle2D rect, const iRectangle2D nextRect) {
   return Invalid;
 }
 
-void isValidImageGrid(iRectangle2D imgDim,
-                      Array1DRef<const iRectangle2D> rects) {
-  auto outPos = imgDim.pos;
-  invariant(outPos.x == 0 && outPos.y == 0);
+void isValidImageGrid(iPoint2D imgSize, Array1DRef<const iRectangle2D> rects) {
+  auto outPos = iPoint2D(0, 0);
+  const auto imgDim = iRectangle2D(outPos, imgSize);
 
   iRectangle2D rect = rects(0);
   if (rect.pos != outPos)
@@ -296,11 +295,13 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getDecoderLUT(
 
 std::vector<iRectangle2D>
 PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
-    iRectangle2D imgDim, Array1DRef<const uint32_t> stripLineOffsets,
+    iPoint2D imgSize, Array1DRef<const uint32_t> stripLineOffsets,
     Array1DRef<const uint16_t> stripWidths,
     Array1DRef<const uint16_t> stripHeights) {
-  if (!imgDim.hasPositiveArea())
+  if (!imgSize.hasPositiveArea())
     ThrowRDE("Empty image requested");
+  if (imgSize.x % 2 != 0 || imgSize.y % 2 != 0)
+    ThrowRDE("Image size is not multiple of 2");
   const int totalStrips = stripLineOffsets.size();
   if (stripWidths.size() != totalStrips || stripHeights.size() != totalStrips)
     ThrowRDE("Inputs have mismatched length");
@@ -317,16 +318,22 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
 
     const auto rect = iRectangle2D(iPoint2D(stripOutputX, stripOutputY),
                                    iPoint2D(stripWidth, stripHeight));
+    const auto imgDim = iRectangle2D({0, 0}, imgSize);
 
     if (!rect.isThisInside(imgDim))
       ThrowRDE("Tile isn't fully within the output image");
     if (!rect.hasPositiveArea())
       ThrowRDE("The tile is empty");
 
+    if (rect.pos.x % 2 != 0 || rect.pos.y % 2 != 0)
+      ThrowRDE("Tile position is not multiple of 2");
+    if (rect.dim.x % 2 != 0 || rect.dim.y % 2 != 0)
+      ThrowRDE("Tile size is not multiple of 2");
+
     mOutRects.emplace_back(rect);
   }
 
-  isValidImageGrid(imgDim, getAsArray1DRef(mOutRects));
+  isValidImageGrid(imgSize, getAsArray1DRef(mOutRects));
   return mOutRects;
 }
 
@@ -340,7 +347,7 @@ PanasonicV8Decompressor::PanasonicV8Decompressor(RawImage outputImg,
       mRawOutput->getBpp() != sizeof(uint16_t)) {
     ThrowRDE("Unexpected component count / data type");
   }
-  if (!mRawOutput->dim.hasPositiveArea())
+  if (mRawOutput->dim != mParams.imgSize)
     ThrowRDE("Unexpected image dimensions");
   const auto maxBpp = maxBitsPerPixelNeeded(mParams.mDecoderLUT);
   if (maxBpp > 32) {
@@ -426,7 +433,6 @@ void PanasonicV8Decompressor::decompressStrip(const Array2DRef<uint16_t> out,
         for (int i = 0; i != 2; ++i) {
           const int32_t diff = decoder.decodeNextDiffValue();
           const int32_t decodedValue = pred(i, j) + diff;
-          invariant(decodedValue > 0);
           pred(i, j) = uint16_t(std::clamp(
               decodedValue, 0, int32_t(std::numeric_limits<uint16_t>::max())));
           outBlock(i, j) = pred(i, j);
