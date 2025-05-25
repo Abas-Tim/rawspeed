@@ -300,6 +300,8 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
     Array1DRef<const uint16_t> stripHeights) {
   if (!imgSize.hasPositiveArea())
     ThrowRDE("Empty image requested");
+  if (imgSize.x % 2 != 0 || imgSize.y % 2 != 0)
+    ThrowRDE("Image size is not multiple of 2");
   const int totalStrips = stripLineOffsets.size();
   if (stripWidths.size() != totalStrips || stripHeights.size() != totalStrips)
     ThrowRDE("Inputs have mismatched length");
@@ -322,6 +324,11 @@ PanasonicV8Decompressor::DecompressorParamsBuilder::getOutRects(
       ThrowRDE("Tile isn't fully within the output image");
     if (!rect.hasPositiveArea())
       ThrowRDE("The tile is empty");
+
+    if (rect.pos.x % 2 != 0 || rect.pos.y % 2 != 0)
+      ThrowRDE("Tile position is not multiple of 2");
+    if (rect.dim.x % 2 != 0 || rect.dim.y % 2 != 0)
+      ThrowRDE("Tile size is not multiple of 2");
 
     mOutRects.emplace_back(rect);
   }
