@@ -426,7 +426,6 @@ void PanasonicV8Decompressor::decompressStrip(const Array2DRef<uint16_t> out,
         for (int i = 0; i != 2; ++i) {
           const int32_t diff = decoder.decodeNextDiffValue();
           const int32_t decodedValue = pred(i, j) + diff;
-          invariant(decodedValue > 0);
           pred(i, j) = uint16_t(std::clamp(
               decodedValue, 0, int32_t(std::numeric_limits<uint16_t>::max())));
           outBlock(i, j) = pred(i, j);
