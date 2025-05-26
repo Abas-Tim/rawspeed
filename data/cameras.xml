@@ -17146,6 +17146,24 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Phase One A/S" model="P40+">
+		<ID make="Phase One" model="P40+">Phase One P40+</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="36" y="6" width="-16" height="-46"/>
+		<Sensor black="0" white="16383"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">8035 435 -962</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-6001 13872 2320</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-1159 3065 5434</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
 	<Camera make="Phase One A/S" model="P45">
 		<ID make="Phase One" model="P45">Phase One P45</ID>
 		<CFA width="2" height="2">
