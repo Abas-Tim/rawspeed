@@ -79,8 +79,9 @@ RawImage RafDecoder::decodeRawInternal() {
     const TiffEntry* e = raw->getEntry(TiffTag::FUJI_RAWIMAGEFULLSIZE);
     height = e->getU16(0);
     width = e->getU16(1);
-  } else
+  } else {
     ThrowRDE("Unable to locate image size");
+  }
 
   if (width == 0 || height == 0 || width > 11808 || height > 8754)
     ThrowRDE("Unexpected image dimensions found: (%u; %u)", width, height);
@@ -219,8 +220,9 @@ void RafDecoder::applyCorrections(const Camera* cam) {
     if (new_size.x <= 0) {
       new_size.x =
           mRaw->dim.x / (double_width ? 2 : 1) - crop_offset.x + new_size.x;
-    } else
+    } else {
       new_size.x /= (double_width ? 2 : 1);
+    }
     if (new_size.y <= 0)
       new_size.y = mRaw->dim.y - crop_offset.y + new_size.y;
   }
@@ -244,6 +246,7 @@ void RafDecoder::applyCorrections(const Camera* cam) {
     iPoint2D final_size(rotatedsize, rotatedsize - 1);
     RawImage rotated = RawImage::create(final_size, RawImageType::UINT16, 1);
     rotated->clearArea(iRectangle2D(iPoint2D(0, 0), rotated->dim));
+    rotated->cfa = mRaw->cfa;
     rotated->metadata = mRaw->metadata;
     rotated->metadata.fujiRotationPos = rotationPos;
 
@@ -285,7 +288,7 @@ void RafDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
     unsigned bps =
         mRootIFD->getEntryRecursive(TiffTag::FUJI_BITSPERSAMPLE)->getU32();
     if (bps > 16)
-      ThrowRDE("Unexpected bit depth: %i", bps);
+      ThrowRDE("Unexpected bit depth: %u", bps);
     mRaw->whitePoint = implicit_cast<int>((1UL << bps) - 1UL);
   }
 
@@ -297,6 +300,8 @@ void RafDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
     ThrowRDE("Couldn't find camera");
 
   assert(cam != nullptr);
+
+  mRaw->cfa = cam->cfa;
 
   applyCorrections(cam);
 
@@ -319,8 +324,8 @@ void RafDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
 
       for (int y = 0; y < 6; y++) {
         for (int x = 0; x < 6; x++)
-          blackLevelSeparate1D(2 * (y % 2) + (x % 2)) +=
-              sep_black->getU32(6 * y + x);
+          blackLevelSeparate1D((2 * (y % 2)) + (x % 2)) +=
+              sep_black->getU32((6 * y) + x);
       }
 
       for (int& k : blackLevelSeparate1D)
@@ -342,7 +347,7 @@ void RafDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
   }
 
   mRaw->blackAreas = cam->blackAreas;
-  mRaw->cfa = cam->cfa;
+
   if (!cam->color_matrix.empty())
     mRaw->metadata.colorMatrix = cam->color_matrix;
   mRaw->metadata.canonical_make = cam->canonical_make;
@@ -356,16 +361,20 @@ void RafDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
     const TiffEntry* wb =
         mRootIFD->getEntryRecursive(TiffTag::FUJI_WB_GRBLEVELS);
     if (wb->count == 3) {
-      mRaw->metadata.wbCoeffs[0] = wb->getFloat(1);
-      mRaw->metadata.wbCoeffs[1] = wb->getFloat(0);
-      mRaw->metadata.wbCoeffs[2] = wb->getFloat(2);
+      std::array<float, 4> wbCoeffs = {};
+      wbCoeffs[0] = wb->getFloat(1);
+      wbCoeffs[1] = wb->getFloat(0);
+      wbCoeffs[2] = wb->getFloat(2);
+      mRaw->metadata.wbCoeffs = wbCoeffs;
     }
   } else if (mRootIFD->hasEntryRecursive(TiffTag::FUJIOLDWB)) {
     const TiffEntry* wb = mRootIFD->getEntryRecursive(TiffTag::FUJIOLDWB);
     if (wb->count == 8) {
-      mRaw->metadata.wbCoeffs[0] = wb->getFloat(1);
-      mRaw->metadata.wbCoeffs[1] = wb->getFloat(0);
-      mRaw->metadata.wbCoeffs[2] = wb->getFloat(3);
+      std::array<float, 4> wbCoeffs = {};
+      wbCoeffs[0] = wb->getFloat(1);
+      wbCoeffs[1] = wb->getFloat(0);
+      wbCoeffs[2] = wb->getFloat(3);
+      mRaw->metadata.wbCoeffs = wbCoeffs;
     }
   }
 }
@@ -382,8 +391,9 @@ int RafDecoder::isCompressed() const {
     const TiffEntry* e = raw->getEntry(TiffTag::IMAGEWIDTH);
     height = e->getU16(0);
     width = e->getU16(1);
-  } else
+  } else {
     ThrowRDE("Unable to locate image size");
+  }
 
   if (width == 0 || height == 0 || width > 11808 || height > 8754)
     ThrowRDE("Unexpected image dimensions found: (%u; %u)", width, height);

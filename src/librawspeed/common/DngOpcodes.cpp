@@ -212,7 +212,7 @@ protected:
     if (!(subImage.isPointInsideInclusive(topLeft) &&
           subImage.isPointInsideInclusive(bottomRight) &&
           bottomRight >= topLeft)) {
-      ThrowRDE("Rectangle (%u, %u, %u, %u) not inside image (%u, %u, %u, %u).",
+      ThrowRDE("Rectangle (%d, %d, %d, %d) not inside image (%d, %d, %d, %d).",
                topLeft.x, topLeft.y, bottomRight.x, bottomRight.y,
                subImage.getTopLeft().x, subImage.getTopLeft().y,
                subImage.getBottomRight().x, subImage.getBottomRight().y);
@@ -398,8 +398,9 @@ protected:
     for (int y = 0; y < numAffected.y; ++y) {
       for (int x = 0; x < numAffected.x; ++x) {
         for (auto p = 0U; p < planes; ++p) {
-          T& pixel = img(ROI.getTop() + rowPitch * y,
-                         firstPlane + (ROI.getLeft() + colPitch * x) * cpp + p);
+          T& pixel =
+              img(ROI.getTop() + (rowPitch * y),
+                  firstPlane + ((ROI.getLeft() + colPitch * x) * cpp) + p);
           pixel = op(x, y, pixel);
         }
       }
@@ -579,9 +580,14 @@ protected:
     deltaF.reserve(deltaF_count);
     std::generate_n(std::back_inserter(deltaF), deltaF_count, [&bs]() {
       const auto F = bs.get<float>();
-      if (!std::isfinite(F))
+      switch (std::fpclassify(F)) {
+      case FP_NORMAL:
+      case FP_SUBNORMAL:
+      case FP_ZERO:
+        return F;
+      default:
         ThrowRDE("Got bad float %f.", implicit_cast<double>(F));
-      return F;
+      }
     });
   }
 };
@@ -702,7 +708,7 @@ DngOpcodes::DngOpcodes(const RawImage& ri, ByteStream bs) {
     if (auto Op = Map(code))
       std::tie(opName, opConstructor) = *Op;
     else
-      ThrowRDE("Unknown unhandled Opcode: %d", code);
+      ThrowRDE("Unknown unhandled Opcode: %u", code);
 
     if (opConstructor != nullptr)
       opcodes.emplace_back(opConstructor(ri, opcode_bs, integrated_subimg));
@@ -711,7 +717,7 @@ DngOpcodes::DngOpcodes(const RawImage& ri, ByteStream bs) {
       // Throw Error if not marked as optional
       if (!(flags & 1))
 #endif
-        ThrowRDE("Unsupported Opcode: %d (%s)", code, opName);
+        ThrowRDE("Unsupported Opcode: %u (%s)", code, opName);
     }
 
     if (opcode_bs.getRemainSize() != 0)

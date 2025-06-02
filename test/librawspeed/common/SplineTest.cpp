@@ -41,13 +41,15 @@ using std::make_tuple;
 
 namespace rawspeed {
 
-::std::ostream& operator<<(::std::ostream& os, const iPoint2D p) {
+static ::std::ostream& operator<<(::std::ostream& os, const iPoint2D p) {
   return os << "(" << p.x << ", " << p.y << ")";
 }
 
 } // namespace rawspeed
 
 namespace rawspeed_test {
+
+namespace {
 
 TEST(SplineStaticTest, DefaultIsUshort16) {
   static_assert(std::is_same<Spline<>::value_type, uint16_t>::value,
@@ -211,7 +213,7 @@ protected:
   std::vector<typename Spline<T>::Segment> gotSegments;
   std::vector<T> interpolated;
 };
-static const identityType identityValues[] = {
+const identityType identityValues[] = {
     make_tuple(std::array<rawspeed::iPoint2D, 2>{{{0, 0}, {65535, 65535}}},
                std::vector<std::array<double, 4>>{{{0.0, 1.0, 0.0, 0.0}}}),
     make_tuple(
@@ -239,7 +241,7 @@ TEST_P(DoubleIdentityTest, ValuesAreLinearlyInterpolated) {
 TEST_P(DoubleIdentityTest, SegmentCoeffients) { CheckSegments(); }
 
 template <typename T> T lerp(T v0, T v1, T t) {
-  return (1.0 - t) * v0 + t * v1;
+  return ((1.0 - t) * v0) + (t * v1);
 }
 
 template <typename T = int>
@@ -309,7 +311,7 @@ protected:
   std::vector<int> expected;
   std::vector<T> got;
 };
-static const calculateStepsType calculateStepsValues[] = {
+const calculateStepsType calculateStepsValues[] = {
     // clang-format off
     make_tuple(0, std::vector<int>{0, 65535}),
     make_tuple(1, std::vector<int>{0, 32768, 65535}),
@@ -404,7 +406,7 @@ protected:
 };
 
 constexpr auto NumExtraSteps = 3;
-static const auto constantValues =
+const auto constantValues =
     ::testing::Combine(::testing::ValuesIn(calculateSteps(NumExtraSteps)),
                        ::testing::Range(0, 1 + NumExtraSteps));
 
@@ -503,7 +505,7 @@ protected:
 };
 
 using Sin2PiRefTest = ReferenceTest<SinReferenceTest<2, 1>>;
-static const referenceType sin2PiRefValues[] = {
+const referenceType sin2PiRefValues[] = {
     // clang-format off
     make_tuple(0,    1.0E-00),
     make_tuple(1,    1.0E+01), // FIXME: should be 1.0E-00
@@ -527,7 +529,7 @@ INSTANTIATE_TEST_SUITE_P(Sin2Pi, Sin2PiRefTest,
 TEST_P(Sin2PiRefTest, NearlyMatchesReference) { check(); }
 
 using SinPiRefTest = ReferenceTest<SinReferenceTest<1, 1>>;
-static const referenceType sinPiRefValues[] = {
+const referenceType sinPiRefValues[] = {
     // clang-format off
     make_tuple(0,  1.0E-00),
     make_tuple(1,  1.0E-01),
@@ -547,5 +549,7 @@ static const referenceType sinPiRefValues[] = {
 INSTANTIATE_TEST_SUITE_P(SinPi, SinPiRefTest,
                          ::testing::ValuesIn(sinPiRefValues));
 TEST_P(SinPiRefTest, NearlyMatchesReference) { check(); }
+
+} // namespace
 
 } // namespace rawspeed_test

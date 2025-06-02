@@ -127,7 +127,7 @@ TiffIFD::TiffIFD(TiffIFD* parent_, NORangesSet<Buffer>* ifds, DataBuffer data,
   // 2 bytes for entry count
   // each entry is 12 bytes
   // 4-byte offset to the next IFD at the end
-  const auto IFDFullSize = 2 + 4 + 12 * numEntries;
+  const auto IFDFullSize = 2 + 4 + (12 * numEntries);
   if (const Buffer IFDBuf(data.getSubView(offset, IFDFullSize));
       !ifds->insert(IFDBuf))
     ThrowTPE("Two IFD's overlap. Raw corrupt!");
@@ -271,13 +271,13 @@ void TiffIFD::checkSubIFDs(int headroom) const {
   if (!headroom)
     assert(count <= TiffIFD::Limits::SubIFDCount);
   else if (count > TiffIFD::Limits::SubIFDCount)
-    ThrowTPE("TIFF IFD has %u SubIFDs", count);
+    ThrowTPE("TIFF IFD has %d SubIFDs", count);
 
   count = headroom + subIFDCountRecursive;
   if (!headroom)
     assert(count <= TiffIFD::Limits::RecursiveSubIFDCount);
   else if (count > TiffIFD::Limits::RecursiveSubIFDCount)
-    ThrowTPE("TIFF IFD file has %u SubIFDs (recursively)", count);
+    ThrowTPE("TIFF IFD file has %d SubIFDs (recursively)", count);
 }
 
 void TiffIFD::recursivelyCheckSubIFDs(int headroom) const {
@@ -286,7 +286,7 @@ void TiffIFD::recursivelyCheckSubIFDs(int headroom) const {
     if (!headroom)
       assert(depth <= TiffIFD::Limits::Depth);
     else if (depth > TiffIFD::Limits::Depth)
-      ThrowTPE("TiffIFD cascading overflow, found %u level IFD", depth);
+      ThrowTPE("TiffIFD cascading overflow, found %d level IFD", depth);
 
     p->checkSubIFDs(headroom);
 

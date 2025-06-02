@@ -76,7 +76,7 @@ LJpegDecompressor::LJpegDecompressor(RawImage img, iRectangle2D imgFrame_,
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
   // Yeah, sure, here it would be just dumb to leave this for production :)
   if (mRaw->dim.x > 9728 || mRaw->dim.y > 6656) {
-    ThrowRDE("Unexpected image dimensions found: (%u; %u)", mRaw->dim.x,
+    ThrowRDE("Unexpected image dimensions found: (%i; %i)", mRaw->dim.x,
              mRaw->dim.y);
   }
 #endif
@@ -140,7 +140,7 @@ LJpegDecompressor::LJpegDecompressor(RawImage img, iRectangle2D imgFrame_,
       frame.dim.x < mcusToConsume ||
       frame.mcu.y * frame.dim.y < imgFrame.dim.y ||
       frame.mcu.x * frame.dim.x < tileRequiredWidth) {
-    ThrowRDE("LJpeg frame (%d, %d) is smaller than expected (%u, %u)",
+    ThrowRDE("LJpeg frame (%d, %d) is smaller than expected (%d, %d)",
              frame.mcu.x * frame.dim.x, frame.mcu.y * frame.dim.y,
              tileRequiredWidth, imgFrame.dim.y);
   }
@@ -206,7 +206,7 @@ void LJpegDecompressor::decodeRowN(
                              .getAsArray2DRef();
     for (int MCURow = 0; MCURow != MCUSize.y; ++MCURow) {
       for (int MCUСol = 0; MCUСol != MCUSize.x; ++MCUСol) {
-        int c = MCUSize.x * MCURow + MCUСol;
+        int c = (MCUSize.x * MCURow) + MCUСol;
         int prediction = pred(MCURow, MCUСol);
         int diff = (static_cast<const PrefixCodeDecoder<>&>(ht[c]))
                        .decodeDifference(bs);
@@ -229,7 +229,7 @@ void LJpegDecompressor::decodeRowN(
     // We may end up needing just part of last N_COMP pixels.
     for (int MCURow = 0; MCURow != MCUSize.y; ++MCURow) {
       for (int MCUСol = 0; MCUСol != MCUSize.x; ++MCUСol) {
-        int c = MCUSize.x * MCURow + MCUСol;
+        int c = (MCUSize.x * MCURow) + MCUСol;
         int prediction = pred(MCURow, MCUСol);
         int diff = (static_cast<const PrefixCodeDecoder<>&>(ht[c]))
                        .decodeDifference(bs);

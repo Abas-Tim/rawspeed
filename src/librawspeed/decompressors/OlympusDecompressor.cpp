@@ -156,8 +156,9 @@ OlympusDecompressorImpl::getPred(const Array2DRef<uint16_t> out, int row,
         pred = left + upMinusNw;
       else
         pred = (left + up) >> 1;
-    } else
+    } else {
       pred = std::abs(leftMinusNw) > std::abs(upMinusNw) ? left : up;
+    }
   }
 
   return pred;
@@ -170,7 +171,7 @@ OlympusDecompressorImpl::decompressGroup(
   const Array2DRef<uint16_t> out(mRaw->getU16DataAsUncroppedArray2DRef());
 
   for (int c = 0; c != 2; ++c) {
-    const int col = 2 * group + c;
+    const int col = (2 * group) + c;
     OlympusDifferenceDecoder& carry = acarry[c];
 
     int diff = carry.getDiff(bits);
@@ -206,7 +207,6 @@ void OlympusDecompressorImpl::decompress(ByteStream input) const {
   invariant(mRaw->dim.x > 0);
   invariant(mRaw->dim.x % 2 == 0);
 
-  input.skipBytes(7);
   BitStreamerMSB bits(input.peekRemainingBuffer().getAsArray1DRef());
 
   for (int y = 0; y < mRaw->dim.y; y++)
@@ -222,11 +222,11 @@ OlympusDecompressor::OlympusDecompressor(RawImage img) : mRaw(std::move(img)) {
 
   if (!mRaw->dim.hasPositiveArea() || mRaw->dim.x % 2 != 0 ||
       mRaw->dim.y % 2 != 0 || mRaw->dim.x > 10400 || mRaw->dim.y > 7792)
-    ThrowRDE("Unexpected image dimensions found: (%u; %u)", mRaw->dim.x,
+    ThrowRDE("Unexpected image dimensions found: (%d; %d)", mRaw->dim.x,
              mRaw->dim.y);
 }
 
-void OlympusDecompressor::decompress(ByteStream input) const {
+void OlympusDecompressor::decompress(const ByteStream& input) const {
   OlympusDecompressorImpl(mRaw).decompress(input);
 }
 

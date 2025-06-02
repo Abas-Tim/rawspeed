@@ -86,7 +86,7 @@ template <> void AbstractDngDecompressor::decompressThread<1>() const noexcept {
 
       if (inputPitchBits % 8 != 0) {
         ThrowRDE("Bad combination of cpp (%u), bps (%u) and width (%u), the "
-                 "pitch is %u bits, which is not a multiple of 8 (1 byte)",
+                 "pitch is %d bits, which is not a multiple of 8 (1 byte)",
                  mRaw->getCpp(), mBps, e.width, inputPitchBits);
       }
 
@@ -233,8 +233,9 @@ void AbstractDngDecompressor::decompressThread() const noexcept {
 #pragma message "JPEG is not present! Lossy JPEG DNG will not be supported!"
     mRaw->setError("jpeg support is disabled.");
 #endif
-  } else
+  } else {
     mRaw->setError("AbstractDngDecompressor: Unknown compression");
+  }
 }
 
 void AbstractDngDecompressor::decompress() const {

@@ -35,6 +35,8 @@ using std::unique_ptr;
 
 namespace rawspeed_test {
 
+namespace {
+
 std::vector<int> ISOList(6);
 
 class CameraSensorInfoTestDumb
@@ -245,7 +247,7 @@ struct IsoExpectationsT final {
   }
 };
 
-static const struct IsoExpectationsT CameraSensorIsoInfos[] = {
+const struct IsoExpectationsT CameraSensorIsoInfos[] = {
     IsoExpectationsT{0, 0, 0, true, true},
 
     IsoExpectationsT{100, 0, 200, false, false},
@@ -316,6 +318,8 @@ TEST_P(CameraSensorInfoTest, isIsoWithin) {
       ASSERT_FALSE(Info.isIsoWithin(data.Iso));
   });
 }
+
+} // namespace
 
 } // namespace rawspeed_test
 

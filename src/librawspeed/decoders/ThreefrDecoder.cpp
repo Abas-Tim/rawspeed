@@ -93,7 +93,7 @@ void ThreefrDecoder::DecodeUncompressed(const TiffIFD* raw) const {
   // FIXME: could be wrong. max "active pixels" - "100 MP"
   if (!mRaw->dim.hasPositiveArea() || mRaw->dim.x % 2 != 0 ||
       mRaw->dim.x > 12000 || mRaw->dim.y > 8842) {
-    ThrowRDE("Unexpected image dimensions found: (%u; %u)", mRaw->dim.x,
+    ThrowRDE("Unexpected image dimensions found: (%d; %d)", mRaw->dim.x,
              mRaw->dim.y);
   }
 
@@ -132,13 +132,15 @@ void ThreefrDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
   if (mRootIFD->hasEntryRecursive(TiffTag::ASSHOTNEUTRAL)) {
     const TiffEntry* wb = mRootIFD->getEntryRecursive(TiffTag::ASSHOTNEUTRAL);
     if (wb->count == 3) {
+      std::array<float, 4> wbCoeffs = {};
       for (uint32_t i = 0; i < 3; i++) {
         const float div = wb->getFloat(i);
         if (div == 0.0F)
           ThrowRDE("Can not decode WB, multiplier is zero/");
 
-        mRaw->metadata.wbCoeffs[i] = 1.0F / div;
+        wbCoeffs[i] = 1.0F / div;
       }
+      mRaw->metadata.wbCoeffs = wbCoeffs;
     }
   }
 }

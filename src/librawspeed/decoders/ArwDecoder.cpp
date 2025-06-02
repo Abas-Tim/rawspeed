@@ -85,7 +85,7 @@ RawImage ArwDecoder::decodeSRF() {
 
   // Replicate the dcraw contortions to get the "decryption" key
   uint8_t offset = mFile[key_off];
-  const Buffer keyData = mFile.getSubView(key_off + 4 * offset, 4);
+  const Buffer keyData = mFile.getSubView(key_off + (4 * offset), 4);
   uint32_t key = getU32BE(keyData.begin());
 
   static const size_t head_size = 40;
@@ -253,8 +253,9 @@ RawImage ArwDecoder::decodeRawInternal() {
     mRaw->createData();
     a.decompress(input);
     mShiftDownScaleForExif = 2;
-  } else
+  } else {
     DecodeARW2(input, width, height, bitPerPixel);
+  }
 
   if (bitPerPixel == 12)
     mShiftDownScaleForExif = 2;
@@ -482,9 +483,11 @@ void ArwDecoder::ParseA100WB() const {
     for (auto& coeff : tmp)
       coeff = bs.getU16();
 
-    mRaw->metadata.wbCoeffs[0] = static_cast<float>(tmp[0]);
-    mRaw->metadata.wbCoeffs[1] = static_cast<float>(tmp[1]);
-    mRaw->metadata.wbCoeffs[2] = static_cast<float>(tmp[3]);
+    std::array<float, 4> wbCoeffs = {};
+    wbCoeffs[0] = static_cast<float>(tmp[0]);
+    wbCoeffs[1] = static_cast<float>(tmp[1]);
+    wbCoeffs[2] = static_cast<float>(tmp[3]);
+    mRaw->metadata.wbCoeffs = wbCoeffs;
 
     // only need this one block, no need to process any further
     break;
@@ -534,7 +537,7 @@ void ArwDecoder::SonyDecrypt(Array1DRef<const uint8_t> ibuf,
 
   // Initialize the decryption pad from the key
   for (int p = 0; p < 4; p++)
-    pad[p] = key = uint32_t(key * 48828125UL + 1UL);
+    pad[p] = key = uint32_t((key * 48828125UL) + 1UL);
   pad[3] = pad[3] << 1 | (pad[0] ^ pad[2]) >> 31;
   for (int p = 4; p < 127; p++)
     pad[p] = (pad[p - 4] ^ pad[p - 2]) << 1 | (pad[p - 3] ^ pad[p - 1]) >> 31;
@@ -613,23 +616,27 @@ void ArwDecoder::GetWB() const {
     if (encryptedIFD.hasEntry(TiffTag::SONYGRBGLEVELS)) {
       const TiffEntry* wb = encryptedIFD.getEntry(TiffTag::SONYGRBGLEVELS);
       if (wb->count != 4)
-        ThrowRDE("WB has %d entries instead of 4", wb->count);
-      mRaw->metadata.wbCoeffs[0] = wb->getFloat(1);
-      mRaw->metadata.wbCoeffs[1] = wb->getFloat(0);
-      mRaw->metadata.wbCoeffs[2] = wb->getFloat(2);
+        ThrowRDE("WB has %u entries instead of 4", wb->count);
+      std::array<float, 4> wbCoeffs = {};
+      wbCoeffs[0] = wb->getFloat(1);
+      wbCoeffs[1] = wb->getFloat(0);
+      wbCoeffs[2] = wb->getFloat(2);
+      mRaw->metadata.wbCoeffs = wbCoeffs;
     } else if (encryptedIFD.hasEntry(TiffTag::SONYRGGBLEVELS)) {
       const TiffEntry* wb = encryptedIFD.getEntry(TiffTag::SONYRGGBLEVELS);
       if (wb->count != 4)
-        ThrowRDE("WB has %d entries instead of 4", wb->count);
-      mRaw->metadata.wbCoeffs[0] = wb->getFloat(0);
-      mRaw->metadata.wbCoeffs[1] = wb->getFloat(1);
-      mRaw->metadata.wbCoeffs[2] = wb->getFloat(3);
+        ThrowRDE("WB has %u entries instead of 4", wb->count);
+      std::array<float, 4> wbCoeffs = {};
+      wbCoeffs[0] = wb->getFloat(0);
+      wbCoeffs[1] = wb->getFloat(1);
+      wbCoeffs[2] = wb->getFloat(3);
+      mRaw->metadata.wbCoeffs = wbCoeffs;
     }
 
     if (encryptedIFD.hasEntry(TiffTag::SONYBLACKLEVEL)) {
       const TiffEntry* bl = encryptedIFD.getEntry(TiffTag::SONYBLACKLEVEL);
       if (bl->count != 4)
-        ThrowRDE("Black Level has %d entries instead of 4", bl->count);
+        ThrowRDE("Black Level has %u entries instead of 4", bl->count);
       mRaw->blackLevelSeparate =
           Array2DRef(mRaw->blackLevelSeparateStorage.data(), 2, 2);
       auto blackLevelSeparate1D = *mRaw->blackLevelSeparate->getAsArray1DRef();
@@ -640,7 +647,7 @@ void ArwDecoder::GetWB() const {
     if (encryptedIFD.hasEntry(TiffTag::SONYWHITELEVEL)) {
       const TiffEntry* wl = encryptedIFD.getEntry(TiffTag::SONYWHITELEVEL);
       if (wl->count != 1 && wl->count != 3)
-        ThrowRDE("White Level has %d entries instead of 1 or 3", wl->count);
+        ThrowRDE("White Level has %u entries instead of 1 or 3", wl->count);
       mRaw->whitePoint = wl->getU16(0) >> mShiftDownScaleForExif;
     }
   }

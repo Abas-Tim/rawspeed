@@ -32,7 +32,7 @@ class OlympusDecompressor final : public AbstractDecompressor {
 
 public:
   explicit OlympusDecompressor(RawImage img);
-  void decompress(ByteStream input) const;
+  void decompress(const ByteStream& input) const;
 };
 
 } // namespace rawspeed

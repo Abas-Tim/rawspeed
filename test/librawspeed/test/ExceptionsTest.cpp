@@ -46,11 +46,13 @@ using std::unique_ptr;
 
 namespace rawspeed_test {
 
-static const char* msg = "my very Smart error Message #1 !";
+namespace {
+
+const char* msg = "my very Smart error Message #1 !";
 
 #define FMT "%s"
 
-template <typename T> static void* MetaHelper(const char* str) {
+template <typename T> void* MetaHelper(const char* str) {
   ADD_FAILURE() << "non-specialzer was called";
   return nullptr;
 }
@@ -203,5 +205,7 @@ TYPED_TEST(ExceptionsTest, ThrowHelperTestMessage) {
     ASSERT_THAT(ex.what(), testing::HasSubstr(msg));
   }
 }
+
+} // namespace
 
 } // namespace rawspeed_test

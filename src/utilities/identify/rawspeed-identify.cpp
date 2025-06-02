@@ -20,7 +20,6 @@
 #include "RawSpeed-API.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -31,7 +30,7 @@
 
 namespace rawspeed::identify {
 
-std::string find_cameras_xml(const char* argv0);
+namespace {
 
 std::string find_cameras_xml(const char* argv0) {
   struct stat statbuf;
@@ -97,6 +96,8 @@ std::string find_cameras_xml(const char* argv0) {
 
   return found_camfile;
 }
+
+} // namespace
 
 } // namespace rawspeed::identify
 
@@ -202,11 +203,14 @@ int main(int argc_, char* argv_[]) {
     }
     fprintf(stdout, "\n");
 
-    fprintf(stdout, "wbCoeffs: %f %f %f %f\n",
-            implicit_cast<double>(r->metadata.wbCoeffs[0]),
-            implicit_cast<double>(r->metadata.wbCoeffs[1]),
-            implicit_cast<double>(r->metadata.wbCoeffs[2]),
-            implicit_cast<double>(r->metadata.wbCoeffs[3]));
+    fprintf(stdout, "wbCoeffs:");
+    if (!r->metadata.wbCoeffs)
+      fprintf(stdout, " (none)");
+    else {
+      for (const auto& e : *r->metadata.wbCoeffs)
+        fprintf(stdout, " %f", implicit_cast<double>(e));
+    }
+    fprintf(stdout, "\n");
 
     fprintf(stdout, "isCFA: %d\n", r->isCFA);
     uint32_t filters = r->cfa.getDcrawFilter();
@@ -229,7 +233,7 @@ int main(int argc_, char* argv_[]) {
     iPoint2D cropTL = r->getCropOffset();
     fprintf(stdout, "cropOffset: %dx%d\n", cropTL.x, cropTL.y);
 
-    fprintf(stdout, "fuji_rotation_pos: %d\n", r->metadata.fujiRotationPos);
+    fprintf(stdout, "fuji_rotation_pos: %u\n", r->metadata.fujiRotationPos);
     fprintf(stdout, "pixel_aspect_ratio: %f\n", r->metadata.pixelAspectRatio);
 
     double sum = 0.0;

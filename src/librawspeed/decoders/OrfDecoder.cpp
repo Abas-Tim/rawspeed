@@ -131,6 +131,23 @@ RawImage OrfDecoder::decodeRawInternal() {
     ThrowRDE("%u stripes, and not uncompressed. Unsupported.",
              raw->getEntry(TiffTag::STRIPOFFSETS)->count);
 
+  if (const int bitsPerPixel = getBitsPerPixel(); bitsPerPixel == 12) {
+    input.skipBytes(7);
+  } else if (bitsPerPixel == 14) {
+    input.skipBytes(8);
+  } else {
+    ThrowRDE("%i-bit images are not supported currently.", bitsPerPixel);
+  }
+
+  const OlympusDecompressor o(mRaw);
+  mRaw->createData();
+  o.decompress(input);
+
+  return mRaw;
+}
+
+int OrfDecoder::getBitsPerPixel() const {
+  int result = 12;
   if (mRootIFD->hasEntryRecursive(TiffTag::OLYMPUSIMAGEPROCESSING)) {
     // Newer cameras process the Image Processing SubIFD in the makernote
     const TiffEntry* img_entry =
@@ -144,16 +161,10 @@ RawImage OrfDecoder::decodeRawInternal() {
     if (image_processing.hasEntry(static_cast<TiffTag>(0x0611))) {
       const TiffEntry* validBits =
           image_processing.getEntry(static_cast<TiffTag>(0x0611));
-      if (validBits->getU16() != 12)
-        ThrowRDE("Only 12-bit images are supported currently.");
+      result = validBits->getU16();
     }
   }
-
-  OlympusDecompressor o(mRaw);
-  mRaw->createData();
-  o.decompress(input);
-
-  return mRaw;
+  return result;
 }
 
 void OrfDecoder::decodeUncompressedInterleaved(ByteStream s, uint32_t w,
@@ -198,7 +209,7 @@ void OrfDecoder::decodeUncompressedInterleaved(ByteStream s, uint32_t w,
     BitStreamerMSB bs(oddLinesInput);
     for (int i = 0; i != numOddLines; ++i) {
       for (unsigned col = 0; col != w; ++col) {
-        int row = 1 + 2 * i;
+        int row = 1 + (2 * i);
         out(row, col) = implicit_cast<uint16_t>(bs.getBits(12));
       }
     }
@@ -288,7 +299,7 @@ void OrfDecoder::parseCFA() const {
 
   for (int y = 0; y < cfaSize.y; y++) {
     for (int x = 0; x < cfaSize.x; x++) {
-      uint8_t c1 = CFA->getByte(4 + x + y * cfaSize.x);
+      uint8_t c1 = CFA->getByte(4 + x + (y * cfaSize.x));
       CFAColor c2 = int2enum(c1);
       mRaw->cfa.setColorAt(iPoint2D(x, y), c2);
     }
@@ -309,11 +320,13 @@ void OrfDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
 
   if (mRootIFD->hasEntryRecursive(TiffTag::OLYMPUSREDMULTIPLIER) &&
       mRootIFD->hasEntryRecursive(TiffTag::OLYMPUSBLUEMULTIPLIER)) {
-    mRaw->metadata.wbCoeffs[0] = static_cast<float>(
+    std::array<float, 4> wbCoeffs = {};
+    wbCoeffs[0] = static_cast<float>(
         mRootIFD->getEntryRecursive(TiffTag::OLYMPUSREDMULTIPLIER)->getU16());
-    mRaw->metadata.wbCoeffs[1] = 256.0F;
-    mRaw->metadata.wbCoeffs[2] = static_cast<float>(
+    wbCoeffs[1] = 256.0F;
+    wbCoeffs[2] = static_cast<float>(
         mRootIFD->getEntryRecursive(TiffTag::OLYMPUSBLUEMULTIPLIER)->getU16());
+    mRaw->metadata.wbCoeffs = wbCoeffs;
   } else if (mRootIFD->hasEntryRecursive(TiffTag::OLYMPUSIMAGEPROCESSING)) {
     // Newer cameras process the Image Processing SubIFD in the makernote
     const TiffEntry* img_entry =
@@ -329,9 +342,11 @@ void OrfDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
       const TiffEntry* wb =
           image_processing.getEntry(static_cast<TiffTag>(0x0100));
       if (wb->count == 2 || wb->count == 4) {
-        mRaw->metadata.wbCoeffs[0] = wb->getFloat(0);
-        mRaw->metadata.wbCoeffs[1] = 256.0F;
-        mRaw->metadata.wbCoeffs[2] = wb->getFloat(1);
+        std::array<float, 4> wbCoeffs = {};
+        wbCoeffs[0] = wb->getFloat(0);
+        wbCoeffs[1] = 256.0F;
+        wbCoeffs[2] = wb->getFloat(1);
+        mRaw->metadata.wbCoeffs = wbCoeffs;
       }
     }
 
@@ -369,6 +384,13 @@ void OrfDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
         // range is the same)
         mRaw->whitePoint =
             *mRaw->whitePoint - (mRaw->blackLevel - blackLevelSeparate1D(0));
+        if (getBitsPerPixel() == 14) {
+          mRaw->whitePoint = *mRaw->whitePoint * 4;
+          mRaw->blackLevel = mRaw->blackLevel * 4;
+          for (int i = 0; i < 4; i++) {
+            blackLevelSeparate1D(i) = blackLevelSeparate1D(i) * 4;
+          }
+        }
       }
     }
   }

@@ -230,7 +230,7 @@ void NefDecoder::DecodeUncompressed() const {
 
   if (yPerSlice == 0 || yPerSlice > static_cast<uint32_t>(mRaw->dim.y) ||
       roundUpDivisionSafe(mRaw->dim.y, yPerSlice) != counts->count) {
-    ThrowRDE("Invalid y per slice %u or strip count %u (height = %u)",
+    ThrowRDE("Invalid y per slice %u or strip count %u (height = %i)",
              yPerSlice, counts->count, mRaw->dim.y);
   }
 
@@ -497,11 +497,13 @@ void NefDecoder::parseWhiteBalance() const {
   if (mRootIFD->hasEntryRecursive(static_cast<TiffTag>(12))) {
     const TiffEntry* wb = mRootIFD->getEntryRecursive(static_cast<TiffTag>(12));
     if (wb->count == 4) {
-      mRaw->metadata.wbCoeffs[0] = wb->getFloat(0);
-      mRaw->metadata.wbCoeffs[1] = wb->getFloat(2);
-      mRaw->metadata.wbCoeffs[2] = wb->getFloat(1);
-      if (mRaw->metadata.wbCoeffs[1] <= 0.0F)
-        mRaw->metadata.wbCoeffs[1] = 1.0F;
+      std::array<float, 4> wbCoeffs = {};
+      wbCoeffs[0] = wb->getFloat(0);
+      wbCoeffs[1] = wb->getFloat(2);
+      wbCoeffs[2] = wb->getFloat(1);
+      if (wbCoeffs[1] <= 0.0F)
+        wbCoeffs[1] = 1.0F;
+      mRaw->metadata.wbCoeffs = wbCoeffs;
     }
   } else if (mRootIFD->hasEntryRecursive(static_cast<TiffTag>(0x0097))) {
     const TiffEntry* wb =
@@ -517,14 +519,18 @@ void NefDecoder::parseWhiteBalance() const {
 
       if (version == 0x100 && wb->count >= 80 &&
           wb->type == TiffDataType::UNDEFINED) {
-        mRaw->metadata.wbCoeffs[0] = static_cast<float>(wb->getU16(36));
-        mRaw->metadata.wbCoeffs[2] = static_cast<float>(wb->getU16(37));
-        mRaw->metadata.wbCoeffs[1] = static_cast<float>(wb->getU16(38));
+        std::array<float, 4> wbCoeffs = {};
+        wbCoeffs[0] = static_cast<float>(wb->getU16(36));
+        wbCoeffs[2] = static_cast<float>(wb->getU16(37));
+        wbCoeffs[1] = static_cast<float>(wb->getU16(38));
+        mRaw->metadata.wbCoeffs = wbCoeffs;
       } else if (version == 0x103 && wb->count >= 26 &&
                  wb->type == TiffDataType::UNDEFINED) {
-        mRaw->metadata.wbCoeffs[0] = static_cast<float>(wb->getU16(10));
-        mRaw->metadata.wbCoeffs[1] = static_cast<float>(wb->getU16(11));
-        mRaw->metadata.wbCoeffs[2] = static_cast<float>(wb->getU16(12));
+        std::array<float, 4> wbCoeffs = {};
+        wbCoeffs[0] = static_cast<float>(wb->getU16(10));
+        wbCoeffs[1] = static_cast<float>(wb->getU16(11));
+        wbCoeffs[2] = static_cast<float>(wb->getU16(12));
+        mRaw->metadata.wbCoeffs = wbCoeffs;
       } else if (((version == 0x204 && wb->count >= 564) ||
                   (version == 0x205 && wb->count >= 284)) &&
                  mRootIFD->hasEntryRecursive(static_cast<TiffTag>(0x001d)) &&
@@ -559,19 +565,19 @@ void NefDecoder::parseWhiteBalance() const {
 
         std::array<uint8_t, 14 + 8> buf;
         for (unsigned char& i : buf) {
-          cj = uint8_t(cj + ci * ck); // modulo arithmetics.
+          cj = uint8_t(cj + (ci * ck)); // modulo arithmetics.
           i = bs.getByte() ^ cj;
           ck++;
         }
 
         // Finally set the WB coeffs
         uint32_t off = (version == 0x204) ? 6 : 14;
-        mRaw->metadata.wbCoeffs[0] =
-            static_cast<float>(getU16BE(&buf[off + 0]));
-        mRaw->metadata.wbCoeffs[1] =
-            static_cast<float>(getU16BE(&buf[off + 2]));
-        mRaw->metadata.wbCoeffs[2] =
-            static_cast<float>(getU16BE(&buf[off + 6]));
+        std::array<float, 4> wbCoeffs = {};
+
+        wbCoeffs[0] = static_cast<float>(getU16BE(&buf[off + 0]));
+        wbCoeffs[1] = static_cast<float>(getU16BE(&buf[off + 2]));
+        wbCoeffs[2] = static_cast<float>(getU16BE(&buf[off + 6]));
+        mRaw->metadata.wbCoeffs = wbCoeffs;
       }
     }
   } else if (mRootIFD->hasEntryRecursive(static_cast<TiffTag>(0x0014))) {
@@ -581,9 +587,11 @@ void NefDecoder::parseWhiteBalance() const {
     if (wb->count == 2560 && wb->type == TiffDataType::UNDEFINED) {
       bs.skipBytes(1248);
       bs.setByteOrder(Endianness::big);
-      mRaw->metadata.wbCoeffs[0] = static_cast<float>(bs.getU16()) / 256.0F;
-      mRaw->metadata.wbCoeffs[1] = 1.0F;
-      mRaw->metadata.wbCoeffs[2] = static_cast<float>(bs.getU16()) / 256.0F;
+      std::array<float, 4> wbCoeffs = {};
+      wbCoeffs[0] = static_cast<float>(bs.getU16()) / 256.0F;
+      wbCoeffs[1] = 1.0F;
+      wbCoeffs[2] = static_cast<float>(bs.getU16()) / 256.0F;
+      mRaw->metadata.wbCoeffs = wbCoeffs;
     } else if (bs.hasPatternAt("NRW ", 0)) {
       uint32_t offset = 0;
       if (!bs.hasPatternAt("0100", 4) && wb->count > 72)
@@ -594,17 +602,19 @@ void NefDecoder::parseWhiteBalance() const {
       if (offset) {
         bs.skipBytes(offset);
         bs.setByteOrder(Endianness::little);
-        mRaw->metadata.wbCoeffs[0] = 4.0F * implicit_cast<float>(bs.getU32());
-        mRaw->metadata.wbCoeffs[1] = implicit_cast<float>(bs.getU32());
-        mRaw->metadata.wbCoeffs[1] += implicit_cast<float>(bs.getU32());
-        mRaw->metadata.wbCoeffs[2] = 4.0F * implicit_cast<float>(bs.getU32());
+        std::array<float, 4> wbCoeffs = {};
+        wbCoeffs[0] = 4.0F * implicit_cast<float>(bs.getU32());
+        wbCoeffs[1] = implicit_cast<float>(bs.getU32());
+        wbCoeffs[1] += implicit_cast<float>(bs.getU32());
+        wbCoeffs[2] = 4.0F * implicit_cast<float>(bs.getU32());
+        mRaw->metadata.wbCoeffs = wbCoeffs;
       }
     }
   }
 
-  if (hints.contains("nikon_wb_adjustment")) {
-    mRaw->metadata.wbCoeffs[0] *= 256.0F / 527.0F;
-    mRaw->metadata.wbCoeffs[2] *= 256.0F / 317.0F;
+  if (hints.contains("nikon_wb_adjustment") && mRaw->metadata.wbCoeffs) {
+    (*mRaw->metadata.wbCoeffs)[0] *= 256.0F / 527.0F;
+    (*mRaw->metadata.wbCoeffs)[2] *= 256.0F / 317.0F;
   }
 }
 
@@ -630,10 +640,10 @@ void NefDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
     const TiffEntry* bl =
         mRootIFD->getEntryRecursive(TiffTag::NIKON_BLACKLEVEL);
     if (bl->count != 4)
-      ThrowRDE("BlackLevel has %d entries instead of 4", bl->count);
+      ThrowRDE("BlackLevel has %u entries instead of 4", bl->count);
     uint32_t bitPerPixel = getBitPerSample();
     if (bitPerPixel != 12 && bitPerPixel != 14)
-      ThrowRDE("Bad bit per pixel: %i", bitPerPixel);
+      ThrowRDE("Bad bit per pixel: %u", bitPerPixel);
     const int sh = 14 - bitPerPixel;
     mRaw->blackLevelSeparate =
         Array2DRef(mRaw->blackLevelSeparateStorage.data(), 2, 2);
@@ -664,7 +674,7 @@ void NefDecoder::decodeMetaDataInternal(const CameraMetaData* meta) {
 // trivial to run this multithreaded.
 void NefDecoder::DecodeNikonSNef(ByteStream input) const {
   if (mRaw->dim.x < 6)
-    ThrowIOE("got a %u wide sNEF, aborting", mRaw->dim.x);
+    ThrowIOE("got a %i wide sNEF, aborting", mRaw->dim.x);
 
   // We need to read the applied whitebalance, since we should return
   // data before whitebalance, so we "unapply" it.
@@ -686,9 +696,11 @@ void NefDecoder::DecodeNikonSNef(ByteStream input) const {
     ThrowRDE("Whitebalance has bad values (%f, %f)",
              implicit_cast<double>(wb_r), implicit_cast<double>(wb_b));
 
-  mRaw->metadata.wbCoeffs[0] = wb_r;
-  mRaw->metadata.wbCoeffs[1] = 1.0F;
-  mRaw->metadata.wbCoeffs[2] = wb_b;
+  std::array<float, 4> wbCoeffs = {};
+  wbCoeffs[0] = wb_r;
+  wbCoeffs[1] = 1.0F;
+  wbCoeffs[2] = wb_b;
+  mRaw->metadata.wbCoeffs = wbCoeffs;
 
   auto inv_wb_r = static_cast<int>(1024.0F / wb_r);
   auto inv_wb_b = static_cast<int>(1024.0F / wb_b);
@@ -745,46 +757,46 @@ void NefDecoder::DecodeNikonSNef(ByteStream input) const {
 
       mRaw->setWithLookUp(
           clampBits(static_cast<int>(implicit_cast<double>(y1) +
-                                     1.370705 * implicit_cast<double>(cr)),
+                                     (1.370705 * implicit_cast<double>(cr))),
                     12),
           tmpch, &random);
       out(row, col) = clampBits((inv_wb_r * tmp + (1 << 9)) >> 10, 15);
 
       mRaw->setWithLookUp(
           clampBits(static_cast<int>(implicit_cast<double>(y1) -
-                                     0.337633 * implicit_cast<double>(cb) -
-                                     0.698001 * implicit_cast<double>(cr)),
+                                     (0.337633 * implicit_cast<double>(cb)) -
+                                     (0.698001 * implicit_cast<double>(cr))),
                     12),
           reinterpret_cast<std::byte*>(&out(row, col + 1)), &random);
 
       mRaw->setWithLookUp(
           clampBits(
               static_cast<int>(implicit_cast<double>(y1) +
-                               1.732446 // NOLINT(modernize-use-std-numbers)
-                                   * implicit_cast<double>(cb)),
+                               (1.732446 // NOLINT(modernize-use-std-numbers)
+                                * implicit_cast<double>(cb))),
               12),
           tmpch, &random);
       out(row, col + 2) = clampBits((inv_wb_b * tmp + (1 << 9)) >> 10, 15);
 
       mRaw->setWithLookUp(
           clampBits(static_cast<int>(implicit_cast<double>(y2) +
-                                     1.370705 * implicit_cast<double>(cr2)),
+                                     (1.370705 * implicit_cast<double>(cr2))),
                     12),
           tmpch, &random);
       out(row, col + 3) = clampBits((inv_wb_r * tmp + (1 << 9)) >> 10, 15);
 
       mRaw->setWithLookUp(
           clampBits(static_cast<int>(implicit_cast<double>(y2) -
-                                     0.337633 * implicit_cast<double>(cb2) -
-                                     0.698001 * implicit_cast<double>(cr2)),
+                                     (0.337633 * implicit_cast<double>(cb2)) -
+                                     (0.698001 * implicit_cast<double>(cr2))),
                     12),
           reinterpret_cast<std::byte*>(&out(row, col + 4)), &random);
 
       mRaw->setWithLookUp(
           clampBits(
               static_cast<int>(implicit_cast<double>(y2) +
-                               1.732446 // NOLINT(modernize-use-std-numbers)
-                                   * implicit_cast<double>(cb2)),
+                               (1.732446 // NOLINT(modernize-use-std-numbers)
+                                * implicit_cast<double>(cb2))),
               12),
           tmpch, &random);
       out(row, col + 5) = clampBits((inv_wb_b * tmp + (1 << 9)) >> 10, 15);
@@ -810,7 +822,7 @@ std::vector<uint16_t> NefDecoder::gammaCurve(double pwr, double ts, int imax) {
       if (std::abs(g[0]) > 0)
         bnd[(pow(g[2] / g[1], -g[0]) - 1) / g[0] - 1 / g[2] > -1] = g[2];
       else
-        bnd[g[2] / exp(1 - 1 / g[2]) < g[1]] = g[2];
+        bnd[g[2] / exp(1 - (1 / g[2])) < g[1]] = g[2];
     }
     g[3] = g[2] / g[1];
     if (std::abs(g[0]) > 0)

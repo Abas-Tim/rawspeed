@@ -198,7 +198,7 @@ VC5Decompressor::BandData VC5Decompressor::Wavelet::reconstructPass(
     int odd = convolution(SegmentTy::mul_odd);
 
     dst(2 * row, col) = static_cast<int16_t>(even);
-    dst(2 * row + 1, col) = static_cast<int16_t>(odd);
+    dst((2 * row) + 1, col) = static_cast<int16_t>(odd);
   };
 
 #pragma GCC diagnostic push
@@ -256,7 +256,7 @@ VC5Decompressor::BandData VC5Decompressor::Wavelet::combineLowHighPass(
       odd = clampBits(odd, 14);
     }
     dst(row, 2 * col) = static_cast<int16_t>(even);
-    dst(row, 2 * col + 1) = static_cast<int16_t>(odd);
+    dst(row, (2 * col) + 1) = static_cast<int16_t>(odd);
   };
 
   // Horizontal reconstruction
@@ -389,11 +389,11 @@ VC5Decompressor::VC5Decompressor(ByteStream bs, const RawImage& img)
     ThrowRDE("Bad image dimensions.");
 
   if (mRaw->dim.x % mVC5.patternWidth != 0)
-    ThrowRDE("Width %u is not a multiple of %u", mRaw->dim.x,
+    ThrowRDE("Width %i is not a multiple of %i", mRaw->dim.x,
              mVC5.patternWidth);
 
   if (mRaw->dim.y % mVC5.patternHeight != 0)
-    ThrowRDE("Height %u is not a multiple of %u", mRaw->dim.y,
+    ThrowRDE("Height %i is not a multiple of %i", mRaw->dim.y,
              mVC5.patternHeight);
 
   Optional<BayerPhase> p = getAsBayerPhase(mRaw->cfa);
@@ -510,15 +510,15 @@ void VC5Decompressor::parseVC5() {
       using enum VC5Tag;
     case ChannelCount:
       if (val != numChannels)
-        ThrowRDE("Bad channel count %u, expected %u", val, numChannels);
+        ThrowRDE("Bad channel count %u, expected %i", val, numChannels);
       break;
     case ImageWidth:
       if (val != mRaw->dim.x)
-        ThrowRDE("Image width mismatch: %u vs %u", val, mRaw->dim.x);
+        ThrowRDE("Image width mismatch: %u vs %i", val, mRaw->dim.x);
       break;
     case ImageHeight:
       if (val != mRaw->dim.y)
-        ThrowRDE("Image height mismatch: %u vs %u", val, mRaw->dim.y);
+        ThrowRDE("Image height mismatch: %u vs %i", val, mRaw->dim.y);
       break;
     case LowpassPrecision:
       if (val < PRECISION_MIN || val > PRECISION_MAX)
@@ -536,11 +536,11 @@ void VC5Decompressor::parseVC5() {
       break;
     case SubbandCount:
       if (val != numSubbands)
-        ThrowRDE("Unexpected subband count %u, expected %u", val, numSubbands);
+        ThrowRDE("Unexpected subband count %u, expected %i", val, numSubbands);
       break;
     case MaxBitsPerComponent:
       if (val != VC5_LOG_TABLE_BITWIDTH) {
-        ThrowRDE("Bad bits per componend %u, not %u", val,
+        ThrowRDE("Bad bits per componend %u, not %i", val,
                  VC5_LOG_TABLE_BITWIDTH);
       }
       break;
@@ -779,7 +779,7 @@ void VC5Decompressor::parseLargeCodeblock(ByteStream bs) {
 
   Wavelet& wavelet = wavelets[1 + idx];
   if (wavelet.isBandValid(band)) {
-    ThrowRDE("Band %u for wavelet %u on channel %u was already seen", band, idx,
+    ThrowRDE("Band %i for wavelet %i on channel %u was already seen", band, idx,
              mVC5.iChannel);
   }
 
@@ -906,8 +906,8 @@ void VC5Decompressor::combineFinalLowpassBandsImpl() const noexcept {
       int bg = lowbands2(row, col) - mid;
       int gd = lowbands3(row, col) - mid;
 
-      int r = gs + 2 * rg;
-      int b = gs + 2 * bg;
+      int r = gs + (2 * rg);
+      int b = gs + (2 * bg);
       int g1 = gs + gd;
       int g2 = gs - gd;
 
@@ -922,7 +922,7 @@ void VC5Decompressor::combineFinalLowpassBandsImpl() const noexcept {
       const Array2DRef<const int> pat(patData.data(), 2, 2);
       for (int patRow = 0; patRow < pat.height(); ++patRow) {
         for (int patCol = 0; patCol < pat.width(); ++patCol) {
-          out(2 * row + patRow, 2 * col + patCol) =
+          out((2 * row) + patRow, (2 * col) + patCol) =
               static_cast<uint16_t>(pat(patRow, patCol));
         }
       }

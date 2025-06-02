@@ -47,6 +47,8 @@ using std::vector;
 
 namespace rawspeed_test {
 
+namespace {
+
 using RoundDownType = std::tuple<uint64_t, uint64_t, uint64_t>;
 class RoundDownTest : public ::testing::TestWithParam<RoundDownType> {
 protected:
@@ -61,7 +63,7 @@ protected:
   uint64_t multiple;
   uint64_t expected; // expected output
 };
-static const RoundDownType RoundDownValues[] = {
+const RoundDownType RoundDownValues[] = {
     make_tuple(0, 0, 0),    make_tuple(0, 10, 0),  make_tuple(10, 0, 10),
     make_tuple(10, 10, 10), make_tuple(10, 1, 10), make_tuple(10, 2, 10),
     make_tuple(10, 3, 9),   make_tuple(10, 4, 8),  make_tuple(10, 5, 10),
@@ -89,7 +91,7 @@ protected:
   uint64_t multiple;
   uint64_t expected; // expected output
 };
-static const RoundUpType RoundUpValues[] = {
+const RoundUpType RoundUpValues[] = {
     make_tuple(0, 0, 0),    make_tuple(0, 10, 0),   make_tuple(10, 0, 10),
     make_tuple(10, 10, 10), make_tuple(10, 1, 10),  make_tuple(10, 2, 10),
     make_tuple(10, 3, 12),  make_tuple(10, 4, 12),  make_tuple(10, 5, 10),
@@ -116,7 +118,7 @@ protected:
   uint64_t divider;
   uint64_t expected; // expected output
 };
-static const roundUpDivisionSafeType roundUpDivisionSafeValues[] = {
+const roundUpDivisionSafeType roundUpDivisionSafeValues[] = {
     make_tuple(0, 10, 0),
     make_tuple(10, 10, 1),
     make_tuple(10, 1, 10),
@@ -186,7 +188,7 @@ protected:
   bool expected; // expected output
 };
 
-static const IsInType IsInValues[] = {
+const IsInType IsInValues[] = {
     make_tuple("foo", true),    make_tuple("foo2", true),
     make_tuple("bar", true),    make_tuple("baz", true),
     make_tuple("foo1", false),  make_tuple("bar2", false),
@@ -211,7 +213,7 @@ protected:
   string out; // expected output
 };
 
-static const TrimSpacesType TrimSpacesValues[] = {
+const TrimSpacesType TrimSpacesValues[] = {
 #define STR "fo2o 3,24 b5a#r"
     make_tuple("foo", "foo"),
     make_tuple(STR, STR),
@@ -248,7 +250,7 @@ protected:
   char sep;           // the separator
   vector<string> out; // expected output
 };
-static const splitStringType splitStringValues[] = {
+const splitStringType splitStringValues[] = {
     make_tuple("", ' ', vector<string>({})),
     make_tuple(" ", ' ', vector<string>({})),
     make_tuple(" ini mi,ni  moe ", ' ',
@@ -285,7 +287,7 @@ protected:
   virtual void SetUp() {
     dstPitch = std::get<0>(GetParam());
     srcPitch = std::get<1>(GetParam());
-    rowSize = min(min(std::get<2>(GetParam()), srcPitch), dstPitch);
+    rowSize = min({std::get<2>(GetParam()), srcPitch, dstPitch});
     height = std::get<3>(GetParam());
 
     assert(srcPitch * height < numeric_limits<uint8_t>::max());
@@ -329,5 +331,7 @@ TEST_P(CopyPixelsTest, CopyPixelsTest) {
   copy();
   compare();
 }
+
+} // namespace
 
 } // namespace rawspeed_test

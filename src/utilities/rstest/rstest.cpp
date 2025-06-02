@@ -19,12 +19,11 @@
 */
 
 #include "RawSpeed-API.h"
-#include "adt/AlignedAllocator.h"
 #include "adt/Array1DRef.h"
 #include "adt/Array2DRef.h"
 #include "adt/Casts.h"
-#include "adt/DefaultInitAllocatorAdaptor.h"
 #include "adt/NotARational.h"
+#include "io/FileIOException.h"
 #include "md5.h"
 #include <array>
 #include <bit>
@@ -44,9 +43,17 @@
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <vector>
+
+#if !defined(_WIN32) &&                                                        \
+    !(__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__))
+#include "io/MMapReader.h"
+#else
+#include "adt/AlignedAllocator.h"
+#include "adt/DefaultInitAllocatorAdaptor.h"
+#include <tuple>
+#endif
 
 #if !defined(__has_feature) || !__has_feature(thread_sanitizer)
 #include <iomanip>
@@ -80,23 +87,13 @@ using std::setw;
 
 namespace rawspeed::rstest {
 
-std::string img_hash(const rawspeed::RawImage& r);
-
-void writePPM(const rawspeed::RawImage& raw, const std::string& fn);
-void writePFM(const rawspeed::RawImage& raw, const std::string& fn);
-
-md5::MD5Hasher::state_type imgDataHash(const rawspeed::RawImage& raw);
-
-void writeImage(const rawspeed::RawImage& raw, const std::string& fn);
+namespace {
 
 struct options final {
   bool create;
   bool force;
   bool dump;
 };
-
-int64_t process(const std::string& filename,
-                const rawspeed::CameraMetaData* metadata, const options& o);
 
 class RstestHashMismatch final : public rawspeed::RawspeedException {
   void anchor() const override;
@@ -152,10 +149,8 @@ md5::MD5Hasher::state_type imgDataHash(const RawImage& raw) {
 #pragma GCC diagnostic ignored "-Wframe-larger-than="
 #pragma GCC diagnostic ignored "-Wstack-usage="
 
-namespace {
-
-void __attribute__((format(printf, 2, 3)))
-APPEND(ostringstream* oss, const char* format, ...) {
+void __attribute__((format(printf, 2, 3))) APPEND(ostringstream* oss,
+                                                  const char* format, ...) {
   std::array<char, 1024> line;
 
   va_list args;
@@ -165,8 +160,6 @@ APPEND(ostringstream* oss, const char* format, ...) {
 
   *oss << line.data();
 }
-
-} // namespace
 
 std::string img_hash(const RawImage& r, bool noSamples) {
   ostringstream oss;
@@ -206,11 +199,14 @@ std::string img_hash(const RawImage& r, bool noSamples) {
   }
   APPEND(&oss, "\n");
 
-  APPEND(&oss, "wbCoeffs: %f %f %f %f\n",
-         implicit_cast<double>(r->metadata.wbCoeffs[0]),
-         implicit_cast<double>(r->metadata.wbCoeffs[1]),
-         implicit_cast<double>(r->metadata.wbCoeffs[2]),
-         implicit_cast<double>(r->metadata.wbCoeffs[3]));
+  APPEND(&oss, "wbCoeffs:");
+  if (!r->metadata.wbCoeffs)
+    APPEND(&oss, " (none)");
+  else {
+    for (const auto& e : *r->metadata.wbCoeffs)
+      APPEND(&oss, " %f", implicit_cast<double>(e));
+  }
+  APPEND(&oss, "\n");
 
   APPEND(&oss, "colorMatrix:");
   if (r->metadata.colorMatrix.empty())
@@ -224,8 +220,8 @@ std::string img_hash(const RawImage& r, bool noSamples) {
   APPEND(&oss, "isCFA: %d\n", r->isCFA);
   APPEND(&oss, "cfa: %s\n", r->cfa.asString().c_str());
   APPEND(&oss, "filters: 0x%x\n", r->cfa.getDcrawFilter());
-  APPEND(&oss, "bpp: %d\n", r->getBpp());
-  APPEND(&oss, "cpp: %d\n", r->getCpp());
+  APPEND(&oss, "bpp: %u\n", r->getBpp());
+  APPEND(&oss, "cpp: %u\n", r->getCpp());
   APPEND(&oss, "dataType: %u\n", static_cast<unsigned>(r->getDataType()));
 
   const iPoint2D dimUncropped = r->getUncroppedDim();
@@ -242,17 +238,17 @@ std::string img_hash(const RawImage& r, bool noSamples) {
 
   APPEND(&oss, "blackAreas: ");
   for (auto ba : r->blackAreas)
-    APPEND(&oss, "%d:%dx%d, ", ba.isVertical, ba.offset, ba.size);
+    APPEND(&oss, "%d:%ux%u, ", ba.isVertical, ba.offset, ba.size);
   APPEND(&oss, "\n");
 
-  APPEND(&oss, "fuji_rotation_pos: %d\n", r->metadata.fujiRotationPos);
+  APPEND(&oss, "fuji_rotation_pos: %u\n", r->metadata.fujiRotationPos);
   APPEND(&oss, "pixel_aspect_ratio: %f\n", r->metadata.pixelAspectRatio);
 
   APPEND(&oss, "badPixelPositions: ");
   {
     MutexLocker guard(&r->mBadPixelMutex);
     for (uint32_t p : r->mBadPixelPositions)
-      APPEND(&oss, "%d, ", p);
+      APPEND(&oss, "%u, ", p);
   }
 
   APPEND(&oss, "\n");
@@ -280,6 +276,8 @@ void writePPM(const RawImage& raw, const std::string& fn) {
 
   // Write PPM header
   fprintf(f.get(), "%s\n%d %d\n65535\n", format.c_str(), width, height);
+  if (ferror(f.get()))
+    ThrowFIE("Could not write file");
 
   width *= raw->getCpp();
 
@@ -291,6 +289,8 @@ void writePPM(const RawImage& raw, const std::string& fn) {
       img(y, x) = getU16BE(&img(y, x));
 
     fwrite(&img(y, 0), sizeof(decltype(img)::value_type), width, f.get());
+    if (ferror(f.get()))
+      ThrowFIE("Could not write file");
   }
 }
 
@@ -304,6 +304,8 @@ void writePFM(const RawImage& raw, const std::string& fn) {
 
   // Write PFM header. if scale < 0, it is little-endian, if >= 0 - big-endian
   int len = fprintf(f.get(), "%s\n%d %d\n-1.0", format.c_str(), width, height);
+  if (ferror(f.get()))
+    ThrowFIE("Could not write file");
 
   // make sure that data starts at aligned offset. for sse
   static const auto dataAlignment = 16;
@@ -323,6 +325,8 @@ void writePFM(const RawImage& raw, const std::string& fn) {
 
   // and actually write padding + new line
   len += fprintf(f.get(), "%0*i\n", padding, 0);
+  if (ferror(f.get()))
+    ThrowFIE("Could not write file");
   assert(paddedLen == len);
 
   // did we write a multiple of an alignment value?
@@ -343,6 +347,8 @@ void writePFM(const RawImage& raw, const std::string& fn) {
       img(row_in, x) = std::bit_cast<float>(getU32LE(&img(row_in, x)));
 
     fwrite(&img(row_in, 0), sizeof(decltype(img)::value_type), width, f.get());
+    if (ferror(f.get()))
+      ThrowFIE("Could not write file");
   }
 }
 
@@ -386,6 +392,12 @@ int64_t process(const std::string& filename, const CameraMetaData* metadata,
   cout << left << setw(55) << filename << ": starting decoding ... " << '\n';
 #endif
 
+#if !defined(_WIN32) &&                                                        \
+    !(__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__))
+  MMapReader reader(filename);
+
+  rawspeed::Buffer buf = reader.getAsBuffer();
+#else
   FileReader reader(filename.c_str());
 
   std::unique_ptr<std::vector<
@@ -394,6 +406,7 @@ int64_t process(const std::string& filename, const CameraMetaData* metadata,
       storage;
   rawspeed::Buffer buf;
   std::tie(storage, buf) = reader.readFile();
+#endif
 
   Timer t;
 
@@ -450,8 +463,6 @@ int64_t process(const std::string& filename, const CameraMetaData* metadata,
 }
 
 #pragma GCC diagnostic pop
-
-namespace {
 
 int results(const map<std::string, std::string, std::less<>>& failedTests,
             const options& o) {

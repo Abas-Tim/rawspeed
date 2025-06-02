@@ -197,6 +197,7 @@ void addBench(Entry* entry, std::string tName, int threads) {
 } // namespace
 
 int main(int argc_, char** argv_) {
+  benchmark::MaybeReenterWithoutASLR(argc_, argv_);
   benchmark::Initialize(&argc_, argv_);
 
   auto argv = rawspeed::Array1DRef(argv_, argc_);
@@ -222,7 +223,7 @@ int main(int argc_, char** argv_) {
 
   const auto threadsMin = threading ? 1 : threadsMax;
 
-  // Were we told to use the repo (i.e. filelist.sha1 in that directory)?
+  // Were we told to use the repo (i.e. filelist.sha256 in that directory)?
   int useChecksumFile = hasFlag("-r");
   std::vector<Entry> Worklist;
   if (useChecksumFile && useChecksumFile + 1 < argv.size()) {

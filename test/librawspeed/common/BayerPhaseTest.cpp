@@ -35,7 +35,7 @@ using rawspeed::ColorFilterArray;
 
 namespace rawspeed {
 
-::std::ostream& operator<<(::std::ostream& os, const BayerPhase p) {
+static ::std::ostream& operator<<(::std::ostream& os, const BayerPhase p) {
   switch (p) {
   case BayerPhase::RGGB:
     return os << "RGGB";
@@ -53,6 +53,8 @@ namespace rawspeed {
 
 namespace rawspeed_test {
 
+namespace {
+
 auto AllKnownCFAColors =
     ::testing::Values(CFAColor::RED, CFAColor::GREEN, CFAColor::BLUE,
                       CFAColor::CYAN, CFAColor::MAGENTA, CFAColor::YELLOW,
@@ -67,7 +69,7 @@ auto AllPossible2x2CFAs = ::testing::Combine(
 auto AllPossibleBayerPhaseShifts =
     ::testing::Combine(AllKnownBayerPhases, AllKnownBayerPhases);
 
-static const std::map<std::array<CFAColor, 4>, BayerPhase> KnownBayerCFAs = {
+const std::map<std::array<CFAColor, 4>, BayerPhase> KnownBayerCFAs = {
     {{CFAColor::RED, CFAColor::GREEN, CFAColor::GREEN, CFAColor::BLUE},
      BayerPhase::RGGB},
     {{CFAColor::GREEN, CFAColor::RED, CFAColor::BLUE, CFAColor::GREEN},
@@ -154,10 +156,10 @@ struct TopRightElement final : AbstractElement {};
 struct BottomLeftElement final : AbstractElement {};
 struct BottomRightElement final : AbstractElement {};
 
-static const TopLeftElement e00;
-static const TopRightElement e01;
-static const BottomLeftElement e10;
-static const BottomRightElement e11;
+const TopLeftElement e00;
+const TopRightElement e01;
+const BottomLeftElement e10;
+const BottomRightElement e11;
 
 ::std::ostream& operator<<(::std::ostream& os, const AbstractElement* e) {
   if (&e00 == e)
@@ -171,7 +173,7 @@ static const BottomRightElement e11;
   __builtin_unreachable();
 }
 
-static const std::map<BayerPhase, std::array<const AbstractElement*, 4>>
+const std::map<BayerPhase, std::array<const AbstractElement*, 4>>
     ExpectedBayerPhaseShifts = {
         {BayerPhase::RGGB, {&e00, &e01, &e10, &e11}}, // baseline
         {BayerPhase::GRBG, {&e01, &e00, &e11, &e10}}, // swap columns
@@ -192,10 +194,10 @@ struct FirstGreenElement final : AbstractColorElement {};
 struct SecondGreenElement final : AbstractColorElement {};
 struct BlueElement final : AbstractColorElement {};
 
-static const RedElement eR;
-static const FirstGreenElement eG0;
-static const SecondGreenElement eG1;
-static const BlueElement eB;
+const RedElement eR;
+const FirstGreenElement eG0;
+const SecondGreenElement eG1;
+const BlueElement eB;
 
 ::std::ostream& operator<<(::std::ostream& os, const AbstractColorElement* e) {
   if (&eR == e)
@@ -209,7 +211,7 @@ static const BlueElement eB;
   __builtin_unreachable();
 }
 
-static const std::map<BayerPhase, std::array<const AbstractColorElement*, 4>>
+const std::map<BayerPhase, std::array<const AbstractColorElement*, 4>>
     ExpectedBayerStablePhaseShifts = {
         {BayerPhase::RGGB, {&eR, &eG0, &eG1, &eB}}, // baseline
         {BayerPhase::GRBG, {&eG0, &eR, &eB, &eG1}}, // swap columns
@@ -222,5 +224,7 @@ TEST_P(BayerPhaseShifTest, applyStablePhaseShiftTest) {
             rawspeed::applyStablePhaseShift(
                 ExpectedBayerStablePhaseShifts.at(src), src, tgt));
 }
+
+} // namespace
 
 } // namespace rawspeed_test

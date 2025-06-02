@@ -34,6 +34,9 @@ using rawspeed::Endianness;
 
 namespace rawspeed_test {
 
+// NOLINTNEXTLINE(google-build-namespaces)
+namespace {
+
 template <typename T, typename Tag> struct BitStreamerPatternTest final {};
 
 struct TestGetBitsTag;
@@ -253,5 +256,7 @@ using Patterns =
                      PumpAndPattern<Pump, Pattern<Pump, OnesTag>>,
                      PumpAndPattern<Pump, Pattern<Pump, InvOnesTag>>,
                      PumpAndPattern<Pump, Pattern<Pump, SaturatedTag>>>;
+
+} // namespace
 
 } // namespace rawspeed_test

@@ -38,7 +38,7 @@
 #include <utility>
 
 #if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
-#include <sanitizer/asan_interface.h>
+#include <sanitizer/common_interface_defs.h>
 #endif
 
 namespace rawspeed {
@@ -53,7 +53,7 @@ KodakDecompressor::KodakDecompressor(RawImage img, ByteStream bs, int bps_,
 
   if (!mRaw->dim.hasPositiveArea() || mRaw->dim.x % 4 != 0 ||
       mRaw->dim.x > 4516 || mRaw->dim.y > 3012)
-    ThrowRDE("Unexpected image dimensions found: (%u; %u)", mRaw->dim.x,
+    ThrowRDE("Unexpected image dimensions found: (%d; %d)", mRaw->dim.x,
              mRaw->dim.y);
 
   if (bps != 10 && bps != 12)

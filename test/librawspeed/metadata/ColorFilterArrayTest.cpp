@@ -34,7 +34,7 @@ using std::string;
 
 namespace rawspeed {
 
-::std::ostream& operator<<(::std::ostream& os, const CFAColor c) {
+static ::std::ostream& operator<<(::std::ostream& os, const CFAColor c) {
   return os << ColorFilterArray::colorToString(c);
 }
 
@@ -42,9 +42,11 @@ namespace rawspeed {
 
 namespace rawspeed_test {
 
+namespace {
+
 using Bayer2x2 = std::tuple<CFAColor, CFAColor, CFAColor, CFAColor>;
 
-static const iPoint2D square(2, 2);
+const iPoint2D square(2, 2);
 
 TEST(ColorFilterArrayTestBasic, Constructor) {
   ASSERT_NO_THROW({
@@ -145,9 +147,9 @@ protected:
   Bayer2x2 param;
 };
 
-static const auto Bayer_RGB =
+const auto Bayer_RGB =
     ::testing::Values(CFAColor::RED, CFAColor::GREEN, CFAColor::BLUE);
-static const auto Bayer_CYGM = ::testing::Values(
+const auto Bayer_CYGM = ::testing::Values(
     CFAColor::CYAN, CFAColor::MAGENTA, CFAColor::YELLOW, CFAColor::FUJI_GREEN);
 
 INSTANTIATE_TEST_SUITE_P(RGGB, ColorFilterArrayTest,
@@ -158,12 +160,12 @@ INSTANTIATE_TEST_SUITE_P(CYGM, ColorFilterArrayTest,
                          testing::Combine(Bayer_CYGM, Bayer_CYGM, Bayer_CYGM,
                                           Bayer_CYGM));
 
-static void setHelper(ColorFilterArray* cfa, Bayer2x2 param) {
+void setHelper(ColorFilterArray* cfa, Bayer2x2 param) {
   cfa->setCFA(square, std::get<0>(param), std::get<1>(param),
               std::get<2>(param), std::get<3>(param));
 }
 
-static void check(ColorFilterArray* cfa, Bayer2x2 param) {
+void check(ColorFilterArray* cfa, Bayer2x2 param) {
   ASSERT_EQ(cfa->getColorAt(0, 0), std::get<0>(param));
   ASSERT_EQ(cfa->getColorAt(1, 0), std::get<1>(param));
   ASSERT_EQ(cfa->getColorAt(0, 1), std::get<2>(param));
@@ -332,5 +334,6 @@ TEST_P(ColorFilterArrayShiftTest, shiftEqualityTest) {
     ASSERT_EQ(f, ColorFilterArray::shiftDcrawFilter(fo, x, y));
   });
 }
+} // namespace
 
 } // namespace rawspeed_test

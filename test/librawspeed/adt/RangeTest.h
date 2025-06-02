@@ -39,7 +39,11 @@ template <typename T>
 
 namespace rawspeed_test {
 
+// NOLINTNEXTLINE(google-build-namespaces)
+namespace {
+
 template <typename T>
+[[maybe_unused]]
 ::testing::AssertionResult RangeContains(const char* range_expr,
                                          const char* pos_expr,
                                          const Range<T>& r, const T& pos) {
@@ -55,6 +59,7 @@ template <typename T>
 }
 
 template <typename T>
+[[maybe_unused]]
 ::testing::AssertionResult RangeDoesntContain(const char* range_expr,
                                               const char* pos_expr,
                                               const Range<T>& r, const T& pos) {
@@ -70,6 +75,7 @@ template <typename T>
 }
 
 template <typename T>
+[[maybe_unused]]
 ::testing::AssertionResult RangesOverlap(const char* m_expr, const char* n_expr,
                                          const T& lhs, const T& rhs) {
   if (!RangesOverlap(lhs, lhs) || !RangesOverlap(rhs, rhs))
@@ -84,6 +90,7 @@ template <typename T>
 }
 
 template <typename T>
+[[maybe_unused]]
 ::testing::AssertionResult RangesDontOverlap(const char* m_expr,
                                              const char* n_expr, const T& lhs,
                                              const T& rhs) {
@@ -116,7 +123,7 @@ INSTANTIATE_TEST_SUITE_P(Unsigned, TwoRangesTest,
                                           testing::Range(0, 3),
                                           testing::Range(0U, 3U)));
 
-static const std::set<twoRangesType> AllOverlapped{
+const std::set<twoRangesType> AllOverlapped{
     std::make_tuple(0, 0, 0, 0), std::make_tuple(0, 0, 0, 1),
     std::make_tuple(0, 0, 0, 2), std::make_tuple(0, 1, 0, 0),
     std::make_tuple(0, 1, 0, 1), std::make_tuple(0, 1, 0, 2),
@@ -138,5 +145,7 @@ static const std::set<twoRangesType> AllOverlapped{
     std::make_tuple(2, 2, 2, 0), std::make_tuple(2, 2, 2, 1),
     std::make_tuple(2, 2, 2, 2),
 };
+
+} // namespace
 
 } // namespace rawspeed_test

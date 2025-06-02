@@ -83,7 +83,7 @@ public:
   double pixelAspectRatio = 1;
 
   // White balance coefficients of the image
-  std::array<float, 4> wbCoeffs = {{NAN, NAN, NAN, NAN}};
+  Optional<std::array<float, 4>> wbCoeffs;
 
   // If not empty, a row-major color matrix,
   // that converts XYZ values to reference camera native color space values,
@@ -291,8 +291,13 @@ RawImageData::getU16DataAsUncroppedArray2DRef() noexcept {
   assert(dataType == RawImageType::UINT16 &&
          "Attempting to access floating-point buffer as uint16_t.");
   assert(!data.empty() && "Data not yet allocated.");
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
   return {reinterpret_cast<uint16_t*>(data.data()), cpp * uncropped_dim.x,
           uncropped_dim.y, static_cast<int>(pitch / sizeof(uint16_t))};
+#pragma GCC diagnostic pop
 }
 
 inline CroppedArray2DRef<uint16_t>
@@ -306,8 +311,13 @@ RawImageData::getF32DataAsUncroppedArray2DRef() noexcept {
   assert(dataType == RawImageType::F32 &&
          "Attempting to access integer buffer as float.");
   assert(!data.empty() && "Data not yet allocated.");
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wunsafe-buffer-usage"
   return {reinterpret_cast<float*>(data.data()), cpp * uncropped_dim.x,
           uncropped_dim.y, static_cast<int>(pitch / sizeof(float))};
+#pragma GCC diagnostic pop
 }
 
 inline CroppedArray2DRef<float>
@@ -340,8 +350,8 @@ inline void RawImageDataU16::setWithLookUp(uint16_t value, std::byte* dst,
     return;
   }
   if (table->dither) {
-    uint32_t base = table->tables[2 * value + 0];
-    uint32_t delta = table->tables[2 * value + 1];
+    uint32_t base = table->tables[(2 * value) + 0];
+    uint32_t delta = table->tables[(2 * value) + 1];
     uint32_t r = *random;
 
     uint32_t pix = base + ((delta * (r & 2047) + 1024) >> 12);
