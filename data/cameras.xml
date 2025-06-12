@@ -16170,6 +16170,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="FUJIFILM" model="X-E5" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="X-E5">Fujifilm X-E5</ID>
+	</Camera>
 	<Camera make="FUJIFILM" model="X-S10">
 		<ID make="Fujifilm" model="X-S10">Fujifilm X-S10</ID>
 		<CFA2 width="6" height="6">
