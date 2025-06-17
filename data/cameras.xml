@@ -7102,6 +7102,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="OM Digital Solutions" model="OM-5MarkII" supported="unknown-no-samples">
+		<ID make="OM System" model="OM-5 Mark II">OM Digital Solutions OM-5 Mark II</ID>
+	</Camera>
 	<Camera make="OM Digital Solutions" model="TG-7">
 		<ID make="OM System" model="TG-7">OM Digital Solutions TG-7</ID>
 		<Crop x="0" y="0" width="-24" height="0"/>
