@@ -7068,7 +7068,7 @@
 	</Camera>
 	<Camera make="OM Digital Solutions" model="OM-1MarkII">
 		<ID make="OM System" model="OM-1 Mark II">OM Digital Solutions OM-1 Mark II</ID>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="0" y="0" width="-12" height="0"/>
 		<Sensor black="254" white="4095"/>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -7080,7 +7080,7 @@
 	</Camera>
 	<Camera make="OM Digital Solutions" model="OM-3">
 		<ID make="OM System" model="OM-3">OM Digital Solutions OM-3</ID>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="0" y="0" width="-12" height="0"/>
 		<Sensor black="254" white="4095"/>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
