@@ -12159,7 +12159,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="PENTAX" model="PENTAX K-r" decoder_version="3" supported="no-samples">
+	<Camera make="PENTAX" model="PENTAX K-r" decoder_version="3">
 		<ID make="Pentax" model="K-r">PENTAX K-r</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -12167,7 +12167,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">RED</Color>
 		</CFA>
-		<Crop x="2" y="2" width="-44" height="0"/>
+		<Crop x="0" y="0" width="-44" height="0"/>
 		<Sensor black="64" white="4000"/>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
