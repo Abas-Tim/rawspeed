@@ -11243,7 +11243,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Panasonic" model="DC-GH5S" decoder_version="3" mode="4:3">
+	<Camera make="Panasonic" model="DC-GH5S" mode="4:3" decoder_version="3">
 		<ID make="Panasonic" model="DC-GH5S">Panasonic DC-GH5S</ID>
 		<Crop x="0" y="0" width="-40" height="0"/>
 		<Sensor black="510" white="8000"/>
@@ -11255,7 +11255,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Panasonic" model="DC-GH5S" decoder_version="3" mode="3:2">
+	<Camera make="Panasonic" model="DC-GH5S" mode="3:2" decoder_version="3">
 		<ID make="Panasonic" model="DC-GH5S">Panasonic DC-GH5S</ID>
 		<Crop x="0" y="0" width="-24" height="0"/>
 		<Sensor black="510" white="8000"/>
@@ -11267,7 +11267,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Panasonic" model="DC-GH5S" decoder_version="3" mode="16:9">
+	<Camera make="Panasonic" model="DC-GH5S" mode="16:9" decoder_version="3">
 		<ID make="Panasonic" model="DC-GH5S">Panasonic DC-GH5S</ID>
 		<Crop x="0" y="0" width="-68" height="0"/>
 		<Sensor black="510" white="8000"/>
@@ -11279,7 +11279,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Panasonic" model="DC-GH5S" decoder_version="3" mode="1:1">
+	<Camera make="Panasonic" model="DC-GH5S" mode="1:1" decoder_version="3">
 		<ID make="Panasonic" model="DC-GH5S">Panasonic DC-GH5S</ID>
 		<Crop x="0" y="0" width="-32" height="0"/>
 		<Sensor black="510" white="8000"/>
