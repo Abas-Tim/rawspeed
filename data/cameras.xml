@@ -4664,7 +4664,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D5300" mode="12bit-compressed" supported="no-samples">
+	<Camera make="NIKON CORPORATION" model="NIKON D5300" mode="12bit-compressed">
 		<ID make="Nikon" model="D5300">Nikon D5300</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
