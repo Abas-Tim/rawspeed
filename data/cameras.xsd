@@ -465,6 +465,7 @@
       <xs:enumeration value="RICOH"/>
       <xs:enumeration value="RoverShot"/>
       <xs:enumeration value="SAMSUNG DIGITAL IMA"/>
+      <xs:enumeration value="SAMSUNG TECHWIN"/>
       <xs:enumeration value="SAMSUNG TECHWIN Co."/>
       <xs:enumeration value="SAMSUNG"/>
       <xs:enumeration value="SEIKO EPSON CORP."/>
