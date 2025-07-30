@@ -11339,8 +11339,29 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Panasonic" model="DC-GH7" supported="unknown-no-samples">
+	<Camera make="Panasonic" model="DC-GH7">
 		<ID make="Panasonic" model="DC-GH7">Panasonic DC-GH7</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="2048" white="65535"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">8573 -3575 -678</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-4252 12079 2451</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-808 2524 5936</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DC-GH7" mode="4:3">
+		<ID make="Panasonic" model="DC-GH7">Panasonic DC-GH7</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="2048" white="65535"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">8573 -3575 -678</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-4252 12079 2451</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-808 2524 5936</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DC-G9">
 		<ID make="Panasonic" model="DC-G9">Panasonic DC-G9</ID>
