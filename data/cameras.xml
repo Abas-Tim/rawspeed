@@ -12360,6 +12360,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="SAMSUNG TECHWIN" model="GX-1S" supported="unknown-no-samples">
+		<ID make="Samsung" model="GX-1S">Samsung GX-1S</ID>
+	</Camera>
 	<Camera make="SAMSUNG" model="NX mini">
 		<ID make="Samsung" model="NX mini">Samsung NX mini</ID>
 		<CFA width="2" height="2">
