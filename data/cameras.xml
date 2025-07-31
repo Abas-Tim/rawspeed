@@ -6078,9 +6078,6 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON" model="COOLPIX P5000" supported="unknown-no-samples">
-		<ID make="Nikon" model="Coolpix P5000">Nikon Coolpix P5000</ID>
-	</Camera>
 	<Camera make="NIKON" model="COOLPIX P6000" mode="12bit-uncompressed" decoder_version="1">
 		<ID make="Nikon" model="Coolpix P6000">Nikon Coolpix P6000</ID>
 		<CFA width="2" height="2">
