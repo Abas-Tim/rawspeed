@@ -14661,6 +14661,15 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="FUJIFILM" model="FinePix S205EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix S205EXR">Fujifilm FinePix S200EXR</ID>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix F500EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix F500EXR">Fujifilm FinePix F000EXR</ID>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix F505EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix F505EXR">Fujifilm FinePix F500EXR</ID>
+	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F550EXR">
 		<ID make="Fujifilm" model="FinePix F550EXR">Fujifilm FinePix F550EXR</ID>
 		<CFA width="2" height="2">
@@ -14696,6 +14705,9 @@
 				<ColorMatrixRow plane="2">-132 1554 4395</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix F605EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix F605EXR">Fujifilm FinePix F600EXR</ID>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F700">
 		<ID make="Fujifilm" model="FinePix F700">Fujifilm FinePix F700</ID>
@@ -14737,6 +14749,9 @@
 				<ColorMatrixRow plane="2">-132 1554 4395</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix F775EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix F775EXR">Fujifilm FinePix F770EXR</ID>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F800EXR" supported="unknown-no-samples">
 		<ID make="Fujifilm" model="FinePix F800EXR">Fujifilm FinePix F800EXR</ID>
@@ -15098,6 +15113,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="FUJIFILM" model="FinePix HS22EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix HS22EXR">Fujifilm FinePix HS20EXR</ID>
+	</Camera>
 	<Camera make="FUJIFILM" model="FinePix HS30EXR">
 		<ID make="Fujifilm" model="FinePix HS30EXR">Fujifilm FinePix HS30EXR</ID>
 		<CFA width="2" height="2">
@@ -15115,6 +15133,12 @@
 				<ColorMatrixRow plane="2">-132 1554 4395</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix HS33EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix HS33EXR">Fujifilm FinePix HS30EXR</ID>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix HS35EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix HS35EXR">Fujifilm FinePix HS30EXR</ID>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix HS50EXR">
 		<ID make="Fujifilm" model="FinePix HS50EXR">Fujifilm FinePix HS50EXR</ID>
