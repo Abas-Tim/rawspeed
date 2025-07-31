@@ -15129,6 +15129,9 @@
 		</CFA>
 		<Crop x="34" y="0" width="-32" height="0"/>
 		<Sensor black="258" white="3900"/>
+		<Aliases>
+			<Alias>FinePix HS33EXR</Alias>
+		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">13690 -5358 -1474</ColorMatrixRow>
@@ -15136,9 +15139,6 @@
 				<ColorMatrixRow plane="2">-132 1554 4395</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
-	</Camera>
-	<Camera make="FUJIFILM" model="FinePix HS33EXR" supported="unknown-no-samples">
-		<ID make="Fujifilm" model="FinePix HS33EXR">Fujifilm FinePix HS30EXR</ID>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix HS35EXR" supported="unknown-no-samples">
 		<ID make="Fujifilm" model="FinePix HS35EXR">Fujifilm FinePix HS30EXR</ID>
