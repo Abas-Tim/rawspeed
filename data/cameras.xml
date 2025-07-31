@@ -13600,6 +13600,15 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="SONY" model="NEX-VG20" supported="unknown-no-samples">
+		<ID make="Sony" model="NEX-VG20">Sony NEX-VG20</ID>
+	</Camera>
+	<Camera make="SONY" model="NEX-VG30" supported="unknown-no-samples">
+		<ID make="Sony" model="NEX-VG30">Sony NEX-VG30</ID>
+	</Camera>
+	<Camera make="SONY" model="NEX-VG900" supported="unknown-no-samples">
+		<ID make="Sony" model="NEX-VG900">Sony NEX-VG900</ID>
+	</Camera>
 	<Camera make="SONY" model="ILCE-3000">
 		<ID make="Sony" model="ILCE-3000">Sony ILCE-3000</ID>
 		<CFA width="2" height="2">
