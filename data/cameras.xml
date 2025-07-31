@@ -2039,6 +2039,9 @@
 	<Camera make="Canon" model="Canon EOS-1D X Mark III" supported="no">
 		<ID make="Canon" model="EOS-1D X Mark III">Canon EOS-1D X Mark III</ID>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot A50" supported="unknown-no-samples">
+		<ID make="Canon" model="PowerShot A50">Canon PowerShot A50</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot Pro1">
 		<ID make="Canon" model="PowerShot Pro1">Canon PowerShot Pro1</ID>
 		<CFA width="2" height="2">
