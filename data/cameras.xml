@@ -7435,6 +7435,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-FZH1" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DMC-FZH1">Panasonic DMC-FZ2000</ID>
+	</Camera>
 	<Camera make="Panasonic" model="DMC-FZ2000" mode="3:2">
 		<ID make="Panasonic" model="DMC-FZ2000">Panasonic DMC-FZ2000</ID>
 		<Crop x="0" y="0" width="0" height="0"/>
@@ -8800,6 +8803,9 @@
 				<ColorMatrixRow plane="2">-1117 2304 4620</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-FZ42" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DMC-FZ42">Panasonic DMC-FZ40</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-FZ45">
 		<Crop x="0" y="0" width="-58" height="-10"/>
@@ -11097,6 +11103,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ82" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DMC-TZ82">Panasonic DMC-ZS60</ID>
+	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ81">
 		<ID make="Panasonic" model="DMC-TZ81">Panasonic DMC-ZS60</ID>
 		<Crop x="0" y="0" width="-128" height="0"/>
@@ -11168,6 +11177,12 @@
 				<ColorMatrixRow plane="2">-628 1647 4898</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DC-FZ81" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-FZ81">Panasonic DC-FZ82</ID>
+	</Camera>
+	<Camera make="Panasonic" model="DC-FZ83" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-FZ83">Panasonic DC-FZ82</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DC-FZ82">
 		<ID make="Panasonic" model="DC-FZ82">Panasonic DC-FZ82</ID>
@@ -11616,6 +11631,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ97" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DMC-TZ97">Panasonic DMC-ZS80</ID>
+	</Camera>
 	<Camera make="Panasonic" model="DC-TZ96">
 		<ID make="Panasonic" model="DC-TZ96">Panasonic DC-ZS80</ID>
 		<Crop x="0" y="0" width="-66" height="0"/>
@@ -11653,6 +11671,12 @@
 				<ColorMatrixRow plane="2">-50 1418 5219</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DC-TX2" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-TX2">Panasonic DC-ZS200</ID>
+	</Camera>
+	<Camera make="Panasonic" model="DC-TX2D" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-TX2D">Panasonic DC-ZS200</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DC-TZ202">
 		<ID make="Panasonic" model="DC-TZ202">Panasonic DC-ZS200</ID>
