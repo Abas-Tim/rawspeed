@@ -5929,6 +5929,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="NIKON" model="E8700" supported="unknown-no-samples">
+		<ID make="Nikon" model="E8700">Nikon E8700</ID>
+	</Camera>
 	<Camera make="NIKON" model="COOLPIX P330" mode="12bit-compressed" decoder_version="5">
 		<ID make="Nikon" model="Coolpix P330">Nikon Coolpix P330</ID>
 		<CFA width="2" height="2">
@@ -6071,6 +6074,9 @@
 				<ColorMatrixRow plane="2">467 1047 4744</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="NIKON" model="COOLPIX P5000" supported="unknown-no-samples">
+		<ID make="Nikon" model="Coolpix P5000">Nikon Coolpix P5000</ID>
 	</Camera>
 	<Camera make="NIKON" model="COOLPIX P6000" mode="12bit-uncompressed" decoder_version="1">
 		<ID make="Nikon" model="Coolpix P6000">Nikon Coolpix P6000</ID>
