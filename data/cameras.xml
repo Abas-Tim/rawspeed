@@ -2039,6 +2039,9 @@
 	<Camera make="Canon" model="Canon EOS-1D X Mark III" supported="no">
 		<ID make="Canon" model="EOS-1D X Mark III">Canon EOS-1D X Mark III</ID>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot A50" supported="unknown-no-samples">
+		<ID make="Canon" model="PowerShot A50">Canon PowerShot A50</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot Pro1">
 		<ID make="Canon" model="PowerShot Pro1">Canon PowerShot Pro1</ID>
 		<CFA width="2" height="2">
@@ -5929,6 +5932,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="NIKON" model="E8700" supported="unknown-no-samples">
+		<ID make="Nikon" model="E8700">Nikon E8700</ID>
+	</Camera>
 	<Camera make="NIKON" model="COOLPIX P330" mode="12bit-compressed" decoder_version="5">
 		<ID make="Nikon" model="Coolpix P330">Nikon Coolpix P330</ID>
 		<CFA width="2" height="2">
@@ -6071,6 +6077,9 @@
 				<ColorMatrixRow plane="2">467 1047 4744</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="NIKON" model="COOLPIX P5000" supported="unknown-no-samples">
+		<ID make="Nikon" model="Coolpix P5000">Nikon Coolpix P5000</ID>
 	</Camera>
 	<Camera make="NIKON" model="COOLPIX P6000" mode="12bit-uncompressed" decoder_version="1">
 		<ID make="Nikon" model="Coolpix P6000">Nikon Coolpix P6000</ID>
@@ -7434,6 +7443,9 @@
 				<ColorMatrixRow plane="2">-608 1660 4766</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-FZH1" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DMC-FZH1">Panasonic DMC-FZ2000</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-FZ2000" mode="3:2">
 		<ID make="Panasonic" model="DMC-FZ2000">Panasonic DMC-FZ2000</ID>
@@ -8800,6 +8812,9 @@
 				<ColorMatrixRow plane="2">-1117 2304 4620</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DMC-FZ42" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DMC-FZ42">Panasonic DMC-FZ40</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-FZ45">
 		<Crop x="0" y="0" width="-58" height="-10"/>
@@ -11097,6 +11112,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ82" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DMC-TZ82">Panasonic DMC-ZS60</ID>
+	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ81">
 		<ID make="Panasonic" model="DMC-TZ81">Panasonic DMC-ZS60</ID>
 		<Crop x="0" y="0" width="-128" height="0"/>
@@ -11168,6 +11186,12 @@
 				<ColorMatrixRow plane="2">-628 1647 4898</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DC-FZ81" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-FZ81">Panasonic DC-FZ82</ID>
+	</Camera>
+	<Camera make="Panasonic" model="DC-FZ83" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-FZ83">Panasonic DC-FZ82</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DC-FZ82">
 		<ID make="Panasonic" model="DC-FZ82">Panasonic DC-FZ82</ID>
@@ -11616,6 +11640,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-TZ97" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DMC-TZ97">Panasonic DMC-ZS80</ID>
+	</Camera>
 	<Camera make="Panasonic" model="DC-TZ96">
 		<ID make="Panasonic" model="DC-TZ96">Panasonic DC-ZS80</ID>
 		<Crop x="0" y="0" width="-66" height="0"/>
@@ -11653,6 +11680,12 @@
 				<ColorMatrixRow plane="2">-50 1418 5219</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DC-TX2" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-TX2">Panasonic DC-ZS200</ID>
+	</Camera>
+	<Camera make="Panasonic" model="DC-TX2D" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-TX2D">Panasonic DC-ZS200</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DC-TZ202">
 		<ID make="Panasonic" model="DC-TZ202">Panasonic DC-ZS200</ID>
@@ -13570,6 +13603,15 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="SONY" model="NEX-VG20" supported="unknown-no-samples">
+		<ID make="Sony" model="NEX-VG20">Sony NEX-VG20</ID>
+	</Camera>
+	<Camera make="SONY" model="NEX-VG30" supported="unknown-no-samples">
+		<ID make="Sony" model="NEX-VG30">Sony NEX-VG30</ID>
+	</Camera>
+	<Camera make="SONY" model="NEX-VG900" supported="unknown-no-samples">
+		<ID make="Sony" model="NEX-VG900">Sony NEX-VG900</ID>
+	</Camera>
 	<Camera make="SONY" model="ILCE-3000">
 		<ID make="Sony" model="ILCE-3000">Sony ILCE-3000</ID>
 		<CFA width="2" height="2">
@@ -14622,6 +14664,15 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="FUJIFILM" model="FinePix S205EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix S205EXR">Fujifilm FinePix S200EXR</ID>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix F500EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix F500EXR">Fujifilm FinePix F000EXR</ID>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix F505EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix F505EXR">Fujifilm FinePix F500EXR</ID>
+	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F550EXR">
 		<ID make="Fujifilm" model="FinePix F550EXR">Fujifilm FinePix F550EXR</ID>
 		<CFA width="2" height="2">
@@ -14657,6 +14708,9 @@
 				<ColorMatrixRow plane="2">-132 1554 4395</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix F605EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix F605EXR">Fujifilm FinePix F600EXR</ID>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F700">
 		<ID make="Fujifilm" model="FinePix F700">Fujifilm FinePix F700</ID>
@@ -14698,6 +14752,9 @@
 				<ColorMatrixRow plane="2">-132 1554 4395</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix F775EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix F775EXR">Fujifilm FinePix F770EXR</ID>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F800EXR" supported="unknown-no-samples">
 		<ID make="Fujifilm" model="FinePix F800EXR">Fujifilm FinePix F800EXR</ID>
@@ -15059,6 +15116,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="FUJIFILM" model="FinePix HS22EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix HS22EXR">Fujifilm FinePix HS20EXR</ID>
+	</Camera>
 	<Camera make="FUJIFILM" model="FinePix HS30EXR">
 		<ID make="Fujifilm" model="FinePix HS30EXR">Fujifilm FinePix HS30EXR</ID>
 		<CFA width="2" height="2">
@@ -15069,6 +15129,9 @@
 		</CFA>
 		<Crop x="34" y="0" width="-32" height="0"/>
 		<Sensor black="258" white="3900"/>
+		<Aliases>
+			<Alias>FinePix HS33EXR</Alias>
+		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">13690 -5358 -1474</ColorMatrixRow>
@@ -15076,6 +15139,9 @@
 				<ColorMatrixRow plane="2">-132 1554 4395</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix HS35EXR" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="FinePix HS35EXR">Fujifilm FinePix HS30EXR</ID>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix HS50EXR">
 		<ID make="Fujifilm" model="FinePix HS50EXR">Fujifilm FinePix HS50EXR</ID>
