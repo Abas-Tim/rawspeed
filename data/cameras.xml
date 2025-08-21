@@ -18193,6 +18193,9 @@
 			<Alias id="GR IIIx HDF">RICOH GR IIIx HDF</Alias>
 		</Aliases>
 	</Camera>
+	<Camera make="RICOH IMAGING COMPANY, LTD." model="RICOH GR IV" mode="dng">
+		<ID make="Ricoh" model="GR IV">Ricoh GR IV</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon IXY 220F" mode="dng">
 		<ID make="Canon" model="IXY 220F">Canon IXY 220F</ID>
 		<Aliases>
