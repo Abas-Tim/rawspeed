@@ -18018,6 +18018,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Hasselblad" model="X2D II 100C" supported="unknown-no-samples">
+		<ID make="Hasselblad" model="X2D II 100C">Hasselblad 100-20-Coated6</ID>
+	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="PENTAX 645Z" mode="dng">
 		<ID make="Pentax" model="645Z">PENTAX 645Z</ID>
 		<ColorMatrices>
