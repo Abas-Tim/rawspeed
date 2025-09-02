@@ -1618,7 +1618,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS M200" supported="unknown-no-samples">
+	<Camera make="Canon" model="Canon EOS M200" supported="no">
 		<ID make="Canon" model="EOS M200">Canon EOS M200</ID>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS R" supported="no">
@@ -1663,7 +1663,7 @@
 	<Camera make="Canon" model="Canon EOS R50" supported="no">
 		<ID make="Canon" model="EOS R50">Canon EOS R50</ID>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS R50 V" supported="unknown-no-samples">
+	<Camera make="Canon" model="Canon EOS R50 V" supported="no">
 		<ID make="Canon" model="EOS R50 V">Canon EOS R50 V</ID>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS R100" supported="no">
@@ -2831,7 +2831,7 @@
 	<Camera make="Canon" model="Canon PowerShot SX70 HS" supported="no">
 		<ID make="Canon" model="PowerShot SX70 HS">Canon PowerShot SX70 HS</ID>
 	</Camera>
-	<Camera make="Canon" model="Canon PowerShot V1" supported="unknown-no-samples">
+	<Camera make="Canon" model="Canon PowerShot V1" supported="no">
 		<ID make="Canon" model="PowerShot V1">Canon PowerShot V1</ID>
 	</Camera>
 	<Camera make="GoPro" model="FUSION" mode="dng">
