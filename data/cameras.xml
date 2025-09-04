@@ -4349,7 +4349,43 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON Z fc" mode="14bit-uncompressed">
+		<ID make="Nikon" model="Z fc">Nikon Z fc</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="1008" white="15892"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">11640 -4829 -1079</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-5107 13006 2325</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-972 1711 7380</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON Z fc" mode="12bit-compressed">
+		<ID make="Nikon" model="Z fc">Nikon Z fc</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="251" white="3972"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">11640 -4829 -1079</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-5107 13006 2325</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-972 1711 7380</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON Z fc" mode="12bit-uncompressed">
 		<ID make="Nikon" model="Z fc">Nikon Z fc</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
