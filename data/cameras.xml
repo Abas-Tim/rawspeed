@@ -741,10 +741,10 @@
 	<Camera make="Canon" model="Canon EOS 550D">
 		<ID make="Canon" model="EOS 550D">Canon EOS 550D</ID>
 		<CFA width="2" height="2">
-			<Color x="1" y="0">BLUE</Color>
 			<Color x="0" y="0">GREEN</Color>
-			<Color x="1" y="1">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
 			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="148" y="54" width="0" height="0"/>
 		<BlackAreas>
@@ -13360,10 +13360,10 @@
 	<Camera make="SONY" model="DSLR-A500">
 		<ID make="Sony" model="DSLR-A500">Sony DSLR-A500</ID>
 		<CFA width="2" height="2">
-			<Color x="1" y="1">BLUE</Color>
+			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
 			<Color x="0" y="1">GREEN</Color>
-			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="500" white="16600"/>
@@ -13378,10 +13378,10 @@
 	<Camera make="SONY" model="DSLR-A550">
 		<ID make="Sony" model="DSLR-A550">Sony DSLR-A550</ID>
 		<CFA width="2" height="2">
-			<Color x="1" y="1">BLUE</Color>
+			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
 			<Color x="0" y="1">GREEN</Color>
-			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="512" white="16372"/>
@@ -13396,10 +13396,10 @@
 	<Camera make="SONY" model="DSLR-A560">
 		<ID make="Sony" model="DSLR-A560">Sony DSLR-A560</ID>
 		<CFA width="2" height="2">
-			<Color x="1" y="1">BLUE</Color>
+			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
 			<Color x="0" y="1">GREEN</Color>
-			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="476" white="16596"/>
@@ -13414,10 +13414,10 @@
 	<Camera make="SONY" model="DSLR-A580">
 		<ID make="Sony" model="DSLR-A580">Sony DSLR-A580</ID>
 		<CFA width="2" height="2">
-			<Color x="1" y="1">BLUE</Color>
+			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
 			<Color x="0" y="1">GREEN</Color>
-			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-2" height="-2"/>
 		<Sensor black="520" white="16596"/>
@@ -13432,10 +13432,10 @@
 	<Camera make="SONY" model="DSLR-A700">
 		<ID make="Sony" model="DSLR-A700">Sony DSLR-A700</ID>
 		<CFA width="2" height="2">
-			<Color x="1" y="1">BLUE</Color>
+			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
 			<Color x="0" y="1">GREEN</Color>
-			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="4288" height="2856"/>
 		<Sensor black="520" white="16383"/>
@@ -13450,10 +13450,10 @@
 	<Camera make="SONY" model="DSLR-A850">
 		<ID make="Sony" model="DSLR-A850">Sony DSLR-A850</ID>
 		<CFA width="2" height="2">
-			<Color x="1" y="1">BLUE</Color>
+			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
 			<Color x="0" y="1">GREEN</Color>
-			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="6080" height="4048"/>
 		<Sensor black="500" white="15000"/>
