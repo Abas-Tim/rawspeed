@@ -10818,8 +10818,29 @@
 	<Camera make="Panasonic" model="DC-S1M2" supported="unknown-no-samples">
 		<ID make="Panasonic" model="DC-S1M2">Panasonic DC-S1M2</ID>
 	</Camera>
-	<Camera make="Panasonic" model="DC-S1M2ES" supported="unknown-no-samples">
+	<Camera make="Panasonic" model="DC-S1M2ES">
 		<ID make="Panasonic" model="DC-S1M2ES">Panasonic DC-S1M2ES</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="512" white="16383"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">11333 -4794 -1062</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-3912 12027 2115</ColorMatrixRow>
+				<ColorMatrixRow plane="2">42 784 5904</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
+	<Camera make="Panasonic" model="DC-S1M2ES" mode="3:2">
+		<ID make="Panasonic" model="DC-S1M2ES">Panasonic DC-S1M2ES</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="512" white="16383"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">11333 -4794 -1062</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-3912 12027 2115</ColorMatrixRow>
+				<ColorMatrixRow plane="2">42 784 5904</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DC-S5">
 		<ID make="Panasonic" model="DC-S5">Panasonic DC-S5</ID>
