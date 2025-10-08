@@ -1399,9 +1399,9 @@
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">8532 -701 -1167</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-4095 11879 2508</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-797 2424 7010</ColorMatrixRow>
+				<ColorMatrixRow plane="0">8300 -2110 -1120</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-4917 12694 2482</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-938 2141 5666</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
