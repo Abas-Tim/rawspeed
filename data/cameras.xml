@@ -6643,7 +6643,7 @@
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">11596 -4007 -1048</ColorMatrixRow>
 				<ColorMatrixRow plane="1">-5432 12798 2957</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-1029 175 6516</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-1029 1750 6516</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
