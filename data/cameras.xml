@@ -6581,6 +6581,12 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="SH-3" supported="unknown-no-samples">
+		<ID make="Olympus" model="SH-3">Olympus SH-3</ID>
+	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="SP310" supported="unknown-no-samples">
+		<ID make="Olympus" model="SP310">Olympus SP310</ID>
+	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="SP320" supported="no-samples">
 		<ID make="Olympus" model="SP320">Olympus SP320</ID>
 		<Crop x="0" y="0" width="0" height="0"/>
@@ -6628,6 +6634,24 @@
 				<ColorMatrixRow plane="2">-1200 1804 6720</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="SP550UZ">
+		<ID make="Olympus" model="SP550UZ">Olympus SP550UZ</ID>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">11596 -4007 -1048</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-5432 12798 2957</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-1029 1750 6516</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="SP560UZ" supported="unknown-no-samples">
+		<ID make="Olympus" model="SP560UZ">Olympus SP560UZ</ID>
+	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="SP565UZ" supported="unknown-no-samples">
+		<ID make="Olympus" model="SP565UZ">Olympus SP565UZ</ID>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-5">
 		<ID make="Olympus" model="E-5">Olympus E-5</ID>
