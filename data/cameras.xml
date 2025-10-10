@@ -18291,6 +18291,9 @@
 	<Camera make="LEICA CAMERA AG" model="LEICA X (Typ 113)" mode="dng">
 		<ID make="Leica" model="X (Typ 113)">LEICA X (Typ 113)</ID>
 	</Camera>
+	<Camera make="LEICA CAMERA AG" model="LEICA X-E (Typ 102)" mode="dng">
+		<ID make="Leica" model="X-E (Typ 102)">LEICA X-E (Typ 102)</ID>
+	</Camera>
 	<Camera make="LEICA CAMERA AG" model="LEICA X-U (Typ 113)" mode="dng">
 		<ID make="Leica" model="X-U (Typ 113)">LEICA X-U (Typ 113)</ID>
 	</Camera>
