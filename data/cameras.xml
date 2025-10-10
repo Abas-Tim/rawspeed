@@ -6401,6 +6401,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="C70Z,C7000Z" supported="unknown-no-samples">
+		<ID make="Olympus" model="C7000Z">Olympus C7000Z</ID>
+	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="C7070WZ">
 		<ID make="Olympus" model="C7070WZ">Olympus C7070WZ</ID>
 		<Crop x="0" y="0" width="3088" height="2309"/>
@@ -6873,6 +6876,9 @@
 				<ColorMatrixRow plane="2">-387 1467 7787</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="E-PL1s" supported="unknown-no-samples">
+		<ID make="Olympus" model="E-PL1s">Olympus E-PL1s</ID>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-PL2">
 		<ID make="Olympus" model="E-PL2">Olympus E-PL2</ID>
