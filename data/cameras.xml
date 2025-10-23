@@ -16874,6 +16874,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="FUJIFILM" model="X-T30 III" supported="unknown-no-samples">
+		<ID make="Fujifilm" model="X-T30 III">Fujifilm X-T30 III</ID>
+	</Camera>
 	<Camera make="FUJIFILM" model="X-T50">
 		<ID make="Fujifilm" model="X-T50">Fujifilm X-T50</ID>
 		<CFA2 width="6" height="6">
