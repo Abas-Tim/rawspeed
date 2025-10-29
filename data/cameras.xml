@@ -1456,6 +1456,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS C50" supported="unknown-no-samples">
+		<ID make="Canon" model="EOS C50">Canon EOS C50</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS M">
 		<ID make="Canon" model="EOS M">Canon EOS M</ID>
 		<CFA width="2" height="2">
