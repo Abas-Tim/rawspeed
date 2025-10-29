@@ -18147,8 +18147,26 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Hasselblad" model="X2D II 100C" supported="unknown-no-samples">
-		<ID make="Hasselblad" model="X2D II 100C">Hasselblad 100-20-Coated6</ID>
+	<Camera make="Hasselblad" model="X2D II 100C">
+		<ID make="Hasselblad" model="X2D II 100C">Hasselblad 100-22-Coated6</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="124" y="92" width="-116" height="0"/>
+		<Sensor black="4317" white="65535"/>
+		<Aliases>
+			<Alias id="X2D II 100C">Hasselblad X2D II 100C</Alias>
+		</Aliases>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">6468 -1899 -545</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-4526 12267 2542</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-388 1276 6096</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
 	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="PENTAX 645Z" mode="dng">
 		<ID make="Pentax" model="645Z">PENTAX 645Z</ID>
