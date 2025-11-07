@@ -14391,7 +14391,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="520" white="16596"/>
 		<Aliases>
-			<Alias id="SLT-A55">SLT-A55V</Alias>
+			<Alias>SLT-A55V</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -14448,7 +14448,7 @@
 		<Crop x="0" y="0" width="-30" height="0"/>
 		<Sensor black="520" white="16596"/>
 		<Aliases>
-			<Alias id="SLT-A65">SLT-A65V</Alias>
+			<Alias>SLT-A65V</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -14469,7 +14469,7 @@
 		<Crop x="0" y="0" width="-28" height="0"/>
 		<Sensor black="520" white="16596"/>
 		<Aliases>
-			<Alias id="SLT-A77">SLT-A77V</Alias>
+			<Alias>SLT-A77V</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -14547,7 +14547,7 @@
 		<Crop x="0" y="0" width="-28" height="0"/>
 		<Sensor black="520" white="16596"/>
 		<Aliases>
-			<Alias id="SLT-A99">SLT-A99V</Alias>
+			<Alias>SLT-A99V</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
