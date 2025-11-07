@@ -17800,6 +17800,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="EASTMAN KODAK COMPANY" model="KODAK P850 ZOOM DIGITAL CAMERA" supported="unknown-no-samples">
+		<ID make="Kodak" model="P850">Kodak P850</ID>
+	</Camera>
 	<Camera make="EASTMAN KODAK COMPANY" model="KODAK P880 ZOOM DIGITAL CAMERA">
 		<ID make="Kodak" model="P880">Kodak P880</ID>
 		<CFA width="2" height="2">
