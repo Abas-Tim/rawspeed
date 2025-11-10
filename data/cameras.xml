@@ -2742,6 +2742,9 @@
 			<Horizontal y="0" height="10"/>
 			<Horizontal y="3062" height="60"/>
 		</BlackAreas>
+		<Aliases>
+			<Alias id="PowerShot S100V">Canon PowerShot S100V</Alias>
+		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">7968 -2565 -636</ColorMatrixRow>
