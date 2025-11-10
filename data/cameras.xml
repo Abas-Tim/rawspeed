@@ -7134,7 +7134,7 @@
 		<Crop x="0" y="0" width="-14" height="0"/>
 		<Sensor black="200" white="3900"/>
 		<Aliases>
-			<Alias id="Stylus1">STYLUS1,1s</Alias>
+			<Alias id="Stylus1s">STYLUS1,1s</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
