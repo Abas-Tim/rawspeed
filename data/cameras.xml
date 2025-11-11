@@ -18395,6 +18395,12 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot D10" mode="dng">
+		<ID make="Canon" model="PowerShot D10">Canon PowerShot D10</ID>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot S2 IS" mode="dng">
+		<ID make="Canon" model="PowerShot S2 IS">Canon PowerShot S2 IS</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot SX10 IS" mode="dng">
 		<ID make="Canon" model="PowerShot SX10 IS">Canon PowerShot SX10 IS</ID>
 	</Camera>
