@@ -5938,7 +5938,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON" model="E8400" mode="12bit-uncompressed" decoder_version="3" supported="no">
+	<Camera make="NIKON" model="E8400" mode="12bit-uncompressed" decoder_version="3" supported="unknown-no-samples">
 		<ID make="Nikon" model="E8400">Nikon Coolpix 8400</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -6242,7 +6242,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON" model="E8800" mode="12bit-uncompressed" decoder_version="3" supported="no">
+	<Camera make="NIKON" model="E8800" mode="12bit-uncompressed" decoder_version="3" supported="unknown-no-samples">
 		<ID make="Nikon" model="E8800">Nikon Coolpix 8800</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
