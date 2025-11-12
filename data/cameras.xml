@@ -17728,6 +17728,27 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="EASTMAN KODAK COMPANY" model="KODAK P712 ZOOM DIGITAL CAMERA">
+		<ID make="Kodak" model="P712">Kodak P712</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">9658 -3314 -823</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-5163 12695 2768</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-1342 1843 6044</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
+	<Camera make="EASTMAN KODAK COMPANY" model="KODAK P850 ZOOM DIGITAL CAMERA" supported="unknown-no-samples">
+		<ID make="Kodak" model="P850">Kodak P850</ID>
+	</Camera>
 	<Camera make="EASTMAN KODAK COMPANY" model="KODAK P880 ZOOM DIGITAL CAMERA">
 		<ID make="Kodak" model="P880">Kodak P880</ID>
 		<CFA width="2" height="2">
