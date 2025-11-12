@@ -17336,6 +17336,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Leaf" model="Credo 50" supported="unknown-no-samples">
+		<ID make="Leaf" model="Credo 50">Leaf Credo 50</ID>
+	</Camera>
 	<Camera make="Leaf" model="Credo 60" supported="no-samples">
 		<ID make="Leaf" model="Credo 60">Leaf Credo 60</ID>
 		<CFA width="2" height="2">
