@@ -17633,6 +17633,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
+		<Aliases>
+			<Alias>DCS Pro SLR/c</Alias>
+		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
 				<ColorMatrixRow plane="0">5494 2393 -232</ColorMatrixRow>
