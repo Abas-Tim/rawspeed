@@ -5938,29 +5938,8 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON" model="E8400" mode="12bit-compressed" decoder_version="3" supported="no">
-		<ID make="Nikon" model="E8400">Nikon E8400</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">BLUE</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">RED</Color>
-		</CFA>
-		<Crop x="0" y="0" width="3280" height="2454"/>
-		<Sensor black="0" white="4095"/>
-		<Hints>
-			<Hint name="coolpixsplit" value=""/>
-		</Hints>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">7842 -2320 -992</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-8154 15718 2599</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-1098 1342 7560</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
 	<Camera make="NIKON" model="E8400" mode="12bit-uncompressed" decoder_version="3" supported="no">
-		<ID make="Nikon" model="E8400">Nikon E8400</ID>
+		<ID make="Nikon" model="E8400">Nikon Coolpix 8400</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5981,7 +5960,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="NIKON" model="E8700" supported="unknown-no-samples">
-		<ID make="Nikon" model="E8700">Nikon E8700</ID>
+		<ID make="Nikon" model="E8700">Nikon Coolpix 8700</ID>
 	</Camera>
 	<Camera make="NIKON" model="COOLPIX P330" mode="12bit-compressed" decoder_version="5">
 		<ID make="Nikon" model="Coolpix P330">Nikon Coolpix P330</ID>
@@ -6081,27 +6060,6 @@
 				<ColorMatrixRow plane="0">10601 -3487 -1127</ColorMatrixRow>
 				<ColorMatrixRow plane="1">-2931 11443 1676</ColorMatrixRow>
 				<ColorMatrixRow plane="2">-587 1740 5278</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
-	<Camera make="NIKON" model="COOLPIX B700" supported="no-samples">
-		<ID make="Nikon" model="COOLPIX B700">Nikon Coolpix B700</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="200" white="4000"/>
-		<Hints>
-			<Hint name="coolpixmangled" value=""/>
-		</Hints>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">14387 -6014 -1299</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-1357 9975 1616</ColorMatrixRow>
-				<ColorMatrixRow plane="2">467 1047 4744</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
@@ -6284,29 +6242,8 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON" model="E8800" mode="12bit-compressed" decoder_version="3" supported="no">
-		<ID make="Nikon" model="Coolpix E8800">Nikon Coolpix E8800</ID>
-		<CFA width="2" height="2">
-			<Color x="0" y="0">BLUE</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">RED</Color>
-		</CFA>
-		<Crop x="0" y="0" width="3280" height="2454"/>
-		<Sensor black="0" white="4095"/>
-		<Hints>
-			<Hint name="coolpixsplit" value=""/>
-		</Hints>
-		<ColorMatrices>
-			<ColorMatrix planes="3">
-				<ColorMatrixRow plane="0">7971 -2314 -913</ColorMatrixRow>
-				<ColorMatrixRow plane="1">-8451 15762 2894</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-1442 1520 7610</ColorMatrixRow>
-			</ColorMatrix>
-		</ColorMatrices>
-	</Camera>
 	<Camera make="NIKON" model="E8800" mode="12bit-uncompressed" decoder_version="3" supported="no">
-		<ID make="Nikon" model="Coolpix E8800">Nikon Coolpix E8800</ID>
+		<ID make="Nikon" model="E8800">Nikon Coolpix 8800</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
 			<Color x="1" y="0">GREEN</Color>
