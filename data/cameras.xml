@@ -17965,6 +17965,24 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Hasselblad" model="Hasselblad H4D-40">
+		<ID make="Hasselblad" model="H4D-40">Hasselblad 40-Coated</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="42" y="4" width="-42" height="-80"/>
+		<Sensor black="256" white="65535"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">6861 -1962 -312</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-4370 12278 2347</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-1653 3167 6751</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
 	<Camera make="Hasselblad" model="Hasselblad H4D-50">
 		<ID make="Hasselblad" model="H4D-50">Hasselblad 50-Coated</ID>
 		<CFA width="2" height="2">
