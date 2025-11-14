@@ -18038,6 +18038,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Hasselblad" model="Hasselblad H5D-60" supported="unknown-no-samples">
+		<ID make="Hasselblad" model="H5D-60">Hasselblad 60-Coated</ID>
+	</Camera>
 	<Camera make="Hasselblad" model="Hasselblad H6D-50c" supported="unknown-no-samples">
 		<ID make="Hasselblad" model="H6D-50c">Hasselblad 50-15-Coated5</ID>
 	</Camera>
