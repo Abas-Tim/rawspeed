@@ -2840,6 +2840,9 @@
 	<Camera make="Canon" model="Canon PowerShot SX70 HS" supported="no">
 		<ID make="Canon" model="PowerShot SX70 HS">Canon PowerShot SX70 HS</ID>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot SX740 HS" supported="unknown-no-samples">
+		<ID make="Canon" model="PowerShot SX740 HS">Canon PowerShot SX740 HS</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot V1" supported="no">
 		<ID make="Canon" model="PowerShot V1">Canon PowerShot V1</ID>
 	</Camera>
