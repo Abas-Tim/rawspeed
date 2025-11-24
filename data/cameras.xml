@@ -18332,6 +18332,9 @@
 	</Camera>
 	<Camera make="LEICA CAMERA AG" model="LEICA D-Lux 8" mode="dng">
 		<ID make="Leica" model="D-Lux 8">LEICA D-Lux 8</ID>
+		<Aliases>
+			<Alias id="D-Lux 8">D-LUX 8 "100 YEARS OF LEICA"</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="GR" mode="dng">
 		<ID make="Ricoh" model="GR">GR</ID>
