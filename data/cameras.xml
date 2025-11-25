@@ -2248,6 +2248,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G7" supported="unknown-no-samples">
+		<ID make="Canon" model="PowerShot G7">Canon PowerShot G7</ID>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G7 X">
 		<ID make="Canon" model="PowerShot G7 X">Canon PowerShot G7 X</ID>
 		<CFA width="2" height="2">
