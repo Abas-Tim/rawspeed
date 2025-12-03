@@ -13996,6 +13996,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="SONY" model="ILCE-7M5" supported="unknown-no-samples">
+		<ID make="Sony" model="ILCE-7M5">Sony ILCE-7M5</ID>
+	</Camera>
 	<Camera make="SONY" model="ILCE-7C">
 		<ID make="Sony" model="ILCE-7C">Sony ILCE-7C</ID>
 		<CFA width="2" height="2">
