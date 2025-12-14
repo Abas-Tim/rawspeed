@@ -418,7 +418,7 @@ VC5Decompressor::VC5Decompressor(ByteStream bs, const RawImage& img)
       wavelet.height = waveletHeight;
 
       wavelet.bands.resize(
-          &wavelet == channel.wavelets.begin() ? 1 : Wavelet::maxBands);
+          &wavelet == &*channel.wavelets.begin() ? 1 : Wavelet::maxBands);
     }
   }
 
