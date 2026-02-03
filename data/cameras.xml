@@ -1345,6 +1345,7 @@
 		<Aliases>
 			<Alias id="EOS Rebel T5">Canon EOS REBEL T5</Alias>
 			<Alias id="EOS Kiss X70">Canon EOS Kiss X70</Alias>
+			<Alias id="EOS Hi">Canon EOS Hi</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
