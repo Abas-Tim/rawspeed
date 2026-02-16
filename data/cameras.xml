@@ -18384,6 +18384,9 @@
 	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="RICOH GR IV" mode="dng">
 		<ID make="Ricoh" model="GR IV">Ricoh GR IV</ID>
+		<Aliases>
+			<Alias id="GR IV HDF">RICOH GR IV HDF</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="RICOH IMAGING COMPANY, LTD." model="RICOH GR IV Monochrome" mode="dng">
 		<ID make="Ricoh" model="GR IV Monochrome">Ricoh GR IV Monochrome</ID>
