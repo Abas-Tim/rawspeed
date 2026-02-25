@@ -3105,7 +3105,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D2X" mode="12bit-compressed" supported="no-samples">
+	<Camera make="NIKON CORPORATION" model="NIKON D2X" mode="12bit-compressed">
 		<ID make="Nikon" model="D2X">Nikon D2X</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
