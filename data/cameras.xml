@@ -11730,8 +11730,10 @@
 		<Aliases>
 			<Alias>DC-TZ95</Alias>
 			<Alias>DC-TZ95D</Alias>
+			<Alias>DC-TZ96D</Alias>
 			<Alias>DC-TZ99</Alias>
 			<Alias>DC-ZS80</Alias>
+			<Alias>DC-ZS80D</Alias>
 			<Alias>DC-ZS99</Alias>
 		</Aliases>
 		<ColorMatrices>
@@ -11749,8 +11751,10 @@
 		<Aliases>
 			<Alias>DC-TZ95</Alias>
 			<Alias>DC-TZ95D</Alias>
+			<Alias>DC-TZ96D</Alias>
 			<Alias>DC-TZ99</Alias>
 			<Alias>DC-ZS80</Alias>
+			<Alias>DC-ZS80D</Alias>
 			<Alias>DC-ZS99</Alias>
 		</Aliases>
 		<ColorMatrices>
