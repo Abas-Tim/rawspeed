@@ -11625,7 +11625,7 @@
 		<Sensor black="143" white="4095"/>
 		<Aliases>
 			<Alias>DC-GF10</Alias>
-			<Alias>GF90</Alias>
+			<Alias>DC-GF90</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -11641,7 +11641,7 @@
 		<Sensor black="143" white="4095"/>
 		<Aliases>
 			<Alias>DC-GF10</Alias>
-			<Alias>GF90</Alias>
+			<Alias>DC-GF90</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
