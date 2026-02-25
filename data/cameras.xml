@@ -11687,10 +11687,9 @@
 		<Sensor black="139" white="4095"/>
 		<Aliases>
 			<Alias>DC-TZ91</Alias>
+			<Alias>DC-TZ92</Alias>
+			<Alias>DC-TZ93</Alias>
 			<Alias>DC-ZS70</Alias>
-			<Alias>DC-FZ91</Alias>
-			<Alias>DC-FZ92</Alias>
-			<Alias>DC-FZ93</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -11706,10 +11705,9 @@
 		<Sensor black="139" white="4095"/>
 		<Aliases>
 			<Alias>DC-TZ91</Alias>
+			<Alias>DC-TZ92</Alias>
+			<Alias>DC-TZ93</Alias>
 			<Alias>DC-ZS70</Alias>
-			<Alias>DC-FZ91</Alias>
-			<Alias>DC-FZ92</Alias>
-			<Alias>DC-FZ93</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
