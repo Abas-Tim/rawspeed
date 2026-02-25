@@ -7202,6 +7202,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-FX180" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DMC-FX180">Panasonic DMC-FX150</ID>
+	</Camera>
 	<Camera make="Panasonic" model="DMC-FX150" mode="4:3">
 		<ID make="Panasonic" model="DMC-FX150">Panasonic DMC-FX150</ID>
 		<Crop x="0" y="0" width="-80" height="-6"/>
@@ -11625,7 +11628,7 @@
 		<Sensor black="143" white="4095"/>
 		<Aliases>
 			<Alias>DC-GF10</Alias>
-			<Alias>GF90</Alias>
+			<Alias>DC-GF90</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -11641,7 +11644,7 @@
 		<Sensor black="143" white="4095"/>
 		<Aliases>
 			<Alias>DC-GF10</Alias>
-			<Alias>GF90</Alias>
+			<Alias>DC-GF90</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -11687,10 +11690,9 @@
 		<Sensor black="139" white="4095"/>
 		<Aliases>
 			<Alias>DC-TZ91</Alias>
+			<Alias>DC-TZ92</Alias>
+			<Alias>DC-TZ93</Alias>
 			<Alias>DC-ZS70</Alias>
-			<Alias>DC-FZ91</Alias>
-			<Alias>DC-FZ92</Alias>
-			<Alias>DC-FZ93</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -11706,10 +11708,9 @@
 		<Sensor black="139" white="4095"/>
 		<Aliases>
 			<Alias>DC-TZ91</Alias>
+			<Alias>DC-TZ92</Alias>
+			<Alias>DC-TZ93</Alias>
 			<Alias>DC-ZS70</Alias>
-			<Alias>DC-FZ91</Alias>
-			<Alias>DC-FZ92</Alias>
-			<Alias>DC-FZ93</Alias>
 		</Aliases>
 		<ColorMatrices>
 			<ColorMatrix planes="3">
@@ -11729,8 +11730,10 @@
 		<Aliases>
 			<Alias>DC-TZ95</Alias>
 			<Alias>DC-TZ95D</Alias>
+			<Alias>DC-TZ96D</Alias>
 			<Alias>DC-TZ99</Alias>
 			<Alias>DC-ZS80</Alias>
+			<Alias>DC-ZS80D</Alias>
 			<Alias>DC-ZS99</Alias>
 		</Aliases>
 		<ColorMatrices>
@@ -11748,8 +11751,10 @@
 		<Aliases>
 			<Alias>DC-TZ95</Alias>
 			<Alias>DC-TZ95D</Alias>
+			<Alias>DC-TZ96D</Alias>
 			<Alias>DC-TZ99</Alias>
 			<Alias>DC-ZS80</Alias>
+			<Alias>DC-ZS80D</Alias>
 			<Alias>DC-ZS99</Alias>
 		</Aliases>
 		<ColorMatrices>
