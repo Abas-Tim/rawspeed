@@ -7202,6 +7202,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-FX180" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DMC-FX180">Panasonic DMC-FX150</ID>
+	</Camera>
 	<Camera make="Panasonic" model="DMC-FX150" mode="4:3">
 		<ID make="Panasonic" model="DMC-FX150">Panasonic DMC-FX150</ID>
 		<Crop x="0" y="0" width="-80" height="-6"/>
