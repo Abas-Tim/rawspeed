@@ -1655,7 +1655,7 @@
 	<Camera make="Canon" model="Canon EOS R6m2" supported="no">
 		<ID make="Canon" model="EOS R6 Mark II">Canon EOS R6 Mark II</ID>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS R6 Mark III" supported="unknown-no-samples">
+	<Camera make="Canon" model="Canon EOS R6 Mark III" supported="no">
 		<ID make="Canon" model="EOS R6 Mark III">Canon EOS R6 Mark III</ID>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS R7" supported="no">
@@ -3105,7 +3105,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D2X" mode="12bit-compressed" supported="no-samples">
+	<Camera make="NIKON CORPORATION" model="NIKON D2X" mode="12bit-compressed">
 		<ID make="Nikon" model="D2X">Nikon D2X</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
