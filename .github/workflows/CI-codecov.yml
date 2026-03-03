@@ -48,7 +48,7 @@ jobs:
           fail-on-cache-miss: true
       - name: Upload coverage to Codecov (linux, unit tests)
         timeout-minutes: 1
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           OS: linux
           ARCH: x86_64
@@ -64,7 +64,7 @@ jobs:
           fail_ci_if_error: true
       - name: Upload coverage to Codecov (linux, benchmarks)
         timeout-minutes: 1
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           OS: linux
           ARCH: x86_64
@@ -80,7 +80,7 @@ jobs:
           fail_ci_if_error: true
       - name: Upload coverage to Codecov (linux, integration)
         timeout-minutes: 1
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           OS: linux
           ARCH: x86_64
@@ -96,7 +96,7 @@ jobs:
           fail_ci_if_error: true
       - name: Upload coverage to Codecov (macOS, unit tests)
         timeout-minutes: 1
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           OS: macOS
           ARCH: aarch64
@@ -112,7 +112,7 @@ jobs:
           fail_ci_if_error: true
       - name: Upload coverage to Codecov (macOS, benchmarks)
         timeout-minutes: 1
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           OS: macOS
           ARCH: aarch64
@@ -128,7 +128,7 @@ jobs:
           fail_ci_if_error: true
       - name: Upload coverage to Codecov (windows, unit tests)
         timeout-minutes: 1
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           OS: windows
           ARCH: x86_64
@@ -144,7 +144,7 @@ jobs:
           fail_ci_if_error: true
       - name: Upload coverage to Codecov (windows, benchmarks)
         timeout-minutes: 1
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         env:
           OS: windows
           ARCH: x86_64
