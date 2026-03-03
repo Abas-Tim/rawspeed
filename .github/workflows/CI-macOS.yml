@@ -152,7 +152,7 @@ jobs:
       - if: inputs.flavor == 'Coverage'
         timeout-minutes: 1
         name: Cache code coverage (macOS reports)
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ env.COVERAGE_REPORT_PREFIX }}/macOS # relative path!
           key: coverage-${{ github.sha }}-macOS

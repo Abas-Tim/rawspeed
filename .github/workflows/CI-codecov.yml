@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Fetch code coverage reports (linux reports)
         timeout-minutes: 1
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ env.COVERAGE_REPORT_PREFIX }}/linux # relative path!
           key: coverage-${{ github.sha }}-linux
@@ -32,7 +32,7 @@ jobs:
           fail-on-cache-miss: true
       - name: Fetch code coverage reports (macOS reports)
         timeout-minutes: 1
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ env.COVERAGE_REPORT_PREFIX }}/macOS # relative path!
           key: coverage-${{ github.sha }}-macOS
@@ -40,7 +40,7 @@ jobs:
           fail-on-cache-miss: true
       - name: Fetch code coverage reports (windows reports)
         timeout-minutes: 1
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ env.COVERAGE_REPORT_PREFIX }}/windows # relative path!
           key: coverage-${{ github.sha }}-windows
