@@ -18142,6 +18142,24 @@
 	<Camera make="Hasselblad" model="Hasselblad H6D-50c" supported="unknown-no-samples">
 		<ID make="Hasselblad" model="H6D-50c">Hasselblad 50-15-Coated5</ID>
 	</Camera>
+	<Camera make="Hasselblad" model="Hasselblad H6D-100cMS">
+		<ID make="Hasselblad" model="H6D-100c">Hasselblad 100-17-Coated5</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="68" y="112" width="-332" height="-4"/>
+		<Sensor black="256" white="65535"/>
+		<ColorMatrices>
+			<ColorMatrix planes="3">
+				<ColorMatrixRow plane="0">5110 -1357 -308</ColorMatrixRow>
+				<ColorMatrixRow plane="1">-5573 12835 3077</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-1279 2025 7010</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
 	<Camera make="Hasselblad" model="Flash Sync">
 		<ID make="Hasselblad" model="CF132">Hasselblad 22-Uncoated</ID>
 		<CFA width="2" height="2">
