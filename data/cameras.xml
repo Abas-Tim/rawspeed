@@ -2850,18 +2850,6 @@
 	<Camera make="Canon" model="Canon PowerShot V1" supported="no">
 		<ID make="Canon" model="PowerShot V1">Canon PowerShot V1</ID>
 	</Camera>
-	<Camera make="GoPro" model="FUSION" mode="dng">
-		<ID make="GoPro" model="FUSION">GoPro FUSION</ID>
-	</Camera>
-	<Camera make="GoPro" model="HERO5 Black" mode="dng">
-		<ID make="GoPro" model="HERO5 Black">GoPro HERO5 Black</ID>
-	</Camera>
-	<Camera make="GoPro" model="HERO6 Black" mode="dng">
-		<ID make="GoPro" model="HERO6 Black">GoPro HERO6 Black</ID>
-	</Camera>
-	<Camera make="GoPro" model="HERO7 Black" mode="dng">
-		<ID make="GoPro" model="HERO7 Black">GoPro HERO7 Black</ID>
-	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D100" mode="12bit-compressed">
 		<ID make="Nikon" model="D100">Nikon D100</ID>
 		<CFA width="2" height="2">
@@ -18610,9 +18598,6 @@
 	<Camera make="SAMSUNG TECHWIN Co." model="SAMSUNG GX20" mode="dng">
 		<ID make="Samsung" model="GX20">Samsung GX20</ID>
 	</Camera>
-	<Camera make="Nokia" model="Lumia 1020" mode="dng">
-		<ID make="Nokia" model="Lumia 1020">Nokia Lumia 1020</ID>
-	</Camera>
 	<Camera make="PENTAX" model="PENTAX K-r" mode="dng">
 		<ID make="Pentax" model="K-r">PENTAX K-r</ID>
 		<ColorMatrices>
@@ -18656,9 +18641,6 @@
 	</Camera>
 	<Camera make="SIGMA" model="sd Quattro H" mode="dng">
 		<ID make="Sigma" model="sd Quattro H">sd Quattro H</ID>
-	</Camera>
-	<Camera make="LGE" model="Nexus 5X" mode="dng">
-		<ID make="LG" model="Nexus 5X">LG Nexus 5X</ID>
 	</Camera>
 	<Camera make="LGE" model="LG-D855" mode="dng">
 		<ID make="LG" model="D855">LG D855</ID>
