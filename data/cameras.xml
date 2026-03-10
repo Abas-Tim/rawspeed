@@ -17451,6 +17451,9 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="15000"/>
 	</Camera>
+	<Camera make="Leaf" model="Leaf AFi-II 12(LI600083   )/Leaf AFi" supported="no">
+		<ID make="Leaf" model="AFi-II 12">Leaf AFi-II 12</ID>
+	</Camera>
 	<Camera make="Leaf" model="Leaf Aptus-II 10(LI300019   )/Phase One 645DF" supported="no-samples">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
