@@ -361,7 +361,7 @@ jobs:
       - name: Upload docs artifact
         timeout-minutes: 1
         if: inputs.flavor == 'WWW'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ${{ github.workspace }}/rawspeed-build/docs/html
       - name: Test (unit tests)
