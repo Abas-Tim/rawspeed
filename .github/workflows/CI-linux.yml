@@ -297,7 +297,7 @@ jobs:
         id: clang-format-upload
         timeout-minutes: 1
         if: inputs.flavor == 'ClangFormat' && failure() && steps.clang-format.conclusion == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: clang-format.patch
           path: ${{ github.workspace }}/clang-format.patch
@@ -490,7 +490,7 @@ jobs:
       - name: Upload results of clang-tidy static analysis [YAML]
         timeout-minutes: 1
         if: inputs.flavor == 'ClangTidy' && failure() && steps.CC-CTSA.conclusion == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: clangtidy_report
           path: ${{ github.workspace }}/rawspeed-build/clang-tidy/
@@ -508,7 +508,7 @@ jobs:
       - name: Upload results of clang-tidy static analysis [HTML]
         timeout-minutes: 1
         if: inputs.flavor == 'ClangTidy' && failure() && steps.CC-CTSA.conclusion == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: codechecker_clangtidy_report
           path: ${{ github.workspace }}/codechecker_clangtidy_report/
@@ -546,7 +546,7 @@ jobs:
       - name: Upload results of clang static analysis [HTML] (plain mode)
         timeout-minutes: 1
         if: inputs.flavor == 'ClangStaticAnalysis' && failure() && steps.CC-CSA-plain.conclusion == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: codechecker_report
           path: ${{ github.workspace }}/codechecker_report/
@@ -584,7 +584,7 @@ jobs:
       - name: Upload results of clang static analysis [HTML] (CTU mode)
         timeout-minutes: 1
         if: inputs.flavor == 'ClangCTUStaticAnalysis' && failure() && steps.CC-CSA-CTU.conclusion == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: codechecker_ctu_report
           path: ${{ github.workspace }}/codechecker_ctu_report/
