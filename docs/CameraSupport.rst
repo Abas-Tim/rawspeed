@@ -85,8 +85,8 @@ Camera Support
             aliases = model.split("/", 1) if make == "Leaf" else [model]
             model_name = aliases[0]
 
-            # Concatenate official aliases with the ones we found above
-            aliases = list(content['aliases']) + aliases[1:]
+            # Concatenate unique official aliases with the ones we found above
+            aliases = [a for a in list(content['aliases']) if a != model_name] + aliases[1:]
 
             modes = [mode for mode in content['modes']
                     if "unsupported" not in mode]
