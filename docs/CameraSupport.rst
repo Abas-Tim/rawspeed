@@ -82,7 +82,7 @@ Camera Support
         models = OrderedDict(sorted(models.items()))
         for model, content in models.items():
             # Leaf cameras have aliases in their model name, we need to split them here
-            aliases = model.split("/")
+            aliases = model.split("/", 1) if make == "Leaf" else [model]
             model_name = aliases[0]
 
             # Concatenate official aliases with the ones we found above
