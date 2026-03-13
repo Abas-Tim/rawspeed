@@ -35,8 +35,11 @@ Camera Support
         mode = camera.getAttribute("mode")
         if mode == '':
             mode = 'Default mode'
-        if camera.hasAttribute("supported") and camera.getAttribute("supported") == 'no':
-            mode += " - *unsupported*"
+        if camera.hasAttribute("supported"):
+            if camera.getAttribute("supported") == 'no':
+                mode += " - *unsupported*"
+            if 'unknown' in camera.getAttribute("supported"):
+                mode += " - *unknown*"
 
         unique_makes[make][model]['modes'].add(mode)
 
@@ -93,6 +96,12 @@ Camera Support
 
             if len(modes) == 0:
                 supported = "✗"
+
+            modes = [mode for mode in modes
+                    if "unknown" not in mode]
+
+            if len(modes) == 0:
+                supported = "?"
             else:
                 supported = "✓"
 
