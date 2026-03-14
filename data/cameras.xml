@@ -8845,6 +8845,7 @@
 		<ID make="Panasonic" model="DMC-FZ42">Panasonic DMC-FZ40</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-FZ45">
+		<ID make="Panasonic" model="DMC-FZ45">Panasonic DMC-FZ40</ID>
 		<Crop x="0" y="0" width="-58" height="-10"/>
 		<Sensor black="150" white="3986"/>
 		<Aliases>
@@ -10973,6 +10974,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60">
+		<ID make="Panasonic" model="DMC-TZ60">Panasonic DMC-ZS40</ID>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="145" white="3971"/>
 		<ColorMatrices>
@@ -10984,6 +10986,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60" mode="3:2">
+		<ID make="Panasonic" model="DMC-TZ60">Panasonic DMC-ZS40</ID>
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="145" white="3971"/>
 		<ColorMatrices>
@@ -10995,6 +10998,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60" mode="16:9">
+		<ID make="Panasonic" model="DMC-TZ60">Panasonic DMC-ZS40</ID>
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="145" white="3956"/>
 		<ColorMatrices>
@@ -11006,6 +11010,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60" mode="1:1">
+		<ID make="Panasonic" model="DMC-TZ60">Panasonic DMC-ZS40</ID>
 		<Crop x="0" y="0" width="-8" height="0"/>
 		<Sensor black="145" white="3956"/>
 		<ColorMatrices>
@@ -11017,6 +11022,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60" mode="4:3">
+		<ID make="Panasonic" model="DMC-TZ60">Panasonic DMC-ZS40</ID>
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="145" white="3956"/>
 		<ColorMatrices>
@@ -11258,13 +11264,13 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DC-FZ81" supported="unknown-no-samples">
-		<ID make="Panasonic" model="DC-FZ81">Panasonic DC-FZ82</ID>
+		<ID make="Panasonic" model="DC-FZ81">Panasonic DC-FZ80</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DC-FZ83" supported="unknown-no-samples">
-		<ID make="Panasonic" model="DC-FZ83">Panasonic DC-FZ82</ID>
+		<ID make="Panasonic" model="DC-FZ83">Panasonic DC-FZ80</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DC-FZ82">
-		<ID make="Panasonic" model="DC-FZ82">Panasonic DC-FZ82</ID>
+		<ID make="Panasonic" model="DC-FZ82">Panasonic DC-FZ80</ID>
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="143" white="4095"/>
 		<Aliases>
@@ -11283,7 +11289,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DC-FZ82" mode="4:3">
-		<ID make="Panasonic" model="DC-FZ82">Panasonic DC-FZ82</ID>
+		<ID make="Panasonic" model="DC-FZ82">Panasonic DC-FZ80</ID>
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="143" white="4095"/>
 		<Aliases>
@@ -11611,7 +11617,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DC-GX880">
-		<ID make="Panasonic" model="DC-GX880">Panasonic DC-GX880</ID>
+		<ID make="Panasonic" model="DC-GX880">Panasonic DC-GF10</ID>
 		<Crop x="0" y="0" width="-210" height="0"/>
 		<Sensor black="143" white="4095"/>
 		<Aliases>
@@ -11627,7 +11633,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DC-GX880" mode="4:3">
-		<ID make="Panasonic" model="DC-GX880">Panasonic DC-GX880</ID>
+		<ID make="Panasonic" model="DC-GX880">Panasonic DC-GF10</ID>
 		<Crop x="0" y="0" width="-210" height="0"/>
 		<Sensor black="143" white="4095"/>
 		<Aliases>
