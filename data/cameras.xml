@@ -10974,6 +10974,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60">
+		<ID make="Panasonic" model="DMC-TZ60">Panasonic DMC-ZS40</ID>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="145" white="3971"/>
 		<ColorMatrices>
@@ -10985,6 +10986,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60" mode="3:2">
+		<ID make="Panasonic" model="DMC-TZ60">Panasonic DMC-ZS40</ID>
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="145" white="3971"/>
 		<ColorMatrices>
@@ -10996,6 +10998,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60" mode="16:9">
+		<ID make="Panasonic" model="DMC-TZ60">Panasonic DMC-ZS40</ID>
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="145" white="3956"/>
 		<ColorMatrices>
@@ -11007,6 +11010,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60" mode="1:1">
+		<ID make="Panasonic" model="DMC-TZ60">Panasonic DMC-ZS40</ID>
 		<Crop x="0" y="0" width="-8" height="0"/>
 		<Sensor black="145" white="3956"/>
 		<ColorMatrices>
@@ -11018,6 +11022,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DMC-TZ60" mode="4:3">
+		<ID make="Panasonic" model="DMC-TZ60">Panasonic DMC-ZS40</ID>
 		<Crop x="0" y="0" width="-128" height="0"/>
 		<Sensor black="145" white="3956"/>
 		<ColorMatrices>
