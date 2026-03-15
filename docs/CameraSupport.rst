@@ -96,14 +96,14 @@ Camera Support
 
             if len(modes) == 0:
                 supported = "✗"
-
-            modes = [mode for mode in modes
-                    if "unknown" not in mode]
-
-            if len(modes) == 0:
-                supported = "?"
             else:
-                supported = "✓"
+                modes = [mode for mode in modes
+                        if "unknown" not in mode]
+
+                if len(modes) == 0:
+                    supported = "?"
+                else:
+                    supported = "✓"
 
             sys.stdout.write("   ")
             csvwriter.writerow([make, model_name, supported, ', '.join(aliases), ', '.join(content['modes'])])
