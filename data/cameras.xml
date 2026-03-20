@@ -17496,6 +17496,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Phase One A/S" model="P25" supported="unknown-no-samples">
+		<ID make="Phase One" model="P25">Phase One P25</ID>
+	</Camera>
 	<Camera make="Phase One A/S" model="P25+">
 		<ID make="Phase One" model="P25+">Phase One P25+</ID>
 		<CFA width="2" height="2">
@@ -17864,6 +17867,9 @@
 				<ColorMatrixRow plane="2">-1626 2194 7904</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Eastman Kodak Company" model="Kodak Digital Science DC40 Zoom Camera" supported="unknown-no-samples">
+		<ID make="Kodak" model="DC40">Kodak Digital Science DC40 Zoom Camera</ID>
 	</Camera>
 	<Camera make="Eastman Kodak Company" model="Kodak Digital Science DC50 Zoom Camera" supported="no-samples">
 		<ID make="Kodak" model="DC50">Kodak Digital Science DC50 Zoom Camera</ID>
