@@ -17496,7 +17496,7 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Phase One A/S" model="P25" supported="unknown-no-samples">
+	<Camera make="Phase One A/S" model="P25" supported="no">
 		<ID make="Phase One" model="P25">Phase One P25</ID>
 	</Camera>
 	<Camera make="Phase One A/S" model="P25+">
