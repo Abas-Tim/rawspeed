@@ -17868,6 +17868,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Eastman Kodak Company" model="Kodak Digital Science DC40 Zoom Camera" supported="unknown-no-samples">
+		<ID make="Kodak" model="DC40">Kodak Digital Science DC40 Zoom Camera</ID>
+	</Camera>
 	<Camera make="Eastman Kodak Company" model="Kodak Digital Science DC50 Zoom Camera" supported="no-samples">
 		<ID make="Kodak" model="DC50">Kodak Digital Science DC50 Zoom Camera</ID>
 	</Camera>
