@@ -17478,6 +17478,9 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="15000"/>
 	</Camera>
+	<Camera make="Phase One A/S" model="P20" supported="unknown-no-samples">
+		<ID make="Phase One" model="P20">Phase One P20</ID>
+	</Camera>
 	<Camera make="Phase One A/S" model="P20+">
 		<ID make="Phase One" model="P20+">Phase One P20+</ID>
 		<CFA width="2" height="2">
@@ -17495,6 +17498,12 @@
 				<ColorMatrixRow plane="2">-3038 4253 7517</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Phase One A/S" model="P21" supported="unknown-no-samples">
+		<ID make="Phase One" model="P21">Phase One P21</ID>
+	</Camera>
+	<Camera make="Phase One A/S" model="P21+" supported="unknown-no-samples">
+		<ID make="Phase One" model="P21+">Phase One P21+</ID>
 	</Camera>
 	<Camera make="Phase One A/S" model="P25" supported="no">
 		<ID make="Phase One" model="P25">Phase One P25</ID>
@@ -17534,6 +17543,9 @@
 				<ColorMatrixRow plane="2">-3206 4671 7087</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Phase One A/S" model="P30+" supported="unknown-no-samples">
+		<ID make="Phase One" model="P30+">Phase One P30+</ID>
 	</Camera>
 	<Camera make="Phase One A/S" model="P40+">
 		<ID make="Phase One" model="P40+">Phase One P40+</ID>
