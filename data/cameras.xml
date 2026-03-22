@@ -17640,6 +17640,9 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Phase One A/S" model="IQ160" supported="unknown-no-samples">
+		<ID make="Phase One" model="IQ160">Phase One IQ160</ID>
+	</Camera>
 	<Camera make="Phase One A/S" model="IQ180">
 		<ID make="Phase One" model="IQ180">Phase One IQ180</ID>
 		<CFA width="2" height="2">
@@ -17675,6 +17678,12 @@
 				<ColorMatrixRow plane="2">0 0 7666</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
+	</Camera>
+	<Camera make="Phase One A/S" model="IQ260" supported="unknown-no-samples">
+		<ID make="Phase One" model="IQ260">Phase One IQ260</ID>
+	</Camera>
+	<Camera make="Phase One A/S" model="IQ280" supported="unknown-no-samples">
+		<ID make="Phase One" model="IQ280">Phase One IQ280</ID>
 	</Camera>
 	<Camera make="Kodak" model="DCS Pro SLR/n">
 		<ID make="Kodak" model="DCS Pro SLR/n">Kodak DCS Pro SLR/n</ID>
