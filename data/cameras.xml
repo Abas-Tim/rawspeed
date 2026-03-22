@@ -17694,6 +17694,15 @@
 	<Camera make="Phase One A/S" model="IQ3 80MP" supported="unknown-no-samples">
 		<ID make="Phase One" model="IQ3 80MP">Phase One IQ3 80MP</ID>
 	</Camera>
+	<Camera make="Phase One A/S" model="IQ3 100MP" supported="no">
+		<ID make="Phase One" model="IQ3 100MP">Phase One IQ3 100MP</ID>
+	</Camera>
+	<Camera make="Phase One A/S" model="IQ3 100MP Trichr" supported="no">
+		<ID make="Phase One" model="IQ3 100MP Trichr">Phase One IQ3 100MP Trichr</ID>
+	</Camera>
+	<Camera make="Phase One A/S" model="IQ4 150MP" supported="no">
+		<ID make="Phase One" model="IQ4 150MP">Phase One IQ4 150MP</ID>
+	</Camera>
 	<Camera make="Kodak" model="DCS Pro SLR/n">
 		<ID make="Kodak" model="DCS Pro SLR/n">Kodak DCS Pro SLR/n</ID>
 		<CFA width="2" height="2">
