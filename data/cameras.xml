@@ -17478,6 +17478,9 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="15000"/>
 	</Camera>
+	<Camera make="Phase One A/S" model="H 25" supported="no">
+		<ID make="Phase One" model="H25">Phase One H25</ID>
+	</Camera>
 	<Camera make="Phase One A/S" model="P20" supported="unknown-no-samples">
 		<ID make="Phase One" model="P20">Phase One P20</ID>
 	</Camera>
