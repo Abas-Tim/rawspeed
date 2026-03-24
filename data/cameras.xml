@@ -11811,6 +11811,14 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DC-TX3" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-TX3">Panasonic DC-ZS300</ID>
+	</Camera>
+	<Camera make="Panasonic" model="DC-TZ300" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-TZ300">Panasonic DC-ZS300</ID>
+	</Camera>
+	<Camera make="Panasonic" model="DC-ZS300" supported="unknown-no-samples">
+	</Camera>
 	<Camera make="PENTAX Corporation" model="PENTAX K100D">
 		<ID make="Pentax" model="K100D">Pentax K100D</ID>
 		<CFA width="2" height="2">
