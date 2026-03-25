@@ -11714,8 +11714,8 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
-	<Camera make="Panasonic" model="DMC-TZ97" supported="unknown-no-samples">
-		<ID make="Panasonic" model="DMC-TZ97">Panasonic DMC-ZS80</ID>
+	<Camera make="Panasonic" model="DC-TZ97" supported="unknown-no-samples">
+		<ID make="Panasonic" model="DC-TZ97">Panasonic DC-ZS80</ID>
 	</Camera>
 	<Camera make="Panasonic" model="DC-TZ96">
 		<ID make="Panasonic" model="DC-TZ96">Panasonic DC-ZS80</ID>
