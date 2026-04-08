@@ -11266,6 +11266,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DC-G95">
+		<ID make="Panasonic" model="DC-G95">Panasonic DC-G99</ID>
 		<Crop x="0" y="0" width="-66" height="0"/>
 		<Sensor black="144" white="4095"/>
 		<Aliases>
@@ -11285,6 +11286,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="Panasonic" model="DC-G95" mode="4:3">
+		<ID make="Panasonic" model="DC-G95">Panasonic DC-G99</ID>
 		<Crop x="0" y="0" width="-66" height="0"/>
 		<Sensor black="144" white="4095"/>
 		<Aliases>
