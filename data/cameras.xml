@@ -5948,10 +5948,10 @@
 		</Hints>
 		<ColorMatrices>
 			<ColorMatrix planes="4">
-				<ColorMatrixRow plane="0">-5368 11478 2368</ColorMatrixRow>
-				<ColorMatrixRow plane="1">5537 -113 3148</ColorMatrixRow>
-				<ColorMatrixRow plane="2">-4969 10021 5782</ColorMatrixRow>
-				<ColorMatrixRow plane="3">778 9028 211</ColorMatrixRow>
+				<ColorMatrixRow plane="0">-6475 12496 2428</ColorMatrixRow>
+				<ColorMatrixRow plane="1">5409 -16 3180</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-5965 10912 5866</ColorMatrixRow>
+				<ColorMatrixRow plane="3">-177 9918 248</ColorMatrixRow>
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
