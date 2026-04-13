@@ -5913,7 +5913,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="NIKON" model="E5400" mode="12bit-uncompressed" decoder_version="3">
-		<ID make="Nikon" model="E5400">Nikon E5400</ID>
+		<ID make="Nikon" model="E5400">Nikon Coolpix 5400</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5934,7 +5934,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="NIKON" model="E5700" mode="12bit-uncompressed" decoder_version="4">
-		<ID make="Nikon" model="E5700">Nikon E5700</ID>
+		<ID make="Nikon" model="E5700">Nikon Coolpix 5700</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">FUJI_GREEN</Color>
 			<Color x="1" y="0">MAGENTA</Color>
