@@ -5890,8 +5890,30 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="NIKON" model="E5000" mode="12bit-uncompressed" decoder_version="4">
+		<ID make="Nikon" model="E5000">Nikon Coolpix 5000</ID>
+		<CFA width="2" height="2">
+			<Color x="0" y="0">FUJI_GREEN</Color>
+			<Color x="1" y="0">MAGENTA</Color>
+			<Color x="0" y="1">YELLOW</Color>
+			<Color x="1" y="1">CYAN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="coolpixsplit" value=""/>
+		</Hints>
+		<ColorMatrices>
+			<ColorMatrix planes="4">
+				<ColorMatrixRow plane="0">-6678 12805 2248</ColorMatrixRow>
+				<ColorMatrixRow plane="1">5725 -499 3375</ColorMatrixRow>
+				<ColorMatrixRow plane="2">-5903 10713 6034</ColorMatrixRow>
+				<ColorMatrixRow plane="3">-270 9976 134</ColorMatrixRow>
+			</ColorMatrix>
+		</ColorMatrices>
+	</Camera>
 	<Camera make="NIKON" model="E5400" mode="12bit-uncompressed" decoder_version="3">
-		<ID make="Nikon" model="E5400">Nikon E5400</ID>
+		<ID make="Nikon" model="E5400">Nikon Coolpix 5400</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5912,7 +5934,7 @@
 		</ColorMatrices>
 	</Camera>
 	<Camera make="NIKON" model="E5700" mode="12bit-uncompressed" decoder_version="4">
-		<ID make="Nikon" model="E5700">Nikon E5700</ID>
+		<ID make="Nikon" model="E5700">Nikon Coolpix 5700</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">FUJI_GREEN</Color>
 			<Color x="1" y="0">MAGENTA</Color>
