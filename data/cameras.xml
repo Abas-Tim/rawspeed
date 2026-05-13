@@ -10539,6 +10539,8 @@
 			</ColorMatrix>
 		</ColorMatrices>
 	</Camera>
+	<Camera make="Panasonic" model="DC-L10" supported="unknown-no-samples">
+	</Camera>
 	<Camera make="Panasonic" model="DC-S1">
 		<Crop x="0" y="0" width="-50" height="0"/>
 		<Sensor black="511" white="16380"/>
