@@ -510,12 +510,6 @@ void IiqDecoder::correctSensorDefects(ByteStream data) const {
     switch (type) {
     case 131: // bad column
     case 137: // bad column
-      // correctBadColumn reads col-2..col+2; skip cols too close to either
-      // edge to avoid out-of-bounds neighbour reads at the row boundaries
-      // (row=2 and row=dim.y-3 of its loop).
-      if (col < 2 || col + 2 >= mRaw->dim.x) {
-        break;
-      }
       correctBadColumn(col);
       break;
     case 129: // bad pixel
@@ -534,6 +528,9 @@ void IiqDecoder::handleBadPixel(const uint16_t col, const uint16_t row) const {
 }
 
 void IiqDecoder::correctBadColumn(const uint16_t col) const {
+  if (col < 2 || col + 2 >= mRaw->dim.x)
+    return;
+
   const Array2DRef<uint16_t> img(mRaw->getU16DataAsUncroppedArray2DRef());
 
   for (int row = 2; row < mRaw->dim.y - 2; row++) {
