@@ -46,6 +46,8 @@ include_directories(BEFORE SYSTEM ${ZLIB_BINARY_DIR})
 
 # Add zlib directly to our build. This defines
 # the gtest and gtest_main targets.
+set(ZLIB_COMPAT ON CACHE BOOL "Compile with zlib compatible API" FORCE)
+
 add_subdirectory(${ZLIB_SOURCE_DIR}
                  ${ZLIB_BINARY_DIR})
 
