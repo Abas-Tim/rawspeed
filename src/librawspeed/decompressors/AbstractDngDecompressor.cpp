@@ -56,7 +56,7 @@ template <> void AbstractDngDecompressor::decompressThread<1>() const noexcept {
 #pragma omp for schedule(static)
 #endif
   for (const auto& e :
-       Array1DRef(slices.data(), implicit_cast<int>(slices.size()))) {
+       Array1DRef<const DngSliceElement>(slices.data(), implicit_cast<int>(slices.size()))) {
     try {
       iPoint2D tileSize(e.width, e.height);
       iPoint2D pos(e.offX, e.offY);
@@ -114,7 +114,7 @@ template <> void AbstractDngDecompressor::decompressThread<7>() const noexcept {
 #pragma omp for schedule(static)
 #endif
   for (const auto& e :
-       Array1DRef(slices.data(), implicit_cast<int>(slices.size()))) {
+       Array1DRef<const DngSliceElement>(slices.data(), implicit_cast<int>(slices.size()))) {
     try {
       LJpegDecoder d(e.bs, mRaw);
       d.decode(e.offX, e.offY, e.width, e.height,
@@ -139,7 +139,7 @@ template <> void AbstractDngDecompressor::decompressThread<8>() const noexcept {
 #pragma omp for schedule(static)
 #endif
   for (const auto& e :
-       Array1DRef(slices.data(), implicit_cast<int>(slices.size()))) {
+       Array1DRef<const DngSliceElement>(slices.data(), implicit_cast<int>(slices.size()))) {
     try {
       DeflateDecompressor z(e.bs.peekBuffer(e.bs.getRemainSize()), mRaw,
                             mPredictor, mBps);
@@ -163,7 +163,7 @@ template <> void AbstractDngDecompressor::decompressThread<9>() const noexcept {
 #pragma omp for schedule(static)
 #endif
   for (const auto& e :
-       Array1DRef(slices.data(), implicit_cast<int>(slices.size()))) {
+       Array1DRef<const DngSliceElement>(slices.data(), implicit_cast<int>(slices.size()))) {
     try {
       VC5Decompressor d(e.bs, mRaw);
       d.decode(e.offX, e.offY, e.width, e.height);
@@ -185,7 +185,7 @@ void AbstractDngDecompressor::decompressThread<0x884c>() const noexcept {
 #pragma omp for schedule(static)
 #endif
   for (const auto& e :
-       Array1DRef(slices.data(), implicit_cast<int>(slices.size()))) {
+       Array1DRef<const DngSliceElement>(slices.data(), implicit_cast<int>(slices.size()))) {
     try {
       JpegDecompressor j(e.bs.peekBuffer(e.bs.getRemainSize()), mRaw);
       j.decode(e.offX, e.offY);
