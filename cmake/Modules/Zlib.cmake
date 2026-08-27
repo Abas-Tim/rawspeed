@@ -41,8 +41,8 @@ include(${ZLIB_PREFIX}/zlib-paths.cmake)
 
 # XXX make sure that zlib is using it's own headers
 # see https://github.com/madler/zlib/issues/218
-include_directories(BEFORE SYSTEM ${ZLIB_PREFIX}/zlib-src)
-include_directories(BEFORE SYSTEM ${ZLIB_PREFIX}/zlib-build)
+include_directories(BEFORE SYSTEM ${ZLIB_SOURCE_DIR})
+include_directories(BEFORE SYSTEM ${ZLIB_BINARY_DIR})
 
 # Add zlib directly to our build. This defines
 # the gtest and gtest_main targets.
