@@ -83,7 +83,7 @@ jobs:
           $tag = "rawspeed-cli-v$ver"
           $zip = "rawspeed-cli-win-x64-v$ver.zip"
           if ($env:GITHUB_REF_TYPE -eq "tag") {
-            gh release create $tag --verify-tag --title "rawspeed-cli v$ver" --notes "Prebuilt rawspeed-cli built from RAWtoJXL native/ workspace (fork msvc-win + vendored pugixml/zlib)." $zip "$zip.sha256"
+            gh release create $tag --title "rawspeed-cli v$ver" --notes "Prebuilt rawspeed-cli built from RAWtoJXL native/ workspace (fork msvc-win + vendored pugixml/zlib)." $zip "$zip.sha256"
           } else {
             gh release create $tag --target $env:GITHUB_SHA --title "rawspeed-cli v$ver" --notes "Prebuilt rawspeed-cli built from RAWtoJXL native/ workspace (fork msvc-win + vendored pugixml/zlib)." $zip "$zip.sha256"
           }
