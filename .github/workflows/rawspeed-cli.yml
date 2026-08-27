@@ -82,8 +82,22 @@ jobs:
           $ver = "${{ env.VER }}"
           $tag = "rawspeed-cli-v$ver"
           $zip = "rawspeed-cli-win-x64-v$ver.zip"
-          if ($env:GITHUB_REF_TYPE -eq "tag") {
-            gh release create $tag --title "rawspeed-cli v$ver" --notes "Prebuilt rawspeed-cli built from RAWtoJXL native/ workspace (fork msvc-win + vendored pugixml/zlib)." $zip "$zip.sha256"
-          } else {
-            gh release create $tag --target $env:GITHUB_SHA --title "rawspeed-cli v$ver" --notes "Prebuilt rawspeed-cli built from RAWtoJXL native/ workspace (fork msvc-win + vendored pugixml/zlib)." $zip "$zip.sha256"
+          $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json" }
+          $repo = $env:GITHUB_REPOSITORY
+          $rid = $null
+          try {
+            $existing = Invoke-RestMethod -Method Get -Uri "https://api.github.com/repos/$repo/releases/tags/$tag" -Headers $headers
+            $rid = $existing.id
+            Write-Output "release for $tag already exists (id $rid); updating assets only"
+          } catch {
+            $payload = @{ tag_name = $tag; name = "rawspeed-cli v$ver"; body = "Prebuilt rawspeed-cli built from RAWtoJXL native/ workspace (fork msvc-win + vendored pugixml/zlib)." } | ConvertTo-Json
+            $created = Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$repo/releases" -Headers $headers -Body $payload -ContentType "application/json"
+            $rid = $created.id
+            Write-Output "created release $tag (id $rid)"
           }
+          $asset = Invoke-RestMethod -Method Post -Uri "https://uploads.github.com/repos/$repo/releases/$rid/assets?name=$zip" `
+            -Headers $headers -ContentType "application/zip" -InFile (Resolve-Path $zip)
+          Write-Output "asset uploaded: $($asset.name) ($($asset.size) bytes)"
+          $ash = Invoke-RestMethod -Method Post -Uri "https://uploads.github.com/repos/$repo/releases/$rid/assets?name=$zip.sha256" `
+            -Headers $headers -ContentType "text/plain" -InFile (Resolve-Path "$zip.sha256")
+          Write-Output "checksum uploaded: $($ash.name)"
