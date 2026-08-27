@@ -52,7 +52,12 @@ add_subdirectory(${ZLIB_SOURCE_DIR}
 set(_zlib_lib zlib)       # shared
 set(_zlib_lib zlibstatic) # static
 
-set_target_properties(${_zlib_lib} PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${_zlib_lib},INTERFACE_INCLUDE_DIRECTORIES>)
+if(TARGET ${_zlib_lib})
+  get_target_property(_zlib_alias_target ${_zlib_lib} ALIASED_TARGET)
+  if(NOT _zlib_alias_target)
+    set_target_properties(${_zlib_lib} PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${_zlib_lib},INTERFACE_INCLUDE_DIRECTORIES>)
+  endif()
+endif()
 
 set(ZLIB_LIBRARIES ${_zlib_lib})
 
