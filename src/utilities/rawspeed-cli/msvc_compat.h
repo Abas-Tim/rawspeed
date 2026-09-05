@@ -31,8 +31,8 @@ template <typename T> inline bool ovf_add(T a, T b, T* r) {
 template <typename T> inline bool ovf_mul(T a, T b, T* r) {
   static_assert(std::is_integral_v<T> && sizeof(T) <= 4);
   if constexpr (std::is_signed_v<T>) {
-    const long long product = static_cast<long long>(a) *
-                               static_cast<long long>(b);
+    const long long product =
+        static_cast<long long>(a) * static_cast<long long>(b);
     *r = static_cast<T>(product);
     return product > static_cast<long long>(std::numeric_limits<T>::max()) ||
            product < static_cast<long long>(std::numeric_limits<T>::min());
@@ -45,7 +45,7 @@ template <typename T> inline bool ovf_mul(T a, T b, T* r) {
   }
 }
 
-}
+} // namespace rawspeed_msvc
 
 #define __builtin_sadd_overflow(a, b, c) rawspeed_msvc::ovf_add((a), (b), (c))
 #define __builtin_mul_overflow(a, b, c) rawspeed_msvc::ovf_mul((a), (b), (c))

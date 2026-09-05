@@ -1,3 +1,4 @@
+#include "RawSpeed-API.h"
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -10,12 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "RawSpeed-API.h"
-
-using std::uint8_t;
 using std::uint16_t;
 using std::uint32_t;
 using std::uint64_t;
+using std::uint8_t;
 
 using rawspeed::CFAColor;
 
@@ -50,8 +49,7 @@ static uint16_t clampToU16(float value) {
   return static_cast<uint16_t>(value);
 }
 
-static void demosaicBand(const DemosaicJob& j, uint32_t yStart,
-                         uint32_t yEnd) {
+static void demosaicBand(const DemosaicJob& j, uint32_t yStart, uint32_t yEnd) {
   for (uint32_t y = yStart; y < yEnd && y < j.rgbHeight; ++y) {
     for (uint32_t x = 0; x < j.rgbWidth; ++x) {
       float acc[3] = {0, 0, 0};
@@ -67,10 +65,9 @@ static void demosaicBand(const DemosaicJob& j, uint32_t yStart,
           const int c = cfaIndexOf(j.patternCode, static_cast<uint32_t>(yy),
                                    static_cast<uint32_t>(xx));
           const float v = static_cast<float>(j.mosaic(yy, xx));
-          const float w = (dx == 0 && dy == 0)
-                              ? 4.0F
-                              : (std::abs(dx) + std::abs(dy) == 1) ? 1.0F
-                                                                    : 0.25F;
+          const float w = (dx == 0 && dy == 0)                 ? 4.0F
+                          : (std::abs(dx) + std::abs(dy) == 1) ? 1.0F
+                                                               : 0.25F;
           acc[c] += v * w;
           counts[c]++;
         }
@@ -100,7 +97,8 @@ static bool render(rawspeed::RawImage raw, std::vector<uint16_t>& rgbOut,
                    uint32_t& outW, uint32_t& outH) {
   if (!raw->isCFA || raw->getDataType() != rawspeed::RawImageType::UINT16 ||
       raw->getCpp() != 1) {
-    std::fprintf(stderr, "rawspeed: only 16-bit Bayer CFA images are supported\n");
+    std::fprintf(stderr,
+                 "rawspeed: only 16-bit Bayer CFA images are supported\n");
     return false;
   }
 
@@ -172,9 +170,8 @@ static bool render(rawspeed::RawImage raw, std::vector<uint16_t>& rgbOut,
 
   const unsigned availableThreads = std::thread::hardware_concurrency();
   const unsigned nThreads = std::min(
-      48u, std::max(1u, std::min(availableThreads == 0 ? 1u
-                                                        : availableThreads,
-                                  h)));
+      48u,
+      std::max(1u, std::min(availableThreads == 0 ? 1u : availableThreads, h)));
   const uint32_t band = (h + nThreads - 1) / nThreads;
   std::vector<std::thread> threads;
   threads.reserve(nThreads);
@@ -222,8 +219,7 @@ int main(int argc, char** argv) {
     else
       std::fprintf(f, "P6\n%u %u\n65535\n", w, h);
 
-    std::vector<uint8_t> row(static_cast<size_t>(w) *
-                             (eightBit ? 3u : 6u));
+    std::vector<uint8_t> row(static_cast<size_t>(w) * (eightBit ? 3u : 6u));
     for (uint32_t y = 0; y < h; ++y) {
       size_t offset = 0;
       const uint16_t* src = rgb.data() + static_cast<size_t>(y) * w * 3;
