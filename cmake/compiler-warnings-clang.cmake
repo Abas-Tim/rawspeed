@@ -14,6 +14,7 @@ set (CLANG_DISABLED_WARNING_FLAGS
   "c++98-compat"
   "c++98-compat-pedantic"
   "c++20-extensions"
+  "c2y-extensions"
   "padded"
   "switch-default"
   "switch-enum"
