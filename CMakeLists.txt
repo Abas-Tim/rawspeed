@@ -123,9 +123,11 @@ endif()
 set(GOOGLETEST_PATH "/usr/src/googletest" CACHE PATH
                     "Path to the googletest root tree. Should contain googletest and googlemock subdirs. And CMakeLists.txt in root, and in both of these subdirs")
 
-set(PUGIXML_PATH "/usr/src/pugixml" CACHE PATH "Path to the pugixml root tree.")
+set(PUGIXML_PATH "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pugixml-1.14" CACHE PATH
+                  "Path to the pugixml root tree.")
 
-set(ZLIB_PATH "/usr/src/zlib" CACHE PATH "Path to the zlib root tree.")
+set(ZLIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/third_party/zlib-1.3.1" CACHE PATH
+                  "Path to the zlib root tree.")
 
 set(GOOGLEBENCHMARK_PATH "/usr/src/googlebenchmark" CACHE PATH
                     "Path to the googlebenchmark root tree.")
