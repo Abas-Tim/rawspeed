@@ -61,7 +61,7 @@ jobs:
           name: ${{ env.JOB_NAME }}.Unittests
           root_dir: ${{ github.workspace }}/rawspeed
           directory: ${{ github.workspace }}/${{ env.COVERAGE_REPORT_PREFIX }}/linux/unittests
-          fail_ci_if_error: true
+          fail_ci_if_error: false
       - name: Upload coverage to Codecov (linux, benchmarks)
         timeout-minutes: 1
         uses: codecov/codecov-action@v5
@@ -77,7 +77,7 @@ jobs:
           name: ${{ env.JOB_NAME }}.Benchmarks
           root_dir: ${{ github.workspace }}/rawspeed
           directory: ${{ github.workspace }}/${{ env.COVERAGE_REPORT_PREFIX }}/linux/benchmarks
-          fail_ci_if_error: true
+          fail_ci_if_error: false
       - name: Upload coverage to Codecov (linux, integration)
         timeout-minutes: 1
         uses: codecov/codecov-action@v5
@@ -93,7 +93,7 @@ jobs:
           name: ${{ env.JOB_NAME }}.Integration
           root_dir: ${{ github.workspace }}/rawspeed
           directory: ${{ github.workspace }}/${{ env.COVERAGE_REPORT_PREFIX }}/linux/integration
-          fail_ci_if_error: true
+          fail_ci_if_error: false
       - name: Upload coverage to Codecov (macOS, unit tests)
         timeout-minutes: 1
         uses: codecov/codecov-action@v5
@@ -109,7 +109,7 @@ jobs:
           name: ${{ env.JOB_NAME }}.Unittests
           root_dir: ${{ github.workspace }}/rawspeed
           directory: ${{ github.workspace }}/${{ env.COVERAGE_REPORT_PREFIX }}/macOS/unittests
-          fail_ci_if_error: true
+          fail_ci_if_error: false
       - name: Upload coverage to Codecov (macOS, benchmarks)
         timeout-minutes: 1
         uses: codecov/codecov-action@v5
@@ -125,7 +125,7 @@ jobs:
           name: ${{ env.JOB_NAME }}.Benchmarks
           root_dir: ${{ github.workspace }}/rawspeed
           directory: ${{ github.workspace }}/${{ env.COVERAGE_REPORT_PREFIX }}/macOS/benchmarks
-          fail_ci_if_error: true
+          fail_ci_if_error: false
       - name: Upload coverage to Codecov (windows, unit tests)
         timeout-minutes: 1
         uses: codecov/codecov-action@v5
@@ -141,7 +141,7 @@ jobs:
           name: ${{ env.JOB_NAME }}.Unittests
           root_dir: ${{ github.workspace }}/rawspeed
           directory: ${{ github.workspace }}/${{ env.COVERAGE_REPORT_PREFIX }}/windows/unittests
-          fail_ci_if_error: true
+          fail_ci_if_error: false
       - name: Upload coverage to Codecov (windows, benchmarks)
         timeout-minutes: 1
         uses: codecov/codecov-action@v5
@@ -157,4 +157,4 @@ jobs:
           name: ${{ env.JOB_NAME }}.Benchmarks
           root_dir: ${{ github.workspace }}/rawspeed
           directory: ${{ github.workspace }}/${{ env.COVERAGE_REPORT_PREFIX }}/windows/benchmarks
-          fail_ci_if_error: true
+          fail_ci_if_error: false
