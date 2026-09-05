@@ -1,0 +1,155 @@
+name: rawspeed-cli publish
+
+on:
+  push:
+    tags:
+      - "rawspeed-cli-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -S . -B build -A x64 `
+            '-DCMAKE_CXX_FLAGS=/Zc:preprocessor /EHsc /utf-8' `
+            '-DBUILD_TESTING=OFF' `
+            '-DBUILD_BENCHMARKING=OFF' `
+            '-DBUILD_FUZZERS=OFF' `
+            '-DBUILD_DOCS=OFF' `
+            '-DBUILD_TOOLS=ON' `
+            '-DRAWSPEED_ENABLE_DEBUG_INFO=OFF' `
+            '-DRAWSPEED_ENABLE_WERROR=OFF' `
+            '-DUSE_XMLLINT=OFF' `
+            '-DWITH_OPENMP=OFF' `
+            '-DWITH_JPEG=OFF' `
+            '-DWITH_PUGIXML=ON' `
+            '-DUSE_BUNDLED_PUGIXML=ON' `
+            "-DPUGIXML_PATH=$env:GITHUB_WORKSPACE/third_party/pugixml-1.14" `
+            '-DALLOW_DOWNLOADING_PUGIXML=OFF' `
+            '-DWITH_ZLIB=ON' `
+            '-DUSE_BUNDLED_ZLIB=ON' `
+            "-DZLIB_PATH=$env:GITHUB_WORKSPACE/third_party/zlib-1.3.1" `
+            '-DALLOW_DOWNLOADING_ZLIB=OFF' `
+            '-DCMAKE_BUILD_TYPE=Release'
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build --config Release --target rawspeed-cli --parallel
+
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $exe = Get-ChildItem -Path build -Recurse -File -Filter rawspeed-cli.exe |
+            Select-Object -First 1
+          if ($null -eq $exe) {
+            throw "rawspeed-cli.exe not found under build/"
+          }
+          $output = (& $exe.FullName 2>&1 | Out-String)
+          $exitCode = $LASTEXITCODE
+          "exe: $($exe.FullName)" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "exit: $exitCode" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "output: $output" | Add-Content $env:GITHUB_STEP_SUMMARY
+          if ($exitCode -ne 2 -or $output -notmatch '(?m)usage:\s+rawspeed-cli\b') {
+            throw "rawspeed-cli smoke test failed: exe=$($exe.FullName) exit=$exitCode output=[$output]"
+          }
+          Write-Output "smoke test ok: $($exe.FullName)"
+
+      - name: Stage and checksum
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $tag = $env:GITHUB_REF_NAME
+          if ($tag -notmatch '^rawspeed-cli-v(?<version>[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?)$') {
+            throw "Unexpected release tag: $tag"
+          }
+          $version = $Matches.version
+          $exe = Get-ChildItem -Path build -Recurse -File -Filter rawspeed-cli.exe |
+            Select-Object -First 1
+          if ($null -eq $exe) {
+            throw "rawspeed-cli.exe not found under build/"
+          }
+
+          $packageDir = Join-Path $env:GITHUB_WORKSPACE "pkg"
+          Remove-Item $packageDir -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
+          Copy-Item $exe.FullName (Join-Path $packageDir "rawspeed-cli.exe") -Force
+          Get-ChildItem -Path $exe.DirectoryName -File -Filter *.dll |
+            Copy-Item -Destination $packageDir -Force
+
+          $zipName = "rawspeed-cli-win-x64-v$version.zip"
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE $zipName
+          Compress-Archive -Path (Join-Path $packageDir "*") `
+            -DestinationPath $zipPath -CompressionLevel Optimal
+          $checksum = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          Set-Content -Path "$zipPath.sha256" -Value $checksum -NoNewline -Encoding ascii
+          "RELEASE_TAG=$tag" >> $env:GITHUB_ENV
+          "RELEASE_VERSION=$version" >> $env:GITHUB_ENV
+          "RELEASE_ZIP=$zipName" >> $env:GITHUB_ENV
+
+      - name: Upload to release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $headers = @{
+            Authorization = "Bearer $env:GITHUB_TOKEN"
+            Accept = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          $repo = $env:GITHUB_REPOSITORY
+          $tag = [uri]::EscapeDataString($env:RELEASE_TAG)
+          $releaseUrl = "https://api.github.com/repos/$repo/releases/tags/$tag"
+          try {
+            $release = Invoke-RestMethod -Method Get -Uri $releaseUrl -Headers $headers
+          } catch {
+            $statusCode = if ($null -ne $_.Exception.Response) {
+              [int]$_.Exception.Response.StatusCode
+            } else {
+              0
+            }
+            if ($statusCode -ne 404) {
+              throw
+            }
+            $payload = @{
+              tag_name = $env:RELEASE_TAG
+              name = "rawspeed-cli v$env:RELEASE_VERSION"
+              body = "Prebuilt rawspeed-cli Windows x64 binary from commit $env:GITHUB_SHA."
+            } | ConvertTo-Json
+            $release = Invoke-RestMethod -Method Post `
+              -Uri "https://api.github.com/repos/$repo/releases" `
+              -Headers $headers -Body $payload -ContentType "application/json"
+          }
+
+          $assetNames = @(
+            $env:RELEASE_ZIP,
+            "$env:RELEASE_ZIP.sha256"
+          )
+          foreach ($assetName in $assetNames) {
+            $asset = @($release.assets) |
+              Where-Object { $_.name -eq $assetName } |
+              Select-Object -First 1
+            if ($null -ne $asset) {
+              Invoke-RestMethod -Method Delete -Uri $asset.url -Headers $headers
+            }
+          }
+
+          foreach ($fileName in $assetNames) {
+            $filePath = Join-Path $env:GITHUB_WORKSPACE $fileName
+            $escapedName = [uri]::EscapeDataString($fileName)
+            $uploadUrl = "https://uploads.github.com/repos/$repo/releases/$($release.id)/assets?name=$escapedName"
+            Invoke-RestMethod -Method Post -Uri $uploadUrl -Headers $headers `
+              -ContentType $(if ($fileName.EndsWith(".zip")) { "application/zip" } else { "text/plain" }) `
+              -InFile $filePath | Out-Null
+          }
+          Write-Output "release assets uploaded for $env:RELEASE_TAG"

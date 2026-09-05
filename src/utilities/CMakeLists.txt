@@ -11,6 +11,8 @@ add_subdirectory(identify)
 
 add_subdirectory(rstest)
 
+add_subdirectory(rawspeed-cli)
+
 if(BUILD_BENCHMARKING)
   add_subdirectory(rsbench)
 endif()

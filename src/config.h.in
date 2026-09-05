@@ -84,7 +84,16 @@ static_assert(RAWSPEED_LARGEPAGESIZE >= RAWSPEED_PAGESIZE,
 #define __has_extension __has_feature // Compatibility with pre-3.0 compilers.
 #endif
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#define RAWSPEED_UNLIKELY_FUNCTION
+#define RAWSPEED_NOINLINE __declspec(noinline)
+#define RAWSPEED_READONLY
+#define RAWSPEED_READNONE
+#define RAWSPEED_ALWAYS_INLINE __forceinline
+#else
 #define RAWSPEED_UNLIKELY_FUNCTION __attribute__((cold))
 #define RAWSPEED_NOINLINE __attribute__((noinline))
 #define RAWSPEED_READONLY __attribute__((pure))
 #define RAWSPEED_READNONE __attribute__((const))
+#define RAWSPEED_ALWAYS_INLINE __attribute__((always_inline))
+#endif
