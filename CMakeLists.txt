@@ -70,9 +70,9 @@ endif()
 
 option(WITH_PUGIXML "Enable XML support for cameras.xml reading" ON)
 if(WITH_PUGIXML)
-  option(USE_BUNDLED_PUGIXML "Build and use pugixml in-tree" OFF)
+  option(USE_BUNDLED_PUGIXML "Build and use pugixml in-tree" ON)
 else()
-  set(USE_BUNDLED_PUGIXML OFF CACHE BOOL "Build and use pugixml in-tree" FORCE)
+  set(USE_BUNDLED_PUGIXML OFF CACHE BOOL "Build and use pugixml in-tree")
 endif()
 if(WITH_PUGIXML AND USE_BUNDLED_PUGIXML)
   option(ALLOW_DOWNLOADING_PUGIXML "If pugixml src tree is not found in location specified by PUGIXML_PATH, do fetch the archive from internet" OFF)
@@ -82,9 +82,9 @@ endif()
 option(WITH_JPEG "Enable JPEG support for DNG Lossy JPEG support" ON)
 option(WITH_ZLIB "Enable ZLIB support for DNG deflate support" ON)
 if(WITH_ZLIB)
-  option(USE_BUNDLED_ZLIB "Build and use zlib in-tree" OFF)
+  option(USE_BUNDLED_ZLIB "Build and use zlib in-tree" ON)
 else()
-  set(USE_BUNDLED_ZLIB OFF CACHE BOOL "Build and use zlib in-tree" FORCE)
+  set(USE_BUNDLED_ZLIB OFF CACHE BOOL "Build and use zlib in-tree")
 endif()
 if(WITH_ZLIB AND USE_BUNDLED_ZLIB)
   option(ALLOW_DOWNLOADING_ZLIB "If ZLIB src tree is not found in location specified by ZLIB_PATH, do fetch the archive from internet" OFF)
@@ -123,9 +123,11 @@ endif()
 set(GOOGLETEST_PATH "/usr/src/googletest" CACHE PATH
                     "Path to the googletest root tree. Should contain googletest and googlemock subdirs. And CMakeLists.txt in root, and in both of these subdirs")
 
-set(PUGIXML_PATH "/usr/src/pugixml" CACHE PATH "Path to the pugixml root tree.")
+set(PUGIXML_PATH "${CMAKE_CURRENT_SOURCE_DIR}/third_party/pugixml-1.14" CACHE PATH
+                  "Path to the pugixml root tree.")
 
-set(ZLIB_PATH "/usr/src/zlib" CACHE PATH "Path to the zlib root tree.")
+set(ZLIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/third_party/zlib-1.3.1" CACHE PATH
+                  "Path to the zlib root tree.")
 
 set(GOOGLEBENCHMARK_PATH "/usr/src/googlebenchmark" CACHE PATH
                     "Path to the googlebenchmark root tree.")

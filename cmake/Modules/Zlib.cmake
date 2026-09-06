@@ -41,18 +41,27 @@ include(${ZLIB_PREFIX}/zlib-paths.cmake)
 
 # XXX make sure that zlib is using it's own headers
 # see https://github.com/madler/zlib/issues/218
-include_directories(BEFORE SYSTEM ${ZLIB_PREFIX}/zlib-src)
-include_directories(BEFORE SYSTEM ${ZLIB_PREFIX}/zlib-build)
+include_directories(BEFORE SYSTEM ${ZLIB_SOURCE_DIR})
+include_directories(BEFORE SYSTEM ${ZLIB_BINARY_DIR})
 
 # Add zlib directly to our build. This defines
 # the gtest and gtest_main targets.
+set(ZLIB_COMPAT ON CACHE BOOL "Compile with zlib compatible API" FORCE)
+
+set(ZLIB_BUILD_EXAMPLES OFF CACHE BOOL "Enable Zlib Examples" FORCE)
+
 add_subdirectory(${ZLIB_SOURCE_DIR}
                  ${ZLIB_BINARY_DIR})
 
 set(_zlib_lib zlib)       # shared
 set(_zlib_lib zlibstatic) # static
 
-set_target_properties(${_zlib_lib} PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${_zlib_lib},INTERFACE_INCLUDE_DIRECTORIES>)
+if(TARGET ${_zlib_lib})
+  get_target_property(_zlib_alias_target ${_zlib_lib} ALIASED_TARGET)
+  if(NOT _zlib_alias_target)
+    set_target_properties(${_zlib_lib} PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${_zlib_lib},INTERFACE_INCLUDE_DIRECTORIES>)
+  endif()
+endif()
 
 set(ZLIB_LIBRARIES ${_zlib_lib})
 

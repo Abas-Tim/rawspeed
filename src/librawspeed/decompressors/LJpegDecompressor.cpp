@@ -205,13 +205,13 @@ void LJpegDecompressor::decodeRowN(
                                            /*croppedHeight=*/MCUSize.y)
                              .getAsArray2DRef();
     for (int MCURow = 0; MCURow != MCUSize.y; ++MCURow) {
-      for (int MCUСol = 0; MCUСol != MCUSize.x; ++MCUСol) {
-        int c = (MCUSize.x * MCURow) + MCUСol;
-        int prediction = pred(MCURow, MCUСol);
+      for (int MCUCol = 0; MCUCol != MCUSize.x; ++MCUCol) {
+        int c = (MCUSize.x * MCURow) + MCUCol;
+        int prediction = pred(MCURow, MCUCol);
         int diff = (static_cast<const PrefixCodeDecoder<>&>(ht[c]))
                        .decodeDifference(bs);
         int pix = prediction + diff;
-        outTile(MCURow, MCUСol) = uint16_t(pix);
+        outTile(MCURow, MCUCol) = uint16_t(pix);
       }
     }
     // The predictor for the next MCU of the row is the just-decoded MCU.
@@ -228,14 +228,14 @@ void LJpegDecompressor::decodeRowN(
     // Some rather esoteric DNG's have odd dimensions, e.g. width % 2 = 1.
     // We may end up needing just part of last N_COMP pixels.
     for (int MCURow = 0; MCURow != MCUSize.y; ++MCURow) {
-      for (int MCUСol = 0; MCUСol != MCUSize.x; ++MCUСol) {
-        int c = (MCUSize.x * MCURow) + MCUСol;
-        int prediction = pred(MCURow, MCUСol);
+      for (int MCUCol = 0; MCUCol != MCUSize.x; ++MCUCol) {
+        int c = (MCUSize.x * MCURow) + MCUCol;
+        int prediction = pred(MCURow, MCUCol);
         int diff = (static_cast<const PrefixCodeDecoder<>&>(ht[c]))
                        .decodeDifference(bs);
         int pix = prediction + diff;
         int stripeRow = MCURow;
-        int stripeCol = (MCUSize.x * mcuIdx) + MCUСol;
+        int stripeCol = (MCUSize.x * mcuIdx) + MCUCol;
         if (stripeCol < outStripe.width())
           outStripe(stripeRow, stripeCol) = uint16_t(pix);
       }

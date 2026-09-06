@@ -7,6 +7,7 @@
 **/*\.yml$
 **/\.clang-tidy$
 **/CMakeLists\.txt$
+^third_party/
 \.ci/**/*
 \.clang-format$
 \.clang-format-ignore$

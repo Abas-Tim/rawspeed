@@ -5,8 +5,6 @@ on:
     outputs:
       rpuu-cache-key:
         value: ${{ jobs.linux.outputs.rpuu-cache-key }}
-  schedule:
-    - cron: "30 0 * * SUN"
   workflow_dispatch:
 
 concurrency:

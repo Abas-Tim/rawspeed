@@ -49,8 +49,12 @@ enum class DEBUG_PRIO {
   EXTRA = 0x10000
 };
 
+#if !defined(_MSC_VER) || defined(__clang__)
 void writeLog(DEBUG_PRIO priority, const char* format, ...)
     __attribute__((format(printf, 2, 3)));
+#else
+void writeLog(DEBUG_PRIO priority, const char* format, ...);
+#endif
 
 inline void copyPixelsImpl(Array1DRef<std::byte> dest,
                            Array1DRef<const std::byte> src) {
