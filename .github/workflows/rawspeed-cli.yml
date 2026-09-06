@@ -63,6 +63,7 @@ jobs:
             throw "rawspeed-cli smoke test failed: exe=$($exe.FullName) exit=$exitCode output=[$output]"
           }
           Write-Output "smoke test ok: $($exe.FullName)"
+          exit 0
 
       - name: Stage and checksum
         shell: pwsh
