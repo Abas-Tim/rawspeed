@@ -1,8 +1,6 @@
 name: Ensure that the code is properly clang-formatted
 
 on:
-  push:
-    branches: [ develop, stable ]
   pull_request_target:
 
 concurrency:
