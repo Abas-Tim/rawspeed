@@ -8,8 +8,10 @@
 #include <cstdint>
 #include <cstdio>
 #include <exception>
+#include <filesystem>
 #include <functional>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <thread>
 #include <vector>
@@ -22,6 +24,27 @@ using std::uint8_t;
 using rawspeed::CFAColor;
 
 namespace {
+
+std::string find_cameras_xml(const char* argv0) {
+#ifdef RS_CAMERAS_XML_PATH
+  if (std::filesystem::exists(RS_CAMERAS_XML_PATH))
+    return RS_CAMERAS_XML_PATH;
+#endif
+  const std::string self(argv0);
+  const std::size_t lastslash = self.find_last_of(R"(/\)");
+  const std::string bindir = lastslash == std::string::npos
+                                 ? std::string(".")
+                                 : self.substr(0, lastslash);
+  std::string camfile = bindir + "/../share/darktable/rawspeed/cameras.xml";
+  if (std::filesystem::exists(camfile))
+    return camfile;
+#ifdef RAWSPEED_STANDALONE_BUILD
+  camfile = std::string(RAWSPEED_SOURCE_DIR "/data/cameras.xml");
+  if (std::filesystem::exists(camfile))
+    return camfile;
+#endif
+  return {};
+}
 
 struct DemosaicJob {
   rawspeed::Array2DRef<uint16_t> mosaic;
@@ -121,7 +144,11 @@ bool render(const rawspeed::RawImage& raw, std::vector<uint16_t>& rgbOut,
   }
 
   const auto cfaSize = raw->cfa.getSize();
-  if (cfaSize.x != 2 || cfaSize.y != 2) {
+  if (cfaSize.x < 2 || cfaSize.y < 2) {
+    raw->cfa.setCFA(rawspeed::iPoint2D(2, 2), CFAColor::RED, CFAColor::GREEN,
+                    CFAColor::GREEN, CFAColor::BLUE);
+  }
+  if (raw->cfa.getSize().x != 2 || raw->cfa.getSize().y != 2) {
     std::fprintf(stderr, "rawspeed: unsupported CFA pattern\n");
     return false;
   }
@@ -229,6 +256,27 @@ int main(int argc_, char** argv_) {
     decoder->failOnUnknown = false;
 
     rawspeed::RawImage raw = decoder->decodeRaw();
+
+    auto meta = std::make_unique<rawspeed::CameraMetaData>();
+#ifdef HAVE_PUGIXML
+    const std::string camfile = find_cameras_xml(argv(0));
+    if (!camfile.empty()) {
+      try {
+        meta = std::make_unique<rawspeed::CameraMetaData>(camfile.c_str());
+      } catch (const std::exception& e) {
+        std::fprintf(stderr,
+                     "rawspeed: cameras.xml unusable ('%s'), continuing "
+                     "without it\n",
+                     e.what());
+      }
+    }
+#endif
+    try {
+      decoder->decodeMetaData(meta.get());
+    } catch (const std::exception& e) {
+      std::fprintf(stderr, "rawspeed: metadata pass failed, continuing: %s\n",
+                   e.what());
+    }
 
     std::vector<uint16_t> rgb;
     uint32_t w = 0;
