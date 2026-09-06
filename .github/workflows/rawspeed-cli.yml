@@ -54,6 +54,7 @@ jobs:
           if ($null -eq $exe) {
             throw "rawspeed-cli.exe not found under build/"
           }
+
           $output = (& $exe.FullName 2>&1 | Out-String)
           $exitCode = $LASTEXITCODE
           "exe: $($exe.FullName)" | Add-Content $env:GITHUB_STEP_SUMMARY
@@ -63,6 +64,75 @@ jobs:
             throw "rawspeed-cli smoke test failed: exe=$($exe.FullName) exit=$exitCode output=[$output]"
           }
           Write-Output "smoke test ok: $($exe.FullName)"
+
+          $w = 8
+          $h = 8
+          $pixels = [System.IO.MemoryStream]::new()
+          for ($y = 0; $y -lt $h; $y++) {
+            for ($x = 0; $x -lt $w; $x++) {
+              $b = [BitConverter]::GetBytes([uint16](($y * $w + $x) * 500 + 1000))
+              $pixels.Write($b, 0, 2)
+            }
+          }
+          $pixels = $pixels.ToArray()
+          $make = [System.Text.Encoding]::ASCII.GetBytes("rawspeed`0")
+          $model = [System.Text.Encoding]::ASCII.GetBytes("test`0")
+          $ucm = [System.Text.Encoding]::ASCII.GetBytes("rawspeed test`0")
+          $entryCount = 16
+          $extOffset = 8 + (2 + $entryCount * 12 + 4)
+          $makeOff = $extOffset
+          $modelOff = $makeOff + $make.Length
+          $ucmOff = $modelOff + $model.Length
+          $pixelOff = $ucmOff + $ucm.Length
+          $ms = [System.IO.MemoryStream]::new()
+          $bw = [System.IO.BinaryWriter]::new($ms)
+          $bw.Write([byte[]]@(0x49, 0x49, 0x2A, 0x00))
+          $bw.Write([uint32]8)
+          $bw.Write([uint16]$entryCount)
+          foreach ($e in @(
+            @(254, 4, 1, 0), @(256, 4, 1, $w), @(257, 4, 1, $h),
+            @(258, 3, 1, 16), @(259, 3, 1, 1), @(262, 3, 1, 32803),
+            @(271, 2, $make.Length, $makeOff), @(272, 2, $model.Length, $modelOff),
+            @(273, 4, 1, $pixelOff), @(277, 3, 1, 1), @(278, 4, 1, $h),
+            @(279, 4, 1, $pixels.Length))) {
+            $bw.Write([uint16]$e[0]); $bw.Write([uint16]$e[1])
+            $bw.Write([uint32]$e[2]); $bw.Write([uint32]$e[3])
+          }
+          $bw.Write([uint16]33421); $bw.Write([uint16]3); $bw.Write([uint32]2)
+          $bw.Write([byte[]]@(2, 0, 2, 0))
+          $bw.Write([uint16]33422); $bw.Write([uint16]1); $bw.Write([uint32]4)
+          $bw.Write([byte[]]@(0, 1, 1, 2))
+          $bw.Write([uint16]50706); $bw.Write([uint16]1); $bw.Write([uint32]4)
+          $bw.Write([byte[]]@(1, 4, 0, 0))
+          $bw.Write([uint16]50708); $bw.Write([uint16]2)
+          $bw.Write([uint32]$ucm.Length); $bw.Write([uint32]$ucmOff)
+          $bw.Write([uint32]0)
+          $bw.Write($make)
+          $bw.Write($model)
+          $bw.Write($ucm)
+          $bw.Write($pixels)
+          $bw.Flush()
+          $dng = Join-Path $env:RUNNER_TEMP "tiny.dng"
+          [System.IO.File]::WriteAllBytes($dng, $ms.ToArray())
+
+          $ppm = Join-Path $env:RUNNER_TEMP "tiny.ppm"
+          & $exe.FullName $dng $ppm 2>&1 | Out-String | Write-Output
+          $decodeExit = $LASTEXITCODE
+          if ($decodeExit -ne 0) {
+            throw "rawspeed-cli decode smoke test failed: exit=$decodeExit"
+          }
+          $ppmBytes = [System.IO.File]::ReadAllBytes($ppm)
+          $expected = "P6`n$w $h`n65535`n"
+          $expectedBytes = [System.Text.Encoding]::ASCII.GetBytes($expected)
+          if ($ppmBytes.Length -ne ($expectedBytes.Length + $w * $h * 6)) {
+            throw "unexpected PPM size: $($ppmBytes.Length)"
+          }
+          for ($i = 0; $i -lt $expectedBytes.Length; $i++) {
+            if ($ppmBytes[$i] -ne $expectedBytes[$i]) {
+              throw "unexpected PPM header"
+            }
+          }
+          Write-Output "decode smoke test ok: $dng -> $ppm ($($ppmBytes.Length) bytes)"
           exit 0
 
       - name: Stage and checksum
